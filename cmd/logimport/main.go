@@ -10,20 +10,10 @@ import (
 )
 
 func main() {
-	fileName := "dc_main.log"
-	fmt.Println("Reading from" + fileName)
-	/*
-		b, err := ioutil.ReadFile(fileName)
+	filePath := "dc_main.log"
+	fmt.Println("Reading from" + filePath)
 
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		str := string(b)
-		fmt.Println(str)
-	*/
-
-	file, ferr := os.Open(fileName)
+	file, ferr := os.Open(filePath)
 	if ferr != nil {
 		panic(ferr)
 	}
