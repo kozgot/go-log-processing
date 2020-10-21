@@ -11,7 +11,8 @@ import (
 )
 
 func main() {
-	filePath := "dc_main.log"
+	// expects the file path from a command line argument (only works for dc_main.log files for now)
+	filePath := os.Args[1]
 	file, ferr := os.Open(filePath)
 	if ferr != nil {
 		panic(ferr)
