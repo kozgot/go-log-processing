@@ -1,3 +1,5 @@
+![Go](https://github.com/kozgot/go-log-processing/workflows/Go/badge.svg)
+
 # Diagnostic log processing and analysis
 
 This repository contains the source code of my independent laboratory project, which is Diagnostic log data processing
