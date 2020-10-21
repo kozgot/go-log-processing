@@ -29,8 +29,10 @@ func parseError(line parsedates.LineWithDate) *ErrorParams {
 	errorCode := parseErrorCode(line.Rest)
 	errorMessage := parseErrorMessage(line.Rest)
 	errorSeverity := parseErrorSeverity(line.Rest)
+	errorDesc := parseErrorDesc(line.Rest)
+	errorSource := parseErrorSource(line.Rest)
 
-	errorParams := ErrorParams{ErrorCode: errorCode, Message: errorMessage, Severity: errorSeverity}
+	errorParams := ErrorParams{ErrorCode: errorCode, Message: errorMessage, Severity: errorSeverity, Description: errorDesc, Source: errorSource}
 
 	return &errorParams
 }
@@ -63,6 +65,36 @@ func parseErrorMessage(line string) string {
 		errorMessageString = strings.Replace(errorMessageString, "]", "", 1)
 
 		return errorMessageString
+	}
+
+	return ""
+}
+
+func parseErrorDesc(line string) string {
+	errorDescFieldRegex, _ := regexp.Compile(ErrorDescRegex)
+	errorDescField := errorDescFieldRegex.FindString(line)
+
+	if errorDescField != "" {
+		// todo: match this with regex
+		errorDescString := strings.Split(errorDescField, "[")[1]
+		errorDescString = strings.Replace(errorDescString, "]", "", 1)
+
+		return errorDescString
+	}
+
+	return ""
+}
+
+func parseErrorSource(line string) string {
+	errorSourceFieldRegex, _ := regexp.Compile(ErrorSourceRegex)
+	errorSourceField := errorSourceFieldRegex.FindString(line)
+
+	if errorSourceField != "" {
+		// todo: match this with regex
+		errorSourceString := strings.Split(errorSourceField, "[")[1]
+		errorSourceString = strings.Replace(errorSourceString, "]", "", 1)
+
+		return errorSourceString
 	}
 
 	return ""
