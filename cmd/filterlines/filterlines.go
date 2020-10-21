@@ -14,6 +14,6 @@ func Filter(line string) (*Line, bool) {
 		return &Line{Level: logLevel, Rest: restOfLine}, true
 	}
 
-	// this line is not important
+	// could not parse log level
 	return nil, false
 }

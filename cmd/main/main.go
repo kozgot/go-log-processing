@@ -7,6 +7,7 @@ import (
 	"os"
 
 	filter "github.com/kozgot/go-log-processing/cmd/filterlines"
+	contentparser "github.com/kozgot/go-log-processing/cmd/parsecontents"
 	"github.com/kozgot/go-log-processing/cmd/parsedates"
 )
 
@@ -20,7 +21,7 @@ func main() {
 
 	scanner := bufio.NewScanner(file)
 
-	relevantLines := []parsedates.LineWithDate{}
+	relevantLines := []contentparser.ParsedLine{}
 	for scanner.Scan() {
 		line := scanner.Text()
 		relevantLine, success := filter.Filter(line)
@@ -33,7 +34,8 @@ func main() {
 			continue
 		}
 
-		relevantLines = append(relevantLines, *parsedLine)
+		finalParsedLine := contentparser.ParseContents(*parsedLine)
+		relevantLines = append(relevantLines, *finalParsedLine)
 	}
 
 	fmt.Println(len(relevantLines))
