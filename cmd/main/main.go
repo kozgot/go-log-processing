@@ -4,8 +4,10 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 
+	elasticsearch "github.com/elastic/go-elasticsearch/v7"
 	filter "github.com/kozgot/go-log-processing/cmd/filterlines"
 	contentparser "github.com/kozgot/go-log-processing/cmd/parsecontents"
 	"github.com/kozgot/go-log-processing/cmd/parsedates"
@@ -20,6 +22,7 @@ func main() {
 	}
 
 	scanner := bufio.NewScanner(file)
+	es7, _ := elasticsearch.NewDefaultClient()
 
 	relevantLines := []contentparser.ParsedLine{}
 	for scanner.Scan() {
@@ -39,4 +42,6 @@ func main() {
 	}
 
 	fmt.Println(len(relevantLines))
+	log.Println(elasticsearch.Version)
+	log.Println(es7.Info())
 }
