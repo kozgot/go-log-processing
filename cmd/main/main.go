@@ -37,5 +37,5 @@ func main() {
 		relevantLines = append(relevantLines, *finalParsedLine)
 	}
 
-	elasticuploader.UploadData(relevantLines)
+	elasticuploader.BulkUpload(relevantLines)
 }
