@@ -3,6 +3,7 @@ package main
 
 import (
 	"bufio"
+	"log"
 	"os"
 
 	elasticuploader "github.com/kozgot/go-log-processing/cmd/elasticsearch"
@@ -13,6 +14,10 @@ import (
 
 func main() {
 	// expects the file path from a command line argument (only works for dc_main.log files for now)
+	if len(os.Args) < 2 {
+		log.Fatalf("ERROR: File path parameter missing!")
+	}
+
 	filePath := os.Args[1]
 	file, ferr := os.Open(filePath)
 	if ferr != nil {
