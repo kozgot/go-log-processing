@@ -1,0 +1,63 @@
+version: "3.3"
+services:
+  
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3
+    container_name: elasticsearch
+    restart: always
+    environment:
+      - cluster.name=elasticsearch
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:9200"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+    networks:
+      - parser-network
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:7.9.3
+    restart: always
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200    # address of elasticsearch docker container which kibana will connect
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch                                   # kibana will start when elasticsearch has started
+    networks:
+      - parser-network
+  parser:
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - ..:/workspace:cached
+    command: sleep infinity
+    networks:
+      - parser-network
+volumes:
+  elasticsearch-data:
+
+networks:
+  parser-network:
+    driver: bridge

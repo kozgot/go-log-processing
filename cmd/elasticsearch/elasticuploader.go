@@ -51,7 +51,7 @@ func BulkIndexerUpload(lines []contentparser.ParsedLine) {
 			}
 			return retryBackoff.NextBackOff()
 		},
-		MaxRetries: 5,
+		MaxRetries: 10,
 	})
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
