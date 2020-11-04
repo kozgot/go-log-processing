@@ -47,11 +47,12 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
-    command: dc_main.log
     depends_on:
       elasticsearch:
         condition: service_healthy
-    restart: on-failure
+    volumes:
+      - ..:/workspace:cached
+    command: sleep infinity
     networks:
       - parser-network
 volumes:

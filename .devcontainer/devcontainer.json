@@ -1,0 +1,25 @@
+{
+    "name": "Go log parser dev env",
+    "dockerComposeFile": [
+        "docker-compose.yml",
+    ],
+    "service": "parser",
+    "workspaceFolder": "/workspace",
+    "settings": {
+        "go.useLanguageServer": true,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll": true
+        },
+    },
+    "extensions": [
+        "ms-vscode.go",
+        "davidanson.vscode-markdownlint",
+        "shardulm94.trailing-spaces",
+        "IBM.output-colorizer"
+    ],
+    "forwardPorts": [
+        9200,
+        5601
+    ]
+  }

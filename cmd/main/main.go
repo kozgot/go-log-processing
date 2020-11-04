@@ -15,7 +15,7 @@ import (
 func main() {
 	// expects the file path from a command line argument (only works for dc_main.log files for now)
 	if len(os.Args) < 2 {
-		log.Fatalf("ERROR: File path parameter missing!")
+		log.Fatalf("ERROR: Missing log file path param!")
 	}
 
 	filePath := os.Args[1]
