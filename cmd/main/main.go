@@ -16,7 +16,7 @@ import (
 
 func main() {
 	// expects the file path from a command line argument (only works for dc_main.log files for now)
-	if len(os.Args) < 2 {
+	if len(os.Args) >= 2 {
 		/////////////////////////////////////////////////
 		// temporary rabbit	MQ tutorial code
 		for {
@@ -62,7 +62,7 @@ func failOnError(err error, msg string) {
 }
 
 func sendHello() {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	conn, err := amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 
