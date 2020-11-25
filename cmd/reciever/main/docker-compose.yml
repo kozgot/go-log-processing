@@ -1,0 +1,30 @@
+version: "3.3"
+services:
+  rabbitmq:
+    image: rabbitmq
+    command: rabbitmq-server
+    expose:
+      - 5672
+      - 15672
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+      interval: 5s
+      timeout: 15s
+      retries: 1
+    networks:
+      - parser-network
+  reciever:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - rabbitmq
+    restart: on-failure
+    volumes:
+      - ..:/workspace:cached
+    networks:
+      - parser-network
+
+networks:
+  parser-network:
+    driver: bridge
