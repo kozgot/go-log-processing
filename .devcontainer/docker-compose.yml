@@ -68,11 +68,11 @@ services:
       retries: 1
     networks:
       - parser-network
-  reciever:
+  elasticuploader:
     environment:
       - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
     build:
-      context: ../cmd/reciever/main
+      context: ../cmd/elasticuploader/main
       dockerfile: ./Dockerfile
     depends_on:
       - rabbitmq
