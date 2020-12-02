@@ -43,6 +43,7 @@ services:
   parser:
     environment:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
@@ -68,6 +69,8 @@ services:
     networks:
       - parser-network
   reciever:
+    environment:
+      - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
     build:
       context: ../cmd/reciever/main
       dockerfile: ./Dockerfile

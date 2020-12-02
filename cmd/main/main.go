@@ -3,6 +3,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -16,16 +17,17 @@ import (
 
 func main() {
 	// expects the file path from a command line argument (only works for dc_main.log files for now)
+	rabbitMqURL := os.Getenv("RABBIT_URL")
+	fmt.Println("Communicationg with RabbitMQ at: ", rabbitMqURL)
+
 	if len(os.Args) >= 2 {
-		/////////////////////////////////////////////////
 		// temporary rabbit	MQ tutorial code
 		for {
-			sendHello()
+			sendHello(rabbitMqURL)
 			time.Sleep(1 * time.Second)
 		}
-		///////////////////////////////////////////////////////
 
-		//log.Fatalf("ERROR: Missing log file path param!")
+		// log.Fatalf("ERROR: Missing log file path param!")
 	}
 
 	filePath := os.Args[1]
@@ -61,8 +63,8 @@ func failOnError(err error, msg string) {
 	}
 }
 
-func sendHello() {
-	conn, err := amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
+func sendHello(rabbitMqURL string) {
+	conn, err := amqp.Dial(rabbitMqURL)
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 
