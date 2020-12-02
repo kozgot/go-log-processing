@@ -3,13 +3,11 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
-	"strconv"
-	"time"
 
-	elasticuploader "github.com/kozgot/go-log-processing/cmd/elasticsearch"
 	filter "github.com/kozgot/go-log-processing/cmd/filterlines"
 	contentparser "github.com/kozgot/go-log-processing/cmd/parsecontents"
 	"github.com/kozgot/go-log-processing/cmd/parsedates"
@@ -21,17 +19,8 @@ func main() {
 	rabbitMqURL := os.Getenv("RABBIT_URL")
 	fmt.Println("Communicationg with RabbitMQ at: ", rabbitMqURL)
 
-	count := 2
-	if len(os.Args) >= count {
-		// temporary rabbit	MQ tutorial code
-		seq := 1
-		for {
-			sendHello(rabbitMqURL, seq)
-			time.Sleep(1 * time.Second)
-			seq++
-		}
-
-		// log.Fatalf("ERROR: Missing log file path param!")
+	if len(os.Args) == 0 {
+		log.Fatalf("ERROR: Missing log file path param!")
 	}
 
 	filePath := os.Args[1]
@@ -58,7 +47,8 @@ func main() {
 		relevantLines = append(relevantLines, *finalParsedLine)
 	}
 
-	elasticuploader.BulkIndexerUpload(relevantLines)
+	// elasticuploader.BulkIndexerUpload(relevantLines)
+	sendLinesToElastic(rabbitMqURL, relevantLines)
 }
 
 func failOnError(err error, msg string) {
@@ -67,7 +57,18 @@ func failOnError(err error, msg string) {
 	}
 }
 
-func sendHello(rabbitMqURL string, seq int) {
+func serializeLines(lines []contentparser.ParsedLine) []byte {
+	// Serialize line
+	bytes1, err := json.Marshal(lines)
+	if err != nil {
+		fmt.Println("Can't serialize", lines)
+	}
+
+	return bytes1
+}
+
+func sendLinesToElastic(rabbitMqURL string, lines []contentparser.ParsedLine) {
+	byteData := serializeLines(lines)
 	conn, err := amqp.Dial(rabbitMqURL)
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
@@ -88,7 +89,7 @@ func sendHello(rabbitMqURL string, seq int) {
 	)
 	failOnError(err, "Failed to declare an exchange")
 
-	body := "Hello World!  " + strconv.Itoa(seq)
+	body := byteData
 
 	err = ch.Publish(
 		"logs", // exchange
@@ -97,11 +98,11 @@ func sendHello(rabbitMqURL string, seq int) {
 		false,  // immediate
 		amqp.Publishing{
 			DeliveryMode: amqp.Persistent,
-			ContentType:  "text/plain",
-			Body:         []byte(body),
+			ContentType:  "application/json",
+			Body:         body,
 		})
 	failOnError(err, "Failed to publish a message")
 
-	log.Printf(" [x] Sent %s", body)
+	log.Printf(" [PARSER] Sent %d lines to RabbitMQ", len(lines))
 	failOnError(err, "Failed to publish a message")
 }
