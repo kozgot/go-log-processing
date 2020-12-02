@@ -1,6 +1,5 @@
 version: "3.3"
 services:
-  
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3
     container_name: elasticsearch
@@ -44,6 +43,7 @@ services:
   parser:
     environment:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
@@ -55,6 +55,33 @@ services:
     command: sleep infinity
     networks:
       - parser-network
+  rabbitmq:
+    image: rabbitmq
+    command: rabbitmq-server
+    expose:
+      - 5672
+      - 15672
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+      interval: 5s
+      timeout: 15s
+      retries: 1
+    networks:
+      - parser-network
+  elasticuploader:
+    environment:
+      - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
+    build:
+      context: ../cmd/elasticuploader/main
+      dockerfile: ./Dockerfile
+    depends_on:
+      - rabbitmq
+    restart: on-failure
+    volumes:
+      - ..:/workspace:cached
+    networks:
+      - parser-network
+ 
 volumes:
   elasticsearch-data:
 

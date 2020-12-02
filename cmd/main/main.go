@@ -3,11 +3,11 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
+	"fmt"
 	"log"
 	"os"
-	"time"
 
-	elasticuploader "github.com/kozgot/go-log-processing/cmd/elasticsearch"
 	filter "github.com/kozgot/go-log-processing/cmd/filterlines"
 	contentparser "github.com/kozgot/go-log-processing/cmd/parsecontents"
 	"github.com/kozgot/go-log-processing/cmd/parsedates"
@@ -16,16 +16,11 @@ import (
 
 func main() {
 	// expects the file path from a command line argument (only works for dc_main.log files for now)
-	if len(os.Args) < 2 {
-		/////////////////////////////////////////////////
-		// temporary rabbit	MQ tutorial code
-		for {
-			sendHello()
-			time.Sleep(1 * time.Second)
-		}
-		///////////////////////////////////////////////////////
+	rabbitMqURL := os.Getenv("RABBIT_URL")
+	fmt.Println("Communicationg with RabbitMQ at: ", rabbitMqURL)
 
-		//log.Fatalf("ERROR: Missing log file path param!")
+	if len(os.Args) == 0 {
+		log.Fatalf("ERROR: Missing log file path param!")
 	}
 
 	filePath := os.Args[1]
@@ -52,7 +47,8 @@ func main() {
 		relevantLines = append(relevantLines, *finalParsedLine)
 	}
 
-	elasticuploader.BulkIndexerUpload(relevantLines)
+	// elasticuploader.BulkIndexerUpload(relevantLines)
+	sendLinesToElastic(rabbitMqURL, relevantLines)
 }
 
 func failOnError(err error, msg string) {
@@ -61,8 +57,19 @@ func failOnError(err error, msg string) {
 	}
 }
 
-func sendHello() {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+func serializeLines(lines []contentparser.ParsedLine) []byte {
+	// Serialize line
+	bytes1, err := json.Marshal(lines)
+	if err != nil {
+		fmt.Println("Can't serialize", lines)
+	}
+
+	return bytes1
+}
+
+func sendLinesToElastic(rabbitMqURL string, lines []contentparser.ParsedLine) {
+	byteData := serializeLines(lines)
+	conn, err := amqp.Dial(rabbitMqURL)
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 
@@ -71,27 +78,31 @@ func sendHello() {
 	failOnError(err, "Failed to open a channel")
 	defer ch.Close()
 
-	// queue
-	q, err := ch.QueueDeclare(
-		"hello", // name
-		false,   // durable
-		false,   // delete when unused
-		false,   // exclusive
-		false,   // no-wait
-		nil,     // arguments
+	err = ch.ExchangeDeclare(
+		"logs",   // name
+		"fanout", // type
+		true,     // durable
+		false,    // auto-deleted
+		false,    // internal
+		false,    // no-wait
+		nil,      // arguments
 	)
-	failOnError(err, "Failed to declare a queue")
+	failOnError(err, "Failed to declare an exchange")
 
-	body := "Hello World!"
+	body := byteData
+
 	err = ch.Publish(
-		"",     // exchange
-		q.Name, // routing key
+		"logs", // exchange
+		"",     // routing key
 		false,  // mandatory
 		false,  // immediate
 		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(body),
+			DeliveryMode: amqp.Persistent,
+			ContentType:  "application/json",
+			Body:         body,
 		})
-	log.Printf(" [x] Sent %s", body)
+	failOnError(err, "Failed to publish a message")
+
+	log.Printf(" [PARSER] Sent %d lines to RabbitMQ", len(lines))
 	failOnError(err, "Failed to publish a message")
 }
