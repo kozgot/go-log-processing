@@ -12,5 +12,5 @@ This repository contains the source code of my independent laboratory project, w
    - In VSCode press `F1`, then select ```Remote-Containers: Open Folder in Container``` and select the folder of the project. 
    - After the container starts, press `F5` to start a debug session. 
 
-## Documentation
+## Information about the project
 [project_overview](https://github.com/kozgot/go-log-processing/blob/master/docs/project_overview.md)
