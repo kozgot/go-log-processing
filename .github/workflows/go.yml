@@ -32,6 +32,7 @@ jobs:
 
     - name: Build
       run: go build -v ./cmd/main
+      run: go build -v ./cmd/elasticuploader/main
 
     - name: Test
       run: go test -v ./cmd/main
