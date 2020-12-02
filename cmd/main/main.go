@@ -20,7 +20,8 @@ func main() {
 	rabbitMqURL := os.Getenv("RABBIT_URL")
 	fmt.Println("Communicationg with RabbitMQ at: ", rabbitMqURL)
 
-	if len(os.Args) >= 2 {
+	count := 2
+	if len(os.Args) >= count {
 		// temporary rabbit	MQ tutorial code
 		for {
 			sendHello(rabbitMqURL)
@@ -76,12 +77,13 @@ func sendHello(rabbitMqURL string) {
 	// queue
 	q, err := ch.QueueDeclare(
 		"hello", // name
-		false,   // durable
+		true,    // durable
 		false,   // delete when unused
 		false,   // exclusive
 		false,   // no-wait
 		nil,     // arguments
 	)
+
 	failOnError(err, "Failed to declare a queue")
 
 	body := "Hello World!"
@@ -91,9 +93,11 @@ func sendHello(rabbitMqURL string) {
 		false,  // mandatory
 		false,  // immediate
 		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(body),
+			DeliveryMode: amqp.Persistent,
+			ContentType:  "text/plain",
+			Body:         []byte(body),
 		})
+
 	log.Printf(" [x] Sent %s", body)
 	failOnError(err, "Failed to publish a message")
 }
