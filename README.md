@@ -11,6 +11,7 @@ This repository contains the source code of my independent laboratory project, w
    - `Tip: Allocate more than 2GB memory for docker, for debbuging inside the Remote container 2 GB won't be enough and the attach is going to keep disconnecting. `
    - In VSCode press `F1`, then select ```Remote-Containers: Open Folder in Container``` and select the folder of the project. 
    - After the container starts, press `F5` to start a debug session. 
+* Docker is also needed for development
 
 ## Information about the project
 [project_overview](https://github.com/kozgot/go-log-processing/blob/master/docs/project_overview.md)
