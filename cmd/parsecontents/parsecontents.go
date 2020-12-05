@@ -132,7 +132,7 @@ func parseWarn(line parsedates.LineWithDate) *WarningParams {
 
 	// parse SMC UID
 	smcUID := parseWarningSMCUID(line.Rest)
-	warningParams.SmcUid = smcUID
+	warningParams.SmcUID = smcUID
 
 	// parse UID
 	uid := parseWarningUID(line.Rest)

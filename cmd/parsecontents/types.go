@@ -14,7 +14,7 @@ type ErrorParams struct {
 // WarningParams contains the parsed warning parameters
 type WarningParams struct {
 	Name          string
-	SmcUid        string
+	SmcUID        string
 	UID           int
 	Priority      int
 	Retry         int
