@@ -47,9 +47,10 @@ var flushBytes = 1000000
 
 // will be overwritten
 var indexName = "index"
+var documentID = 1
 
 func main() {
-	log.Println("Reciever started and listening...")
+	log.Println("Elastic Uploader starting...")
 	rabbitMqURL := os.Getenv("RABBIT_URL")
 	fmt.Println("RABBIT_URL:", rabbitMqURL)
 
@@ -116,12 +117,21 @@ func main() {
 			} else if strings.Contains(string(d.Body), "[DONE]") {
 				// wait for the documents of the current index to arrive
 				BulkIndexerUpload(lines)
+				log.Println(strings.Repeat("▔", 65))
+				log.Printf("	Successfully indexed all %d documents (index name: %s)", documentID-1, indexName)
+
+				// cleanup...
 				lines = []ParsedLine{} // clear the buffer after uploading the contents
-				log.Println("----------    DONE    -----------")
+				documentID = 1
+				indexName = ""
 			} else {
-				// save messages
+				// save messages until we hit the 1000 line treshold
 				line := deserializeLines(d.Body)
 				lines = append(lines, line)
+				if len(lines) >= 1000 {
+					BulkIndexerUpload(lines)
+					lines = []ParsedLine{} // clear the buffer after uploading the contents
+				}
 			}
 		}
 	}()
@@ -146,12 +156,6 @@ func BulkIndexerUpload(lines []ParsedLine) {
 
 		err error
 	)
-
-	numItems := len(lines)
-
-	log.Printf(
-		"\x1b[1mBulkIndexer\x1b[0m: documents [%s] workers [%d] flush [%s]",
-		humanize.Comma(int64(numItems)), numWorkers, humanize.Bytes(uint64(flushBytes)))
 
 	// Use a third-party package for implementing the backoff function
 	retryBackoff := backoff.NewExponentialBackOff()
@@ -200,7 +204,7 @@ func BulkIndexerUpload(lines []ParsedLine) {
 				Action: "index",
 
 				// DocumentID is the (optional) document ID
-				DocumentID: strconv.Itoa(i),
+				DocumentID: strconv.Itoa(documentID),
 
 				// Body is an `io.Reader` with the payload
 				Body: bytes.NewReader(data),
@@ -220,6 +224,9 @@ func BulkIndexerUpload(lines []ParsedLine) {
 				},
 			},
 		)
+
+		documentID++
+
 		if err != nil {
 			log.Fatalf("Unexpected error: %s", err)
 		}
@@ -278,7 +285,6 @@ func createEsIndex(index string) {
 }
 
 func reportBulkIndexerStats(biStats esutil.BulkIndexerStats, dur time.Duration) {
-	log.Println(strings.Repeat("▔", 65))
 
 	if biStats.NumFailed > 0 {
 		log.Fatalf(

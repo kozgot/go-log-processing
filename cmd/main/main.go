@@ -29,10 +29,12 @@ func main() {
 		panic(ferr)
 	}
 
+	log.Printf("  Processing log file: %s ...", filePath)
 	scanner := bufio.NewScanner(file)
 	indexName := "dc_main"
 	// Send the name of the index
 	sendStringMessageToElastic(rabbitMqURL, "[INDEXNAME] "+indexName)
+	log.Printf("  Creating index: %s ...", indexName)
 	for scanner.Scan() {
 		line := scanner.Text()
 		relevantLine, success := filter.Filter(line)
@@ -51,6 +53,7 @@ func main() {
 
 	// Send a message indicating that this is the end of the current index
 	sendStringMessageToElastic(rabbitMqURL, "[DONE]")
+	log.Printf("  Done processing log file: %s", filePath)
 }
 
 func failOnError(err error, msg string) {
@@ -103,7 +106,6 @@ func sendData(rabbitMqURL string, data []byte) {
 		})
 	failOnError(err, "Failed to publish a message")
 
-	// log.Printf(" [PARSER] Sent a line to RabbitMQ")
 	failOnError(err, "Failed to publish a message")
 }
 
@@ -114,7 +116,6 @@ func sendLinesToElastic(rabbitMqURL string, line contentparser.ParsedLine) {
 
 func sendStringMessageToElastic(rabbitMqURL string, indexName string) {
 	bytes, err := json.Marshal(indexName)
-	fmt.Println(string(bytes))
 	if err != nil {
 		fmt.Println("Can't serialize", indexName)
 	}
