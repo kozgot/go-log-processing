@@ -35,11 +35,25 @@ type ErrorParams struct {
 	Source      string
 }
 
+// WarningParams contains the parsed warning parameters
+type WarningParams struct {
+	Name          string
+	SmcUID        string
+	UID           int
+	Priority      int
+	Retry         int
+	Creation      time.Time
+	MinLaunchTime time.Time
+	ErrorParams   ErrorParams
+	FileName      string
+}
+
 // ParsedLine contains a parsed line from the log file
 type ParsedLine struct {
-	Timestamp   time.Time
-	Level       string
-	ErrorParams *ErrorParams
+	Timestamp     time.Time
+	Level         string
+	ErrorParams   ErrorParams
+	WarningParams WarningParams
 }
 
 var numWorkers = 4
