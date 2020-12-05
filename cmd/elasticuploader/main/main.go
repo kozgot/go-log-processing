@@ -114,6 +114,7 @@ func main() {
 				log.Println("Creating index:  ", indexName)
 				createEsIndex(indexName)
 			} else if strings.Contains(string(d.Body), "[DONE]") {
+				// wait for the documents of the current index to arrive
 				BulkIndexerUpload(lines)
 				lines = []ParsedLine{} // clear the buffer after uploading the contents
 				log.Println("----------    DONE    -----------")

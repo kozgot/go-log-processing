@@ -31,6 +31,7 @@ func main() {
 
 	scanner := bufio.NewScanner(file)
 	indexName := "dc_main"
+	// Send the name of the index
 	sendStringMessageToElastic(rabbitMqURL, "[INDEXNAME] "+indexName)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -48,6 +49,7 @@ func main() {
 		sendLinesToElastic(rabbitMqURL, *finalParsedLine)
 	}
 
+	// Send a message indicating that this is the end of the current index
 	sendStringMessageToElastic(rabbitMqURL, "[DONE]")
 }
 
