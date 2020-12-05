@@ -6,7 +6,7 @@ const ErrorCodeRegex = "error_code\\[" + NumberRegex + "\\]"
 // NumberRegex matches any number
 const NumberRegex = "[0-9]+"
 
-// NumberRegex matches any number
+// LongNumberRegex matches any number
 const LongNumberRegex = "[0-9]*"
 
 // AbcRegex matches strings containing any lowercase or uppercase letters

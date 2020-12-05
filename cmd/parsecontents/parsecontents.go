@@ -1,7 +1,6 @@
 package parsecontents
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -16,15 +15,14 @@ func ParseContents(line parsedates.LineWithDate) *ParsedLine {
 	switch line.Level {
 	case "ERROR":
 		errorParams := parseError(line)
-		parsedLine.ErrorParams = errorParams
+		parsedLine.ErrorParams = *errorParams
 
-	case "INFO":
-		// fmt.Println("INFO")
 	case "WARN":
-		warning, success := parseWarn(line)
-		if success {
-			parsedLine.WarningParams = warning
+		warning := parseWarn(line)
+		if warning == nil {
+			return nil
 		}
+		parsedLine.WarningParams = *warning
 	}
 
 	return &parsedLine
@@ -123,18 +121,18 @@ func parseErrorSeverity(line string) int {
 	return 0
 }
 
-func parseWarn(line parsedates.LineWithDate) (*WarningParams, bool) {
+func parseWarn(line parsedates.LineWithDate) *WarningParams {
 	warningParams := WarningParams{}
 
 	warnRegex, _ := regexp.Compile(WarnRegex)
 	warn := warnRegex.FindString(line.Rest)
 	if warn == "" {
-		return nil, false
+		return nil
 	}
 
 	// parse SMC UID
 	smcUID := parseWarningSMCUID(line.Rest)
-	warningParams.SMC_UID = smcUID
+	warningParams.SmcUid = smcUID
 
 	// parse UID
 	uid := parseWarningUID(line.Rest)
@@ -166,10 +164,10 @@ func parseWarn(line parsedates.LineWithDate) (*WarningParams, bool) {
 
 	// parse inner error params
 	errorParams := parseError(line)
-	warningParams.ErrorParams = errorParams
+	warningParams.ErrorParams = *errorParams
 
 	// could not parse log level
-	return &warningParams, true
+	return &warningParams
 }
 
 func parseWarningPriority(line string) int {
@@ -281,7 +279,6 @@ func parseWarningMinLaunchTime(line string) time.Time {
 		warningMinLaunchTimeString = strings.Replace(warningMinLaunchTimeString, "]", "", 1)
 
 		dateTime := parseDateTime(warningMinLaunchTimeString)
-		fmt.Println(dateTime)
 		return dateTime
 	}
 

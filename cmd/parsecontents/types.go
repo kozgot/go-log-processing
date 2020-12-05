@@ -14,13 +14,13 @@ type ErrorParams struct {
 // WarningParams contains the parsed warning parameters
 type WarningParams struct {
 	Name          string
-	SMC_UID       string
+	SmcUid        string
 	UID           int
 	Priority      int
 	Retry         int
 	Creation      time.Time
 	MinLaunchTime time.Time
-	ErrorParams   *ErrorParams
+	ErrorParams   ErrorParams
 	FileName      string
 }
 
@@ -28,6 +28,6 @@ type WarningParams struct {
 type ParsedLine struct {
 	Timestamp     time.Time
 	Level         string
-	ErrorParams   *ErrorParams
-	WarningParams *WarningParams
+	ErrorParams   ErrorParams
+	WarningParams WarningParams
 }

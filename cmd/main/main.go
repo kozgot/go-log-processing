@@ -48,7 +48,9 @@ func main() {
 		}
 
 		finalParsedLine := contentparser.ParseContents(*parsedLine)
-		sendLinesToElastic(rabbitMqURL, *finalParsedLine)
+		if finalParsedLine != nil {
+			sendLinesToElastic(rabbitMqURL, *finalParsedLine)
+		}
 	}
 
 	// Send a message indicating that this is the end of the current index
