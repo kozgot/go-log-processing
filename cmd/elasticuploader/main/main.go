@@ -42,8 +42,15 @@ type ParsedLine struct {
 	ErrorParams *ErrorParams
 }
 
+var numWorkers = 4
+var flushBytes = 1000000
+
+// will be overwritten
+var indexName = "index"
+var documentID = 1
+
 func main() {
-	log.Println("Reciever started and listening...")
+	log.Println("Elastic Uploader starting...")
 	rabbitMqURL := os.Getenv("RABBIT_URL")
 	fmt.Println("RABBIT_URL:", rabbitMqURL)
 
@@ -96,52 +103,58 @@ func main() {
 	)
 	failOnError(err, "Failed to register a consumer")
 
+	lines := []ParsedLine{}
 	forever := make(chan bool)
 
 	go func() {
 		for d := range msgs {
-			lines := deserializeLines(d.Body)
-			log.Printf("[UPLOADER] Received a message")
-			BulkIndexerUpload(lines)
+			if strings.Contains(string(d.Body), "[INDEXNAME] ") {
+				indexNameMessageString := string(d.Body)
+				runes := []rune(indexNameMessageString)
+				indexName = string(runes[len("[INDEXNAME] ")+1 : len(indexNameMessageString)-1])
+				log.Println("Creating index:  ", indexName)
+				createEsIndex(indexName)
+			} else if strings.Contains(string(d.Body), "[DONE]") {
+				// wait for the documents of the current index to arrive
+				BulkIndexerUpload(lines)
+				log.Printf("  Successfully indexed all %d documents (index name: %s)", documentID-1, indexName)
 
-			time.Sleep(2 * time.Second)
-			log.Printf("Done")
+				// cleanup...
+				lines = []ParsedLine{} // clear the buffer after uploading the contents
+				documentID = 1
+				indexName = ""
+			} else {
+				// save messages until we hit the 1000 line treshold
+				line := deserializeLines(d.Body)
+				lines = append(lines, line)
+				if len(lines) >= 1000 {
+					BulkIndexerUpload(lines)
+					lines = []ParsedLine{} // clear the buffer after uploading the contents
+				}
+			}
 		}
 	}()
-
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
 	<-forever
 }
 
-func deserializeLines(bytes []byte) []ParsedLine {
-	var lines []ParsedLine
-	err := json.Unmarshal(bytes, &lines)
+func deserializeLines(bytes []byte) ParsedLine {
+	var line ParsedLine
+	err := json.Unmarshal(bytes, &line)
 	if err != nil {
-		fmt.Println("ERROR ----- Can't deserislize message")
+		fmt.Println("ERROR ----- Can't deserislize message: " + string(bytes))
 	}
 
-	return lines
+	return line
 }
-
-var indexName = "dc_main"
-var batchSize = 500
-var numWorkers = 4
-var flushBytes = 1000000
 
 // BulkIndexerUpload uploads data to Elasticsearch using BulkIndexer from go-elasticsearch
 func BulkIndexerUpload(lines []ParsedLine) {
 	var (
 		countSuccessful uint64
 
-		res *esapi.Response
 		err error
 	)
-
-	numItems := len(lines)
-
-	log.Printf(
-		"\x1b[1mBulkIndexer\x1b[0m: documents [%s] workers [%d] flush [%s]",
-		humanize.Comma(int64(numItems)), numWorkers, humanize.Bytes(uint64(flushBytes)))
 
 	// Use a third-party package for implementing the backoff function
 	retryBackoff := backoff.NewExponentialBackOff()
@@ -174,20 +187,6 @@ func BulkIndexerUpload(lines []ParsedLine) {
 		log.Fatalf("Error creating the indexer: %s", err)
 	}
 
-	// Re-create the index
-	if res, err = es.Indices.Delete([]string{indexName}, es.Indices.Delete.WithIgnoreUnavailable(true)); err != nil || res.IsError() {
-		log.Fatalf("Cannot delete index: %s", err)
-	}
-	res.Body.Close()
-	res, err = es.Indices.Create(indexName)
-	if err != nil {
-		log.Fatalf("Cannot create index: %s", err)
-	}
-	if res.IsError() {
-		log.Fatalf("Cannot create index: %s", res)
-	}
-	res.Body.Close()
-
 	start := time.Now().UTC()
 
 	for i, a := range lines {
@@ -204,7 +203,7 @@ func BulkIndexerUpload(lines []ParsedLine) {
 				Action: "index",
 
 				// DocumentID is the (optional) document ID
-				DocumentID: strconv.Itoa(i),
+				DocumentID: strconv.Itoa(documentID),
 
 				// Body is an `io.Reader` with the payload
 				Body: bytes.NewReader(data),
@@ -224,6 +223,9 @@ func BulkIndexerUpload(lines []ParsedLine) {
 				},
 			},
 		)
+
+		documentID++
+
 		if err != nil {
 			log.Fatalf("Unexpected error: %s", err)
 		}
@@ -240,8 +242,48 @@ func BulkIndexerUpload(lines []ParsedLine) {
 	reportBulkIndexerStats(biStats, dur)
 }
 
+func createEsIndex(index string) {
+	var (
+		res *esapi.Response
+		err error
+	)
+
+	// Use a third-party package for implementing the backoff function
+	retryBackoff := backoff.NewExponentialBackOff()
+
+	// Create the Elasticsearch client
+	es, err := elasticsearch.NewClient(elasticsearch.Config{
+		// Retry on 429 TooManyRequests statuses
+		RetryOnStatus: []int{502, 503, 504, 429},
+		RetryBackoff: func(i int) time.Duration {
+			if i == 1 {
+				retryBackoff.Reset()
+			}
+			return retryBackoff.NextBackOff()
+		},
+		MaxRetries: 10,
+	})
+	if err != nil {
+		log.Fatalf("Error creating the client: %s", err)
+	}
+
+	// Re-create the index
+	if res, err = es.Indices.Delete([]string{index}, es.Indices.Delete.WithIgnoreUnavailable(true)); err != nil || res.IsError() {
+		log.Fatalf("Cannot delete index: %s", err)
+	}
+	res.Body.Close()
+	res, err = es.Indices.Create(index)
+	if err != nil {
+		log.Fatalf("Cannot create index: %s", err)
+	}
+	if res.IsError() {
+		log.Fatalf("Cannot create index: %s", res)
+	}
+	res.Body.Close()
+
+}
+
 func reportBulkIndexerStats(biStats esutil.BulkIndexerStats, dur time.Duration) {
-	log.Println(strings.Repeat("▔", 65))
 
 	if biStats.NumFailed > 0 {
 		log.Fatalf(
@@ -259,4 +301,6 @@ func reportBulkIndexerStats(biStats esutil.BulkIndexerStats, dur time.Duration) 
 			humanize.Comma(int64(1000.0/float64(dur/time.Millisecond)*float64(biStats.NumFlushed))),
 		)
 	}
+
+	log.Println(strings.Repeat("▔", 65))
 }

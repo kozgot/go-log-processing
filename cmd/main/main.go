@@ -29,8 +29,12 @@ func main() {
 		panic(ferr)
 	}
 
+	log.Printf("  Processing log file: %s ...", filePath)
 	scanner := bufio.NewScanner(file)
-	relevantLines := []contentparser.ParsedLine{}
+	indexName := "dc_main"
+	// Send the name of the index
+	sendStringMessageToElastic(rabbitMqURL, "[INDEXNAME] "+indexName)
+	log.Printf("  Creating index: %s ...", indexName)
 	for scanner.Scan() {
 		line := scanner.Text()
 		relevantLine, success := filter.Filter(line)
@@ -44,11 +48,12 @@ func main() {
 		}
 
 		finalParsedLine := contentparser.ParseContents(*parsedLine)
-		relevantLines = append(relevantLines, *finalParsedLine)
+		sendLinesToElastic(rabbitMqURL, *finalParsedLine)
 	}
 
-	// elasticuploader.BulkIndexerUpload(relevantLines)
-	sendLinesToElastic(rabbitMqURL, relevantLines)
+	// Send a message indicating that this is the end of the current index
+	sendStringMessageToElastic(rabbitMqURL, "[DONE]")
+	log.Printf("  Done processing log file: %s", filePath)
 }
 
 func failOnError(err error, msg string) {
@@ -57,18 +62,16 @@ func failOnError(err error, msg string) {
 	}
 }
 
-func serializeLines(lines []contentparser.ParsedLine) []byte {
-	// Serialize line
-	bytes1, err := json.Marshal(lines)
+func serializeLine(line contentparser.ParsedLine) []byte {
+	bytes, err := json.Marshal(line)
 	if err != nil {
-		fmt.Println("Can't serialize", lines)
+		fmt.Println("Can't serialize", line)
 	}
 
-	return bytes1
+	return bytes
 }
 
-func sendLinesToElastic(rabbitMqURL string, lines []contentparser.ParsedLine) {
-	byteData := serializeLines(lines)
+func sendData(rabbitMqURL string, data []byte) {
 	conn, err := amqp.Dial(rabbitMqURL)
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
@@ -89,7 +92,7 @@ func sendLinesToElastic(rabbitMqURL string, lines []contentparser.ParsedLine) {
 	)
 	failOnError(err, "Failed to declare an exchange")
 
-	body := byteData
+	body := data
 
 	err = ch.Publish(
 		"logs", // exchange
@@ -103,6 +106,18 @@ func sendLinesToElastic(rabbitMqURL string, lines []contentparser.ParsedLine) {
 		})
 	failOnError(err, "Failed to publish a message")
 
-	log.Printf(" [PARSER] Sent %d lines to RabbitMQ", len(lines))
 	failOnError(err, "Failed to publish a message")
+}
+
+func sendLinesToElastic(rabbitMqURL string, line contentparser.ParsedLine) {
+	byteData := serializeLine(line)
+	sendData(rabbitMqURL, byteData)
+}
+
+func sendStringMessageToElastic(rabbitMqURL string, indexName string) {
+	bytes, err := json.Marshal(indexName)
+	if err != nil {
+		fmt.Println("Can't serialize", indexName)
+	}
+	sendData(rabbitMqURL, bytes)
 }
