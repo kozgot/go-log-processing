@@ -117,8 +117,7 @@ func main() {
 			} else if strings.Contains(string(d.Body), "[DONE]") {
 				// wait for the documents of the current index to arrive
 				BulkIndexerUpload(lines)
-				log.Println(strings.Repeat("▔", 65))
-				log.Printf("	Successfully indexed all %d documents (index name: %s)", documentID-1, indexName)
+				log.Printf("  Successfully indexed all %d documents (index name: %s)", documentID-1, indexName)
 
 				// cleanup...
 				lines = []ParsedLine{} // clear the buffer after uploading the contents
