@@ -42,6 +42,12 @@ type ParsedLine struct {
 	ErrorParams *ErrorParams
 }
 
+var numWorkers = 4
+var flushBytes = 1000000
+
+// will be overwritten
+var indexName = "index"
+
 func main() {
 	log.Println("Reciever started and listening...")
 	rabbitMqURL := os.Getenv("RABBIT_URL")
@@ -96,44 +102,47 @@ func main() {
 	)
 	failOnError(err, "Failed to register a consumer")
 
+	lines := []ParsedLine{}
 	forever := make(chan bool)
 
 	go func() {
 		for d := range msgs {
-			lines := deserializeLines(d.Body)
-			log.Printf("[UPLOADER] Received a message")
-			BulkIndexerUpload(lines)
-
-			time.Sleep(2 * time.Second)
-			log.Printf("Done")
+			if strings.Contains(string(d.Body), "[INDEXNAME] ") {
+				indexNameMessageString := string(d.Body)
+				runes := []rune(indexNameMessageString)
+				indexName = string(runes[len("[INDEXNAME] ")+1 : len(indexNameMessageString)-1])
+				log.Println("Creating index:  ", indexName)
+				createEsIndex(indexName)
+			} else if strings.Contains(string(d.Body), "[DONE]") {
+				BulkIndexerUpload(lines)
+				lines = []ParsedLine{} // clear the buffer after uploading the contents
+				log.Println("----------    DONE    -----------")
+			} else {
+				// save messages
+				line := deserializeLines(d.Body)
+				lines = append(lines, line)
+			}
 		}
 	}()
-
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
 	<-forever
 }
 
-func deserializeLines(bytes []byte) []ParsedLine {
-	var lines []ParsedLine
-	err := json.Unmarshal(bytes, &lines)
+func deserializeLines(bytes []byte) ParsedLine {
+	var line ParsedLine
+	err := json.Unmarshal(bytes, &line)
 	if err != nil {
-		fmt.Println("ERROR ----- Can't deserislize message")
+		fmt.Println("ERROR ----- Can't deserislize message: " + string(bytes))
 	}
 
-	return lines
+	return line
 }
-
-var indexName = "dc_main"
-var batchSize = 500
-var numWorkers = 4
-var flushBytes = 1000000
 
 // BulkIndexerUpload uploads data to Elasticsearch using BulkIndexer from go-elasticsearch
 func BulkIndexerUpload(lines []ParsedLine) {
 	var (
 		countSuccessful uint64
 
-		res *esapi.Response
 		err error
 	)
 
@@ -173,20 +182,6 @@ func BulkIndexerUpload(lines []ParsedLine) {
 	if err != nil {
 		log.Fatalf("Error creating the indexer: %s", err)
 	}
-
-	// Re-create the index
-	if res, err = es.Indices.Delete([]string{indexName}, es.Indices.Delete.WithIgnoreUnavailable(true)); err != nil || res.IsError() {
-		log.Fatalf("Cannot delete index: %s", err)
-	}
-	res.Body.Close()
-	res, err = es.Indices.Create(indexName)
-	if err != nil {
-		log.Fatalf("Cannot create index: %s", err)
-	}
-	if res.IsError() {
-		log.Fatalf("Cannot create index: %s", res)
-	}
-	res.Body.Close()
 
 	start := time.Now().UTC()
 
@@ -240,6 +235,47 @@ func BulkIndexerUpload(lines []ParsedLine) {
 	reportBulkIndexerStats(biStats, dur)
 }
 
+func createEsIndex(index string) {
+	var (
+		res *esapi.Response
+		err error
+	)
+
+	// Use a third-party package for implementing the backoff function
+	retryBackoff := backoff.NewExponentialBackOff()
+
+	// Create the Elasticsearch client
+	es, err := elasticsearch.NewClient(elasticsearch.Config{
+		// Retry on 429 TooManyRequests statuses
+		RetryOnStatus: []int{502, 503, 504, 429},
+		RetryBackoff: func(i int) time.Duration {
+			if i == 1 {
+				retryBackoff.Reset()
+			}
+			return retryBackoff.NextBackOff()
+		},
+		MaxRetries: 10,
+	})
+	if err != nil {
+		log.Fatalf("Error creating the client: %s", err)
+	}
+
+	// Re-create the index
+	if res, err = es.Indices.Delete([]string{index}, es.Indices.Delete.WithIgnoreUnavailable(true)); err != nil || res.IsError() {
+		log.Fatalf("Cannot delete index: %s", err)
+	}
+	res.Body.Close()
+	res, err = es.Indices.Create(index)
+	if err != nil {
+		log.Fatalf("Cannot create index: %s", err)
+	}
+	if res.IsError() {
+		log.Fatalf("Cannot create index: %s", res)
+	}
+	res.Body.Close()
+
+}
+
 func reportBulkIndexerStats(biStats esutil.BulkIndexerStats, dur time.Duration) {
 	log.Println(strings.Repeat("▔", 65))
 
@@ -259,4 +295,6 @@ func reportBulkIndexerStats(biStats esutil.BulkIndexerStats, dur time.Duration) 
 			humanize.Comma(int64(1000.0/float64(dur/time.Millisecond)*float64(biStats.NumFlushed))),
 		)
 	}
+
+	log.Println(strings.Repeat("▔", 65))
 }

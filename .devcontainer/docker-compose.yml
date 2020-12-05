@@ -70,6 +70,7 @@ services:
       - parser-network
   elasticuploader:
     environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
       - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
     build:
       context: ../cmd/elasticuploader/main
