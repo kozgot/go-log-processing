@@ -2,17 +2,23 @@
 package main
 
 import (
+	"archive/zip"
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 
 	filter "github.com/kozgot/go-log-processing/cmd/filterlines"
 	contentparser "github.com/kozgot/go-log-processing/cmd/parsecontents"
 	"github.com/kozgot/go-log-processing/cmd/parsedates"
 	"github.com/streadway/amqp"
 )
+
+const unzippedInputFileFolderName = "unzipped_input_files"
 
 func main() {
 	// expects the file path from a command line argument (only works for dc_main.log files for now)
@@ -24,17 +30,92 @@ func main() {
 	}
 
 	filePath := os.Args[1]
+	files, err := Unzip(filePath, unzippedInputFileFolderName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Unzipped:\n" + strings.Join(files, "\n"))
+
+	for _, file := range files {
+		processFile(file, rabbitMqURL)
+	}
+}
+
+// Unzip will decompress a zip archive, moving all files and folders
+// within the zip file (parameter 1) to an output directory (parameter 2).
+func Unzip(src string, dest string) ([]string, error) {
+	r, err := zip.OpenReader(src)
+	if err != nil {
+		return make([]string, 0), err
+	}
+	defer r.Close()
+
+	filenames := make([]string, 0, len(r.File))
+
+	for _, f := range r.File {
+		// Store filename/path for returning and using later on
+		fpath := filepath.Join(dest, f.Name)
+
+		// Check for ZipSlip. More Info: http://bit.ly/2MsjAWE
+		if !strings.HasPrefix(fpath, filepath.Clean(dest)+string(os.PathSeparator)) {
+			return filenames, fmt.Errorf("%s: illegal file path", fpath)
+		}
+
+		filenames = append(filenames, fpath)
+
+		if f.FileInfo().IsDir() {
+			// Make Folder
+			error := os.MkdirAll(fpath, os.ModePerm)
+			if error != nil {
+				panic(error)
+			}
+
+			continue
+		}
+
+		// Make File
+		if err = os.MkdirAll(filepath.Dir(fpath), os.ModePerm); err != nil {
+			return filenames, err
+		}
+
+		outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+		if err != nil {
+			return filenames, err
+		}
+
+		rc, err := f.Open()
+		if err != nil {
+			return filenames, err
+		}
+
+		_, err = io.Copy(outFile, rc)
+
+		// Close the file without defer to close before next iteration of loop
+		outFile.Close()
+		rc.Close()
+
+		if err != nil {
+			return filenames, err
+		}
+	}
+	return filenames, nil
+}
+
+func processFile(filePath string, rabbitMqURL string) {
 	file, ferr := os.Open(filePath)
 	if ferr != nil {
 		panic(ferr)
 	}
 
-	log.Printf("  Processing log file: %s ...", filePath)
+	_, shortFileName := filepath.Split(filePath)
+
+	log.Printf("  Processing log file: %s ...", shortFileName)
 	scanner := bufio.NewScanner(file)
-	indexName := "dc_main"
+
 	// Send the name of the index
-	sendStringMessageToElastic(rabbitMqURL, "[INDEXNAME] "+indexName)
-	log.Printf("  Creating index: %s ...", indexName)
+	sendStringMessageToElastic(rabbitMqURL, "[INDEXNAME] "+shortFileName)
+	log.Printf("  Creating index: %s ...", shortFileName)
 	for scanner.Scan() {
 		line := scanner.Text()
 		relevantLine, success := filter.Filter(line)
@@ -55,7 +136,7 @@ func main() {
 
 	// Send a message indicating that this is the end of the current index
 	sendStringMessageToElastic(rabbitMqURL, "[DONE]")
-	log.Printf("  Done processing log file: %s", filePath)
+	log.Printf("  Done processing log file: %s", shortFileName)
 }
 
 func failOnError(err error, msg string) {

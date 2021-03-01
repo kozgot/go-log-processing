@@ -11,7 +11,9 @@
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/main/main.go",
             "env": {},
-            "args": [ "dc_main.log"]
+            "args": [
+                "files.zip"
+            ]
         }
     ]
 }
