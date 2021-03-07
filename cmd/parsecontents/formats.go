@@ -53,8 +53,8 @@ const CreationTimeRegex = "creation_time\\[" + anyCharsExceptParentheses + "\\]"
 // MinLaunchTimeRegex represents the regular expression that matches the severity[number] field in an error line
 const MinLaunchTimeRegex = "min_launch_time\\[" + anyCharsExceptParentheses + "\\]"
 
-// SMCUIDRegex represents the regular expression that matches the severity[number] field in an error line
+// SMCUIDRegex represents the regular expression that matches the smc_uid[smcidentifier] field in a log message
 const SMCUIDRegex = "smc_uid\\[" + anyCharsExceptParentheses + "\\]"
 
-// UIDRegex represents the regular expression that matches the severity[number] field in an error line
+// UIDRegex represents the regular expression that matches the uid[number] field in a log message
 const UIDRegex = "uid\\[" + LongNumberRegex + "\\]"
