@@ -24,13 +24,28 @@ func parseInfo(line parsedates.LineWithDate) *InfoParams {
 		return &infoParams
 	}
 
-	// todo: try to parse all INFO lines from both files
-	// 3 kinds from plc_manager (routing table, smc join, message)
-	// from dc_main: message sent/recieved lines with all kinds of payload (for now, that is enough)
-	// --> collect all payload stuff into a note for starters
+	statusMessage := parseStatusLine(line.Rest)
+	if joinMessage != nil {
+		infoParams.StatusMessage = *statusMessage
+		infoParams.MessageType = StatusMessageType
+		return &infoParams
+	}
 
-	// could not parse log level
+	dcMessage := parseDCMessage(line.Rest)
+	if dcMessage != nil {
+		infoParams.DCMessage = *dcMessage
+		infoParams.MessageType = DCMessageType
+		return &infoParams
+	}
+
 	return &infoParams
+}
+
+func parseStatusLine(line string) *StatusMessageParams {
+	statusLine := StatusMessageParams{}
+
+	// todo: is this needed at all?
+	return &statusLine
 }
 
 func parseRoutingTableLine(line string) *RoutingTableParams {
@@ -59,6 +74,7 @@ func parseSmcJoinLine(line string) *SmcJoinMessageParams {
 	lineRest := strings.Replace(line, SmcJoinRegex, "", 1)
 	// OK [Confirmed] <-- [join_type[LBA] smc_uid[dc18-smc28] physical_address[EEBEDDFFFE6210A5] logical_address[FE80::4021:FF:FE00:000e:61616] short_address[14] last_joining_date[Wed Jun 10 09:37:35 2020]]--(PLC)
 
+	// todo: rest of the implementation
 	messageParts := strings.Split(lineRest, "<--")
 	if len(messageParts) < 2 {
 		log.Fatalf("There was no direction indicator in Join message: %s", line)
