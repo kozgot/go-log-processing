@@ -9,17 +9,14 @@ const NumberRegex = "[0-9]+"
 // LongNumberRegex matches any number
 const LongNumberRegex = "[0-9]*"
 
-// AbcRegex matches strings containing any lowercase or uppercase letters
-const AbcRegex = "(.*?)"
+// LongNumberBetweenBracketsRegex matches any number between square brackets
+const LongNumberBetweenBracketsRegex = "\\[" + LongNumberRegex + "\\]"
+
+// AnyLettersBetweenBrackets matches strings containing any lowercase or uppercase letters
+const AnyLettersBetweenBrackets = "\\[(.*?)\\]"
 
 // MessageRegex matches the message[...] field
-const MessageRegex = "message\\[" + AbcRegex + "\\]"
-
-// OpeningBracketRegex matches [
-const OpeningBracketRegex = "\\["
-
-// ClosingBracketRegex matches ]
-const ClosingBracketRegex = "\\]"
+const MessageRegex = "message" + AnyLettersBetweenBrackets
 
 // ErrorSeverityRegex represents the regular expression that matches the severity[number] field in an error line
 const ErrorSeverityRegex = "severity\\[" + "[0-9]" + "\\]"
@@ -34,27 +31,27 @@ const ErrorSourceRegex = "source\\[" + "(.*?)" + "\\]"
 const WarnRegex = "Task failed, "
 
 // WarningPriorityRegex represents the regular expression that matches the severity[number] field in an error line
-const WarningPriorityRegex = "priority\\[" + LongNumberRegex + "\\]"
+const WarningPriorityRegex = "priority" + LongNumberBetweenBracketsRegex
 
 // WarningNameRegex matches the name[...] field
-const WarningNameRegex = "name\\[" + AbcRegex + "\\]"
+const WarningNameRegex = "name" + AnyLettersBetweenBrackets
 
-const anyCharsExceptParentheses = "[^\\(^\\[]*"
+const anyCharsExceptOpeningParentheses = "[^\\(^\\[]*"
 
 // FileNameRegex matches the (...) field
-const FileNameRegex = "\\(" + anyCharsExceptParentheses + "::" + LongNumberRegex + "\\)"
+const FileNameRegex = "\\(" + anyCharsExceptOpeningParentheses + "::" + LongNumberRegex + "\\)"
 
 // WarningRetryRegex represents the regular expression that matches the severity[number] field in an error line
-const WarningRetryRegex = "retry\\[" + LongNumberRegex + "\\]"
+const WarningRetryRegex = "retry" + LongNumberBetweenBracketsRegex
 
 // CreationTimeRegex represents the regular expression that matches the severity[number] field in an error line
-const CreationTimeRegex = "creation_time\\[" + anyCharsExceptParentheses + "\\]"
+const CreationTimeRegex = "creation_time\\[" + anyCharsExceptOpeningParentheses + "\\]"
 
 // MinLaunchTimeRegex represents the regular expression that matches the severity[number] field in an error line
-const MinLaunchTimeRegex = "min_launch_time\\[" + anyCharsExceptParentheses + "\\]"
+const MinLaunchTimeRegex = "min_launch_time\\[" + anyCharsExceptOpeningParentheses + "\\]"
 
 // SMCUIDRegex represents the regular expression that matches the smc_uid[smcidentifier] field in a log message
-const SMCUIDRegex = "smc_uid\\[" + anyCharsExceptParentheses + "\\]"
+const SMCUIDRegex = "smc_uid\\[" + anyCharsExceptOpeningParentheses + "\\]"
 
 // UIDRegex represents the regular expression that matches the uid[number] field in a log message
-const UIDRegex = "uid\\[" + LongNumberRegex + "\\]"
+const UIDRegex = "uid" + LongNumberBetweenBracketsRegex
