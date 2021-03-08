@@ -44,7 +44,7 @@ type WarningParams struct {
 	Retry         int
 	Creation      time.Time
 	MinLaunchTime time.Time
-	ErrorParams   ErrorParams
+	Details       ErrorParams
 	FileName      string
 }
 
@@ -126,7 +126,6 @@ func main() {
 				indexNameMessageString := string(d.Body)
 				runes := []rune(indexNameMessageString)
 				indexName = string(runes[len("[INDEXNAME] ")+1 : len(indexNameMessageString)-1])
-				log.Println("Creating index:  ", indexName)
 				createEsIndex(indexName)
 			} else if strings.Contains(string(d.Body), "[DONE]") {
 				// wait for the documents of the current index to arrive
@@ -277,15 +276,20 @@ func createEsIndex(index string) {
 		},
 		MaxRetries: 10,
 	})
+
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
 	}
+
+	log.Println("Deleting index:  ", index, "...")
 
 	// Re-create the index
 	if res, err = es.Indices.Delete([]string{index}, es.Indices.Delete.WithIgnoreUnavailable(true)); err != nil || res.IsError() {
 		log.Fatalf("Cannot delete index: %s", err)
 	}
 	res.Body.Close()
+
+	log.Println("Creating index:  ", index, "...")
 	res, err = es.Indices.Create(index)
 	if err != nil {
 		log.Fatalf("Cannot create index: %s", err)
