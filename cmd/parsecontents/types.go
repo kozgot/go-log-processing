@@ -11,15 +11,6 @@ type ErrorParams struct {
 	Source      string
 }
 
-// InfoMessageParams contains the parsed info level messages that have been sent or recieved by the dc
-type InfoMessageParams struct {
-	SentByDC bool
-	Sender   string
-	Receiver string
-	Message  string
-	Payload  InfoPayload
-}
-
 // WarningParams contains the parsed warning parameters
 type WarningParams struct {
 	Name          string
@@ -29,19 +20,29 @@ type WarningParams struct {
 	Retry         int
 	Creation      time.Time
 	MinLaunchTime time.Time
-	ErrorParams   ErrorParams
+	Details       ErrorParams
 	FileName      string
 }
 
+// todo: define enum for these
+const (
+	RountingMessageType = "ROUTING"
+	JoinMessageType     = "JOIN"
+	StatusMessageType   = "STATUS"
+	DCMessageType       = "DC"
+)
+
 // InfoParams contains the parsed info parameters
 type InfoParams struct {
-	RoutingParams       RoutingTableParams
-	JoinMessageParams   SmcJoinMessageParams
-	StatusMessageParams StatusMessageParams
+	MessageType    string // one of 'ROUTING', 'JOIN', 'STATUS', or 'DC'
+	RoutingMessage RoutingTableParams
+	JoinMessage    SmcJoinMessageParams
+	StatusMessage  StatusMessageParams
+	DCMessage      DCMessageParams
 }
 
 // RoutingTableParams contains the parsed routing table message parameters
-type RoutingTableParams struct {
+type RoutingTableParams struct { // Routing Table: Addr[0x0018] NextHopAddr[0x001F] RouteCost[15] HopCount[0] WeakLink[2] ValidTime[240] (min)
 	Address        string
 	NextHopAddress string
 	RouteCost      int
@@ -51,14 +52,14 @@ type RoutingTableParams struct {
 }
 
 // SmcJoinMessageParams contains the parsed SMC join message parameters
-type SmcJoinMessageParams struct {
-	Ok        bool
-	Response  string
-	JoinType  string
-	SmcConfig SmcConfigParams
+type SmcJoinMessageParams struct { // SMC Join OK [Confirmed] <-- [join_type[LBA] smc_uid[..] physical_address[..] logical_address[..] short_address[14] last_joining_date[..]]--(PLC)
+	Ok         bool
+	Response   string
+	JoinType   string
+	SmcAddress SmcAddressParams
 }
 
-type SmcConfigParams struct {
+type SmcAddressParams struct {
 	SmcUID          string
 	PhysicalAddress string
 	LogicalAddress  string
@@ -67,9 +68,17 @@ type SmcConfigParams struct {
 }
 
 // StatusMessageParams contains the parsed message lines from plc_manager.log
-type StatusMessageParams struct {
+type StatusMessageParams struct { // LOADNG_SEQ_NUM_REPORTED status_byte[0xA5]<--[Network status]--(PLC)
 	Message    string
 	StatusByte string
+}
+
+// DCMessageParams contains the parsed info level messages that have been sent or recieved by the dc
+type DCMessageParams struct {
+	Sender      string
+	Receiver    string
+	MessageType string // todo: prepare enums for message types
+	Payload     InfoPayload
 }
 
 // ParsedLine contains a parsed line from the log file
@@ -84,8 +93,13 @@ type ParsedLine struct {
 /* Info Message Payload types*/
 // InfoMessagePayload contains the parsed payload of info level messages that have been sent or recieved by the dc
 type InfoPayload struct {
-	CommonProps CommonMessageProps
-	TimeRange   TimeRange
+	SmcUID         string
+	PodUID         string
+	ServiceLevelId int
+	Value          int
+	Time           time.Time
+
+	TimeRange TimeRange
 
 	ConnectOrDisconnectPayload ConnectOrDisconnectPayload
 	DLMSLogPayload             DLMSLogPayload
@@ -94,25 +108,13 @@ type InfoPayload struct {
 	TarifSettingsPayload       TarifSettingsPayload
 	SettingsPayload            SettingsPayload
 	ServiceLevelPayload        ServiceLevelPayload
-	SmcAddressPayload          SmcAddressPayload
+	SmcAddressPayload          SmcAddressParams
 	SmcConfigPayload           SmcConfigPayload
 	PodConfigPayload           PodConfigPayload
 }
 
-type CommonMessageProps struct {
-	// <--[new smc]--(SVI) dc18-smc18 esetén ez egy smc uid
-	// <--[last index]--(DB)
-	// <--[read index profiles]--(SMC) smc_uid[dc18-smc10] (1)
-	// --[statistics]-->(DB) itt nincs payload
-	SmcUID         string
-	PodUID         string
-	ServiceLevelId int
-	Value          int
-	Time           time.Time // it is only present in 3 types of messages
-}
-
 type SettingsPayload struct {
-	// <--[settings]--(DB) and --[settings]-->(DB)     // exactly the same properties
+	// <--[settings]--(DB) and --[settings]-->(DB)
 	DcUID                         string
 	Locality                      string
 	Region                        string
@@ -131,7 +133,7 @@ type SettingsPayload struct {
 type ServiceLevelPayload struct {
 	//  <--[service_level]--(DB)
 	MeterMode                      int
-	StartHourDailyCycle            string // pl.: 20h better type??
+	StartHourDailyCycle            string // eg. 20h, todo: better type??
 	LoadSheddingDailyEnergyBudget  int
 	LocalSheddingDailyEnergyBudget int
 	MaxActivePower                 int
@@ -141,12 +143,9 @@ type ServiceLevelPayload struct {
 	LocalHourlyEnergyLimits        []HourlyEnergyLimit
 }
 
-type SmcAddressPayload struct {
-	// <--[smc address]--(DB)
-	LogicalAddress  string
-	ShortAddress    string
-	PhysicalAddress string
-	LastJoiningDate time.Time
+type HourlyEnergyLimit struct {
+	HourNumber int
+	Limit      int
 }
 
 type SmcConfigPayload struct {
@@ -171,17 +170,10 @@ type MessagePayload struct {
 
 type PodConfigPayload struct {
 	// <--[pod configuration]--(DB)
-	SerialNumber            string // mitgh be int
+	SerialNumber            int
 	Phase                   int
 	PositionInSmc           int
 	SoftwareFirmwareVersion string
-}
-
-type TarifSettingsPayload struct {
-	//  <--[tariff_settings]--(DB) ebbol csak 1 van
-	ActiveCalendar            Calendar
-	PassiveCalendar           Calendar
-	ActivePassiveCalendarTime int
 }
 
 type TimeRange struct {
@@ -204,7 +196,7 @@ type IndexPayload struct {
 	// <--[index]--(SMC) & --[index]-->(SVI)
 	PreviousTime  time.Time // it might be ticks or something (eg. 1591776000)
 	PreviousValue int
-	SerialNumber  string // might be int
+	SerialNumber  int
 }
 
 type ConnectOrDisconnectPayload struct {
@@ -217,6 +209,14 @@ type ConnectOrDisconnectPayload struct {
 	Connected bool
 }
 
+// parsing of these can wait, does not seem so important as it only has a single occurance
+type TarifSettingsPayload struct {
+	//  <--[tariff_settings]--(DB) ebbol csak 1 van
+	ActiveCalendar            Calendar
+	PassiveCalendar           Calendar
+	ActivePassiveCalendarTime int
+}
+
 type Calendar struct {
 	CalendarName CalendarName
 }
@@ -226,9 +226,4 @@ type CalendarName struct {
 	SeasonProfile string // for now, the exact type is unkown
 	WeekProfile   string // for now, the exact type is unkown
 	DayProfile    string // for now, the exact type is unkown
-}
-
-type HourlyEnergyLimit struct {
-	HourNumber int
-	Limit      int
 }
