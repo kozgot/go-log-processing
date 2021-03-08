@@ -53,7 +53,6 @@ func parseWarn(line parsedates.LineWithDate) *WarningParams {
 	errorParams := parseError(line)
 	warningParams.Details = *errorParams
 
-	// could not parse log level
 	return &warningParams
 }
 
