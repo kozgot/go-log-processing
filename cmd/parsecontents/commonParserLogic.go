@@ -1,0 +1,47 @@
+package parsecontents
+
+import (
+	"regexp"
+	"strconv"
+	"strings"
+)
+
+func parseFieldInBracketsAsString(line string, regexString string) string {
+	regex, _ := regexp.Compile(regexString)
+	textualField := regex.FindString(line)
+
+	if textualField == "" {
+		// log.Println("Could not parse textual field from line: ", line, regex)
+		return ""
+	}
+
+	textualFieldValue := strings.Split(textualField, "[")[1]
+	textualFieldValue = strings.Replace(textualFieldValue, "]", "", 1)
+
+	return textualFieldValue
+}
+
+func parseFieldAsString(line string, regexString string) string {
+	regex, _ := regexp.Compile(regexString)
+	textualField := regex.FindString(line)
+
+	if textualField == "" {
+		// log.Println("Could not parse textual field from line: ", line, regex)
+		return ""
+	}
+
+	return textualField
+}
+
+func tryParseIntFromString(stringRepresentation string) int {
+	if stringRepresentation != "" {
+		parsedNumber, err := strconv.Atoi(stringRepresentation)
+		if err != nil {
+			panic(err)
+		}
+
+		return parsedNumber
+	}
+
+	return 0
+}
