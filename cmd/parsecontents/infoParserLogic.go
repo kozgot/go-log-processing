@@ -25,7 +25,7 @@ func parseInfo(line parsedates.LineWithDate) *InfoParams {
 	}
 
 	statusMessage := parseStatusLine(line.Rest)
-	if joinMessage != nil {
+	if statusMessage != nil {
 		infoParams.StatusMessage = *statusMessage
 		infoParams.MessageType = StatusMessageType
 		return &infoParams
@@ -43,8 +43,13 @@ func parseInfo(line parsedates.LineWithDate) *InfoParams {
 
 func parseStatusLine(line string) *StatusMessageParams {
 	statusLine := StatusMessageParams{}
+	statusLine.StatusByte = parseFieldInBracketsAsString(line, StatusByteRegex)
+	if statusLine.StatusByte == "" {
+		return nil
+	}
 
-	// todo: is this needed at all?
+	statusLine.Message = parseFieldAsString(line, StatusMessageRegex)
+
 	return &statusLine
 }
 
@@ -66,27 +71,42 @@ func parseRoutingTableLine(line string) *RoutingTableParams {
 }
 
 func parseSmcJoinLine(line string) *SmcJoinMessageParams {
-	isSmcJoinLine := parseFieldAsString(line, SmcJoinRegex) != ""
+	smcJoinstring := parseFieldAsString(line, SmcJoinRegex)
+	isSmcJoinLine := smcJoinstring != ""
 	if !isSmcJoinLine {
 		return nil
 	}
 
-	lineRest := strings.Replace(line, SmcJoinRegex, "", 1)
+	smcJoinLine := SmcJoinMessageParams{}
+
+	lineRest := strings.Replace(line, smcJoinstring, "", 1)
 	// OK [Confirmed] <-- [join_type[LBA] smc_uid[dc18-smc28] physical_address[EEBEDDFFFE6210A5] logical_address[FE80::4021:FF:FE00:000e:61616] short_address[14] last_joining_date[Wed Jun 10 09:37:35 2020]]--(PLC)
 
 	// todo: rest of the implementation
-	messageParts := strings.Split(lineRest, "<--")
+	messageParts := strings.Split(lineRest, "<--") // todo: match indicator with regex, or at least constant
 	if len(messageParts) < 2 {
 		log.Fatalf("There was no direction indicator in Join message: %s", line)
 	}
 
 	responseString := messageParts[0]
-	log.Println(responseString)
+	response := parseStringBetweenBrackets(responseString)
+	smcJoinLine.Response = response
 
-	payloadString := messageParts[1]
-	log.Println("payload: ", payloadString)
+	status := parseJoinStatus(responseString)
+	smcJoinLine.Ok = status == "OK" // todo: is there a better way?
 
-	smcJoinLine := SmcJoinMessageParams{}
+	payloadString := strings.TrimLeft(messageParts[1], " [") // todo: is there a better way?
+	payloadString = strings.TrimRight(payloadString, "] ")   // todo: is there a better way?
+	//log.Println("payload:", payloadString)
 
 	return &smcJoinLine
+}
+
+func parseStringBetweenBrackets(line string) string {
+	return parseFieldInBracketsAsString(line, AnyLettersBetweenBrackets)
+}
+
+func parseJoinStatus(line string) string {
+	parsed := parseFieldAsString(line, JoinStatusResponseRegex)
+	return parsed
 }

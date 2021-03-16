@@ -68,7 +68,7 @@ type SmcAddressParams struct {
 }
 
 // StatusMessageParams contains the parsed message lines from plc_manager.log
-type StatusMessageParams struct { // LOADNG_SEQ_NUM_REPORTED status_byte[0xA5]<--[Network status]--(PLC)
+type StatusMessageParams struct {
 	Message    string
 	StatusByte string
 }
