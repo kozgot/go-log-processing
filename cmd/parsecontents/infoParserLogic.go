@@ -83,7 +83,10 @@ func parseSmcJoinLine(line string) *SmcJoinMessageParams {
 	// OK [Confirmed] <-- [join_type[LBA] smc_uid[dc18-smc28] physical_address[EEBEDDFFFE6210A5] logical_address[FE80::4021:FF:FE00:000e:61616] short_address[14] last_joining_date[Wed Jun 10 09:37:35 2020]]--(PLC)
 
 	// todo: rest of the implementation
-	messageParts := strings.Split(lineRest, "<--") // todo: match indicator with regex, or at least constant
+
+	// split the string by the <-- arrow
+	// join messages are always directed towards the dc
+	messageParts := strings.Split(lineRest, InComingMessageArrow)
 	if len(messageParts) < 2 {
 		log.Fatalf("There was no direction indicator in Join message: %s", line)
 	}

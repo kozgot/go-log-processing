@@ -1,10 +1,7 @@
 package parsecontents
 
 // ErrorCodeRegex represents the regular expression that matches the error_code[number] field in an error line
-const ErrorCodeRegex = "error_code\\[" + NumberRegex + "\\]"
-
-// NumberRegex matches any number
-const NumberRegex = "[0-9]+"
+const ErrorCodeRegex = "error_code" + NumberBetweenBrackets
 
 // LongNumberRegex matches any number
 const LongNumberRegex = "[0-9]*"
@@ -12,14 +9,17 @@ const LongNumberRegex = "[0-9]*"
 // LongNumberBetweenBracketsRegex matches any number between square brackets
 const LongNumberBetweenBracketsRegex = "\\[" + LongNumberRegex + "\\]"
 
-// AnyLettersBetweenBrackets matches strings containing any lowercase or uppercase letters
+// AnyLettersBetweenBrackets matches strings containing any lowercase or uppercase letters between square brackets
 const AnyLettersBetweenBrackets = "\\[(.*?)\\]"
+
+// NumberBetweenBrackets matches strings containing a single number between square brackets
+const NumberBetweenBrackets = "\\[[0-9]\\]"
 
 // MessageRegex matches the message[...] field
 const MessageRegex = "message" + AnyLettersBetweenBrackets
 
 // ErrorSeverityRegex represents the regular expression that matches the severity[number] field in an error line
-const ErrorSeverityRegex = "severity\\[" + "[0-9]" + "\\]"
+const ErrorSeverityRegex = "severity" + NumberBetweenBrackets
 
 // ErrorDescRegex represents the regular expression that matches the description[...] field in an error line
 const ErrorDescRegex = "description\\[" + "(.*?)" + "\\]"
