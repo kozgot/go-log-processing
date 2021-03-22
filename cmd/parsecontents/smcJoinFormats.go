@@ -9,18 +9,22 @@ const SmcJoinRegex = "SMC Join "
 // JoinStatusResponseRegex represents the regular expression that matches the response status of an SMC join event
 const JoinStatusResponseRegex = "(NOT OK|OK)"
 
-// InComingMessageArrow represents the direction of messages sent to the dc main
-const InComingMessageArrow = "<--"
+// InComingArrow represents the direction of messages sent to the dc main
+const InComingArrow = "<--"
 
-// OutGoingMessageArrow represents the direction of messages sent by the dc main
-const OutGoingMessageArrow = "-->"
+// OutGoingArrow represents the direction of messages sent by the dc main
+const OutGoingArrow = "-->"
 
 const JoinTypeRegex = "join_type" + AnyLettersBetweenBrackets
 
+// SmcUIDRegex matches the smc uid field of a log line, formatted like: smc_uid[dc18-smc18].
 const SmcUidRegex = "smc_uid" + AnyLettersBetweenBrackets
 
+// PhysicalAddressRegex matches the physical address field of a log line, formatted like: physical_address[EEBEDDFFFE6210AA].
 const PhysicalAddressRegex = "physical_address" + AnyLettersBetweenBrackets
 
+// LogicalAddressRegex matches the logical address field of a log line, formatted like: logical_address[FE80::4021:FF:FE00:0015:61616].
 const LogicalAddressRegex = "logical_address" + AnyLettersBetweenBrackets
 
-const ShortAddressRegex = "short_address" + NumberBetweenBrackets
+// ShortAddressRegex matches the short address field of a log line, formatted like: short_address[21].
+const ShortAddressRegex = "short_address" + LongNumberBetweenBracketsRegex

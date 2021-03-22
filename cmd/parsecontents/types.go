@@ -63,7 +63,7 @@ type SmcAddressParams struct {
 	SmcUID          string
 	PhysicalAddress string
 	LogicalAddress  string
-	ShortAddress    string
+	ShortAddress    int
 	LastJoiningDate time.Time
 }
 
@@ -75,10 +75,9 @@ type StatusMessageParams struct {
 
 // DCMessageParams contains the parsed info level messages that have been sent or recieved by the dc
 type DCMessageParams struct {
-	Sender      string
-	Receiver    string
-	MessageType string // todo: prepare enums for message types
-	Payload     InfoPayload
+	SourceOrDestName string
+	MessageType      string // todo: prepare enums for message types
+	Payload          InfoPayload
 }
 
 // ParsedLine contains a parsed line from the log file

@@ -10,28 +10,28 @@ import (
 func parseInfo(line parsedates.LineWithDate) *InfoParams {
 	infoParams := InfoParams{}
 
-	routingMessage := parseRoutingTableLine(line.Rest)
+	routingMessage := parseRoutingTableLine(line.Rest) // done
 	if routingMessage != nil {
 		infoParams.RoutingMessage = *routingMessage
 		infoParams.MessageType = RountingMessageType
 		return &infoParams
 	}
 
-	joinMessage := parseSmcJoinLine(line.Rest)
+	joinMessage := parseSmcJoinLine(line.Rest) // todo: finish payload parsing
 	if joinMessage != nil {
 		infoParams.JoinMessage = *joinMessage
 		infoParams.MessageType = JoinMessageType
 		return &infoParams
 	}
 
-	statusMessage := parseStatusLine(line.Rest)
+	statusMessage := parseStatusLine(line.Rest) // done
 	if statusMessage != nil {
 		infoParams.StatusMessage = *statusMessage
 		infoParams.MessageType = StatusMessageType
 		return &infoParams
 	}
 
-	dcMessage := parseDCMessage(line.Rest)
+	dcMessage := parseDCMessage(line.Rest) // todo: whole implementation
 	if dcMessage != nil {
 		infoParams.DCMessage = *dcMessage
 		infoParams.MessageType = DCMessageType
@@ -82,11 +82,9 @@ func parseSmcJoinLine(line string) *SmcJoinMessageParams {
 	lineRest := strings.Replace(line, smcJoinstring, "", 1)
 	// OK [Confirmed] <-- [join_type[LBA] smc_uid[dc18-smc28] physical_address[EEBEDDFFFE6210A5] logical_address[FE80::4021:FF:FE00:000e:61616] short_address[14] last_joining_date[Wed Jun 10 09:37:35 2020]]--(PLC)
 
-	// todo: rest of the implementation
-
 	// split the string by the <-- arrow
 	// join messages are always directed towards the dc
-	messageParts := strings.Split(lineRest, InComingMessageArrow)
+	messageParts := strings.Split(lineRest, InComingArrow)
 	if len(messageParts) < 2 {
 		log.Fatalf("There was no direction indicator in Join message: %s", line)
 	}
@@ -100,8 +98,37 @@ func parseSmcJoinLine(line string) *SmcJoinMessageParams {
 
 	payloadString := strings.TrimLeft(messageParts[1], " [") // todo: is there a better way?
 	payloadString = strings.TrimRight(payloadString, "] ")   // todo: is there a better way?
-	//log.Println("payload:", payloadString)
 
+	joinType := parseFieldInBracketsAsString(payloadString, JoinTypeRegex)
+	if joinType != "" {
+		smcJoinLine.JoinType = joinType
+	}
+
+	smcAddress := SmcAddressParams{}
+
+	smcUid := parseFieldInBracketsAsString(payloadString, SmcUidRegex)
+	if smcUid != "" {
+		smcAddress.SmcUID = smcUid
+	}
+
+	physicalAddress := parseFieldInBracketsAsString(payloadString, PhysicalAddressRegex)
+	if physicalAddress != "" {
+		smcAddress.PhysicalAddress = physicalAddress
+	}
+
+	logicalAddress := parseFieldInBracketsAsString(payloadString, LogicalAddressRegex)
+	if logicalAddress != "" {
+		smcAddress.LogicalAddress = logicalAddress
+	}
+
+	shortAddress := parseFieldInBracketsAsString(payloadString, ShortAddressRegex)
+	if shortAddress != "" {
+		smcAddress.ShortAddress = tryParseIntFromString(shortAddress)
+	}
+
+	// todo last joining date
+
+	smcJoinLine.SmcAddress = smcAddress
 	return &smcJoinLine
 }
 
