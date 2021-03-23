@@ -196,5 +196,3 @@ const PositionInSmcRegex = "position_in_smc" + LongNumberBetweenBracketsRegex
 
 // SoftwareFirmwareVersionRegex matches the software firmware version field of a dc message, formatted like: software_firmware_version[IMETER190801].
 const SoftwareFirmwareVersionRegex = "software_firmware_version" + AnythingBetweenBracketsRegex
-
-// todo: TarifSettingsPayload parsing ??

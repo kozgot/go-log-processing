@@ -104,7 +104,6 @@ type InfoPayload struct {
 	DLMSLogPayload             DLMSLogPayload
 	IndexPayload               IndexPayload
 	MessagePayload             MessagePayload
-	TarifSettingsPayload       TarifSettingsPayload
 	SettingsPayload            SettingsPayload
 	ServiceLevelPayload        ServiceLevelPayload
 	SmcAddressPayload          SmcAddressParams
@@ -206,14 +205,6 @@ type ConnectOrDisconnectPayload struct {
 	Topic     string
 	Timeout   int
 	Connected bool
-}
-
-// parsing of these can wait, does not seem so important as it only has a single occurance
-type TarifSettingsPayload struct {
-	//  <--[tariff_settings]--(DB) ebbol csak 1 van
-	ActiveCalendar            Calendar
-	PassiveCalendar           Calendar
-	ActivePassiveCalendarTime int
 }
 
 type Calendar struct {
