@@ -84,6 +84,7 @@ type StatusMessageParams struct {
 
 // DCMessageParams contains the parsed info level messages that have been sent or recieved by the dc
 type DCMessageParams struct {
+	IsInComing       bool
 	SourceOrDestName string
 	MessageType      string // todo: prepare enums for message types
 	Payload          DcMessagePayload
@@ -175,7 +176,6 @@ type TimeRange struct {
 }
 
 type DLMSLogPayload struct {
-	Time3            time.Time
 	DLMSRequestTime  time.Time
 	DLMSResponseTime time.Time
 	DLMSError        string

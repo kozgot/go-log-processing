@@ -77,31 +77,22 @@ func parseWarningSMCUID(line string) string {
 }
 
 func parseWarningCreationTime(line string) time.Time {
-	warningCreationTimeFieldRegex, _ := regexp.Compile(CreationTimeRegex)
-	warningCreationTimeField := warningCreationTimeFieldRegex.FindString(line)
-
-	if warningCreationTimeField != "" {
-		// todo: match this with regex
-		warningCreationTimeString := strings.Split(warningCreationTimeField, "[")[1]
-		warningCreationTimeString = strings.Replace(warningCreationTimeString, "]", "", 1)
-
-		dateTime := parseDateTime(warningCreationTimeString)
-		return dateTime
-	}
-
-	return time.Time{}
+	return parseDateTimeField(line, CreationTimeRegex)
 }
 
 func parseWarningMinLaunchTime(line string) time.Time {
-	warningMinLaunchTimeFieldRegex, _ := regexp.Compile(MinLaunchTimeRegex)
-	warningMinLaunchTimeField := warningMinLaunchTimeFieldRegex.FindString(line)
+	return parseDateTimeField(line, MinLaunchTimeRegex)
+}
 
-	if warningMinLaunchTimeField != "" {
-		// todo: match this with regex
-		warningMinLaunchTimeString := strings.Split(warningMinLaunchTimeField, "[")[1]
-		warningMinLaunchTimeString = strings.Replace(warningMinLaunchTimeString, "]", "", 1)
+func parseDateTimeField(line string, regex string) time.Time {
+	timeFieldRegex, _ := regexp.Compile(regex)
+	timeField := timeFieldRegex.FindString(line)
 
-		dateTime := parseDateTime(warningMinLaunchTimeString)
+	if timeField != "" {
+		timeString := strings.Split(timeField, "[")[1]
+		timeString = strings.Replace(timeString, "]", "", 1)
+
+		dateTime := parseDateTime(timeString)
 		return dateTime
 	}
 

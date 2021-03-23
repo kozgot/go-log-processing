@@ -175,7 +175,6 @@ type TimeRange struct {
 }
 
 type DLMSLogPayload struct {
-	Time3            time.Time
 	DLMSRequestTime  time.Time
 	DLMSResponseTime time.Time
 	DLMSError        string

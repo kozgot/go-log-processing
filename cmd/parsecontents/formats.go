@@ -44,10 +44,10 @@ const FileNameRegex = "\\(" + anyCharsExceptOpeningParentheses + "::" + LongNumb
 // WarningRetryRegex represents the regular expression that matches the severity[number] field in an error line
 const WarningRetryRegex = "retry" + LongNumberBetweenBracketsRegex
 
-// CreationTimeRegex represents the regular expression that matches the severity[number] field in an error line
+// CreationTimeRegex represents the regular expression that matches the creation_time[Wed Jun 10 09:18:39 2020] field in an error line
 const CreationTimeRegex = "creation_time\\[" + anyCharsExceptOpeningParentheses + "\\]"
 
-// MinLaunchTimeRegex represents the regular expression that matches the severity[number] field in an error line
+// MinLaunchTimeRegex represents the regular expression that matches the min_launch_time[Wed Jun 10 09:18:39 2020] field in an error line
 const MinLaunchTimeRegex = "min_launch_time\\[" + anyCharsExceptOpeningParentheses + "\\]"
 
 // SMCUIDRegex represents the regular expression that matches the smc_uid[smcidentifier] field in a log message

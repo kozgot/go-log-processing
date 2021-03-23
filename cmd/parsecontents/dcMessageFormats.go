@@ -5,21 +5,6 @@ import "github.com/kozgot/go-log-processing/cmd/parsedates"
 // This file contains regular expressions used to parse data from INFO level log lines in the dc_main.log
 // eg.: <--[last index]--(DB) pod_uid[1658] time[1591776000] value[9130] (smart_meter_cabinet_facade.cc::315)
 
-// PodUidRegex matches the pod id in a dc message.
-const PodUidRegex = "pod_uid" + LongNumberBetweenBracketsRegex
-
-// TimeTicksRegex matches the time field of a dc message, in ticks.
-const TimeTicksRegex = "time" + LongNumberBetweenBracketsRegex
-
-// ValueRegex matches the value field of a dc message.
-const ValueRegex = "value" + LongNumberBetweenBracketsRegex
-
-// AnythingBetweenParenthesesRegex matches anything between parentheses.
-const AnythingBetweenParenthesesRegex = "\\(([^\\)])*\\)"
-
-// AnythingBetweenBracketsRegex matches anything between brackets.
-const AnythingBetweenBracketsRegex = "\\[([^\\]])*\\]"
-
 // IncomingMessageTypeRegex is used to identify the type of the incoming dc message, which is between the []. eg.: <--[last index]--(DB)
 const IncomingMessageTypeRegex = InComingArrow + AnythingBetweenBracketsRegex
 
@@ -31,6 +16,15 @@ const IncomingMessageSourceRegex = "--" + AnythingBetweenParenthesesRegex
 
 // OutGoingMessageDestRegex is used to identify the destination of the outgoing dc message, which is between the (). eg.: --[last index]-->(DB)
 const OutGoingMessageDestRegex = OutGoingArrow + AnythingBetweenParenthesesRegex
+
+// PodUidRegex matches the pod id in a dc message.
+const PodUidRegex = "pod_uid" + LongNumberBetweenBracketsRegex
+
+// TimeTicksRegex matches the time field of a dc message, in ticks.
+const TimeTicksRegex = "time" + LongNumberBetweenBracketsRegex
+
+// ValueRegex matches the value field of a dc message.
+const ValueRegex = "value" + LongNumberBetweenBracketsRegex
 
 // ServiceLevelIdRegex matches the service level id field of a dc message, formatted like: service_level_id[9].
 const ServiceLevelIdRegex = "service_level_id" + NumberBetweenBrackets
@@ -63,7 +57,7 @@ const ConnectedRegex = "connected" + NumberBetweenBrackets
 
 // DLMSLogPayload comes next
 // DateTimeRegexFieldRegex matches the time field of a dc message, formatted like: time[Wed Jun 10 10:02:35 2020].
-const DateTimeRegexFieldRegex = "time" + parsedates.DateBetweenBracketsRegex
+const DateTimeRegexFieldRegex = "time\\[" + anyCharsExceptOpeningParentheses + "\\]"
 
 // DLMSRequestTimeRegex matches the dlms request time field of a dc message, formatted like: dlms_request_time[1591783353632].
 const DLMSRequestTimeRegex = "dlms_request_time" + LongNumberBetweenBracketsRegex
@@ -196,3 +190,9 @@ const PositionInSmcRegex = "position_in_smc" + LongNumberBetweenBracketsRegex
 
 // SoftwareFirmwareVersionRegex matches the software firmware version field of a dc message, formatted like: software_firmware_version[IMETER190801].
 const SoftwareFirmwareVersionRegex = "software_firmware_version" + AnythingBetweenBracketsRegex
+
+// AnythingBetweenParenthesesRegex matches anything between parentheses.
+const AnythingBetweenParenthesesRegex = "\\(([^\\)])*\\)"
+
+// AnythingBetweenBracketsRegex matches anything between brackets.
+const AnythingBetweenBracketsRegex = "\\[([^\\]])*\\]"

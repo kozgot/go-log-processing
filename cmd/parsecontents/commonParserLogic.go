@@ -21,6 +21,21 @@ func parseFieldInBracketsAsString(line string, regexString string) string {
 	return textualFieldValue
 }
 
+func parseFieldInParenthesesAsString(line string, regexString string) string {
+	regex, _ := regexp.Compile(regexString)
+	textualField := regex.FindString(line)
+
+	if textualField == "" {
+		// log.Println("Could not parse textual field from line: ", line, regex)
+		return ""
+	}
+
+	textualFieldValue := strings.Split(textualField, "(")[1]
+	textualFieldValue = strings.Replace(textualFieldValue, ")", "", 1)
+
+	return textualFieldValue
+}
+
 func parseFieldAsString(line string, regexString string) string {
 	regex, _ := regexp.Compile(regexString)
 	textualField := regex.FindString(line)
