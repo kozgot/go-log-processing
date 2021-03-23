@@ -2,7 +2,14 @@ package main
 
 import "time"
 
-// TODO: share these types between the parser and the uploader OR do not deserialize rabbitMQ messages, store them as byte arrays instead
+// ParsedLine contains a parsed line from the log file
+type ParsedLine struct {
+	Timestamp     time.Time
+	Level         string
+	ErrorParams   ErrorParams
+	WarningParams WarningParams
+	InfoParams    InfoParams
+}
 
 // ErrorParams contains the parsed error parameters
 type ErrorParams struct {
@@ -44,7 +51,7 @@ type InfoParams struct {
 }
 
 // RoutingTableParams contains the parsed routing table message parameters
-type RoutingTableParams struct { // Routing Table: Addr[0x0018] NextHopAddr[0x001F] RouteCost[15] HopCount[0] WeakLink[2] ValidTime[240] (min)
+type RoutingTableParams struct {
 	Address        string
 	NextHopAddress string
 	RouteCost      int
@@ -54,7 +61,7 @@ type RoutingTableParams struct { // Routing Table: Addr[0x0018] NextHopAddr[0x00
 }
 
 // SmcJoinMessageParams contains the parsed SMC join message parameters
-type SmcJoinMessageParams struct { // SMC Join OK [Confirmed] <-- [join_type[LBA] smc_uid[..] physical_address[..] logical_address[..] short_address[14] last_joining_date[..]]--(PLC)
+type SmcJoinMessageParams struct {
 	Ok         bool
 	Response   string
 	JoinType   string
@@ -77,24 +84,14 @@ type StatusMessageParams struct {
 
 // DCMessageParams contains the parsed info level messages that have been sent or recieved by the dc
 type DCMessageParams struct {
-	Sender      string
-	Receiver    string
-	MessageType string // todo: prepare enums for message types
-	Payload     InfoPayload
+	SourceOrDestName string
+	MessageType      string // todo: prepare enums for message types
+	Payload          DcMessagePayload
 }
 
-// ParsedLine contains a parsed line from the log file
-type ParsedLine struct {
-	Timestamp     time.Time
-	Level         string
-	ErrorParams   ErrorParams
-	WarningParams WarningParams
-	InfoParams    InfoParams
-}
-
-/* Info Message Payload types*/
-// InfoMessagePayload contains the parsed payload of info level messages that have been sent or recieved by the dc
-type InfoPayload struct {
+/* Dc Message Payload types*/
+// DcMessagePayload contains the parsed payload of info level messages that have been sent or recieved by the dc
+type DcMessagePayload struct {
 	SmcUID         string
 	PodUID         string
 	ServiceLevelId int
@@ -107,7 +104,6 @@ type InfoPayload struct {
 	DLMSLogPayload             DLMSLogPayload
 	IndexPayload               IndexPayload
 	MessagePayload             MessagePayload
-	TarifSettingsPayload       TarifSettingsPayload
 	SettingsPayload            SettingsPayload
 	ServiceLevelPayload        ServiceLevelPayload
 	SmcAddressPayload          SmcAddressParams
@@ -116,7 +112,6 @@ type InfoPayload struct {
 }
 
 type SettingsPayload struct {
-	// <--[settings]--(DB) and --[settings]-->(DB)
 	DcUID                         string
 	Locality                      string
 	Region                        string
@@ -133,7 +128,6 @@ type SettingsPayload struct {
 }
 
 type ServiceLevelPayload struct {
-	//  <--[service_level]--(DB)
 	MeterMode                      int
 	StartHourDailyCycle            string // eg. 20h, todo: better type??
 	LoadSheddingDailyEnergyBudget  int
@@ -151,7 +145,6 @@ type HourlyEnergyLimit struct {
 }
 
 type SmcConfigPayload struct {
-	// <--[smc configuration]--(DB)
 	CustomerSerialNumber           string
 	PhysicalAddress                string
 	SmcStatus                      string
@@ -163,7 +156,6 @@ type SmcConfigPayload struct {
 }
 
 type MessagePayload struct {
-	// --[message]-->(SVI)
 	Current float32
 	Total   float32
 	URL     string
@@ -171,7 +163,6 @@ type MessagePayload struct {
 }
 
 type PodConfigPayload struct {
-	// <--[pod configuration]--(DB)
 	SerialNumber            int
 	Phase                   int
 	PositionInSmc           int
@@ -179,15 +170,11 @@ type PodConfigPayload struct {
 }
 
 type TimeRange struct {
-	// --[read index low profiles]-->(SMC)
-	// <--[consumption]--(SMC)
-
 	From time.Time
 	To   time.Time
 }
 
 type DLMSLogPayload struct {
-	// --[DLMS Logs]-->(SVI)
 	Time3            time.Time
 	DLMSRequestTime  time.Time
 	DLMSResponseTime time.Time
@@ -195,28 +182,18 @@ type DLMSLogPayload struct {
 }
 
 type IndexPayload struct {
-	// <--[index]--(SMC) & --[index]-->(SVI)
 	PreviousTime  time.Time // it might be ticks or something (eg. 1591776000)
 	PreviousValue int
 	SerialNumber  int
 }
 
 type ConnectOrDisconnectPayload struct {
-	// --[connect]-->(SVI) & --[disconnect]-->(SVI)
 	Type      int
 	ClientId  string
 	URL       string
 	Topic     string
 	Timeout   int
 	Connected bool
-}
-
-// parsing of these can wait, does not seem so important as it only has a single occurance
-type TarifSettingsPayload struct {
-	//  <--[tariff_settings]--(DB) ebbol csak 1 van
-	ActiveCalendar            Calendar
-	PassiveCalendar           Calendar
-	ActivePassiveCalendarTime int
 }
 
 type Calendar struct {
