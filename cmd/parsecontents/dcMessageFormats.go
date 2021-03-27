@@ -1,7 +1,5 @@
 package parsecontents
 
-import "github.com/kozgot/go-log-processing/cmd/parsedates"
-
 // This file contains regular expressions used to parse data from INFO level log lines in the dc_main.log
 // eg.: <--[last index]--(DB) pod_uid[1658] time[1591776000] value[9130] (smart_meter_cabinet_facade.cc::315)
 
@@ -30,10 +28,10 @@ const ValueRegex = "value" + LongNumberBetweenBracketsRegex
 const ServiceLevelIdRegex = "service_level_id" + NumberBetweenBrackets
 
 // TimeRangeFromRegex is used to identify the start fo the time range of the dc message. eg.: from[Wed Jun 10 09:18:33 2020]
-const TimeRangeFromRegex = "from" + parsedates.DateBetweenBracketsRegex
+const TimeRangeFromRegex = "from\\[" + anyCharsExceptOpeningParentheses + "\\]"
 
 // TimeRangeToRegex is used to identify the end fo the time range of the dc message. eg.: to[Wed Jun 10 10:02:33 2020]
-const TimeRangeToRegex = "to" + parsedates.DateBetweenBracketsRegex
+const TimeRangeToRegex = "to\\[" + anyCharsExceptOpeningParentheses + "\\]"
 
 // TimeRangeStartTicksRegex is used to identify the start fo the time range of the dc message in this format: start[1591776600]
 const TimeRangeStartTicksRegex = "start" + LongNumberBetweenBracketsRegex
@@ -57,7 +55,7 @@ const ConnectedRegex = "connected" + NumberBetweenBrackets
 
 // DLMSLogPayload comes next
 // DateTimeRegexFieldRegex matches the time field of a dc message, formatted like: time[Wed Jun 10 10:02:35 2020].
-const DateTimeRegexFieldRegex = "time\\[" + anyCharsExceptOpeningParentheses + "\\]"
+const DateTimeFieldRegex = "time\\[" + anyCharsExceptOpeningParentheses + "\\]"
 
 // DLMSRequestTimeRegex matches the dlms request time field of a dc message, formatted like: dlms_request_time[1591783353632].
 const DLMSRequestTimeRegex = "dlms_request_time" + LongNumberBetweenBracketsRegex
@@ -157,7 +155,7 @@ const LocalHourlyEnergyLimitsRegex = "local_hourly_energy_limits" + EnergyLimitV
 
 // SmcAddressParams, the rest is in the smcjoinformats file
 // LastJoiningDateRegex matches the last joining date field of a dc message, formatted like: last_joining_date[Wed Jun 10 00:57:05 2020].
-const LastJoiningDateRegex = "last_joining_date" + parsedates.DateBetweenBracketsRegex
+const LastJoiningDateRegex = "last_joining_date\\[" + anyCharsExceptOpeningParentheses + "\\]"
 
 // SmcConfig coming up
 // CustomerSerialNumberRegex matches the customer serial number field of a dc message, formatted like: customer_serial_number[SAG0980200000834].
@@ -176,7 +174,7 @@ const CurrentApp2FwRegex = "current_app2_fw" + AnythingBetweenBracketsRegex
 const CurrentPlcFwRegex = "current_plc_fw" + AnythingBetweenBracketsRegex
 
 // LastSuccessfulDlmsResponseDateRegex matches the last successful dlms response date field of a dc message, formatted like: last_successful_dlms_response_date [Wed Jun 10 07:58:11 2020].
-const LastSuccessfulDlmsResponseDateRegex = "last_successful_dlms_response_date " + parsedates.DateBetweenBracketsRegex
+const LastSuccessfulDlmsResponseDateRegex = "last_successful_dlms_response_date\\[" + anyCharsExceptOpeningParentheses + "\\]"
 
 // NextHopRegex matches the next hop field of a dc message, formatted like: next_hop[0].
 const NextHopRegex = "next_hop" + LongNumberBetweenBracketsRegex

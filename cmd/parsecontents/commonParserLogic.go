@@ -60,3 +60,16 @@ func tryParseIntFromString(stringRepresentation string) int {
 
 	return 0
 }
+
+func tryParseInt64FromString(stringRepresentation string) int64 {
+	if stringRepresentation != "" {
+		parsedNumber, err := strconv.ParseInt(stringRepresentation, 10, 64)
+		if err != nil {
+			panic(err)
+		}
+
+		return parsedNumber
+	}
+
+	return 0
+}

@@ -8,6 +8,3 @@ const DateFormatRegexShort = "([12]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])
 
 // DateSurroundingRegex represents the regular expression that matches the whitespaces, square brackets, and colon that might sourround the timestamp in a line of a log file
 const DateSurroundingRegex = "\\[*( )*\\]*(:)*"
-
-// DateBetweenBracketsRegex matches a date between [], in the following format: [Wed Jun 10 09:18:33 2020]
-const DateBetweenBracketsRegex = "\\[" + DateFormatRegex + "\\]"
