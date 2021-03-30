@@ -144,14 +144,11 @@ const InServiceRegex = "in_service" + NumberBetweenBrackets
 // NameRegex matches the name field of a dc message, formatted like: name[1. Suspension].
 const NameRegex = "name" + AnythingBetweenBracketsRegex
 
-// EnergyLimitValuesRegex matches the hourly energy limits values of a dc message, formatted like: [[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]].
-const EnergyLimitValuesRegex = "\\[\\[(([0-9]+) )*[0-9][0-9]*\\]\\]"
-
 // HourlyEnergyLimitsRegex matches the hourly energy limits field of a dc message, formatted like: hourly_energy_limits[[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]].
-const HourlyEnergyLimitsRegex = "hourly_energy_limits" + EnergyLimitValuesRegex
+const HourlyEnergyLimitsRegex = "hourly_energy_limits" + AnythingBetweenDoubleBracketsRegex
 
 // LocalHourlyEnergyLimitsRegex matches the local hourly energy limits field of a dc message, formatted like: local_hourly_energy_limits[[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]].
-const LocalHourlyEnergyLimitsRegex = "local_hourly_energy_limits" + EnergyLimitValuesRegex
+const LocalHourlyEnergyLimitsRegex = "local_hourly_energy_limits" + AnythingBetweenDoubleBracketsRegex
 
 // SmcAddressParams, the rest is in the smcjoinformats file
 // LastJoiningDateRegex matches the last joining date field of a dc message, formatted like: last_joining_date[Wed Jun 10 00:57:05 2020].
@@ -194,3 +191,6 @@ const AnythingBetweenParenthesesRegex = "\\(([^\\)])*\\)"
 
 // AnythingBetweenBracketsRegex matches anything between brackets.
 const AnythingBetweenBracketsRegex = "\\[([^\\]])*\\]"
+
+// AnythingBetweenDoubleBracketsRegex matches anything between two brackets.
+const AnythingBetweenDoubleBracketsRegex = "\\[\\[([^\\]])*\\]\\]"

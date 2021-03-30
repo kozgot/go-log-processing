@@ -236,36 +236,38 @@ func parseSettingsPayload(line string) *SettingsPayload {
 }
 
 func parseServiceLevelPayload(line string) *ServiceLevelPayload {
-	result := ServiceLevelPayload{}
-	result.MeterMode = tryParseIntFromString(parseFieldInBracketsAsString(line, MeterModeRegex))
-
-	result.StartHourDailyCycle = parseFieldInBracketsAsString(line, StartHourDailyCycleRegex)
-
-	result.LoadSheddingDailyEnergyBudget = tryParseIntFromString(parseFieldInBracketsAsString(line, LoadSheddingDailyEnergyBudgetRegex))
-	result.LocalSheddingDailyEnergyBudget = tryParseIntFromString(parseFieldInBracketsAsString(line, LocalSheddingDailyEnergyBudgetRegex))
-	result.MaxActivePower = tryParseIntFromString(parseFieldInBracketsAsString(line, MaxActivePowerRegex))
-
-	result.InService = tryParseIntFromString(parseFieldInBracketsAsString(line, InServiceRegex)) == 1
-
-	result.Name = parseFieldInBracketsAsString(line, NameRegex)
-
-	//result.HourlyEnergyLimits = parseHourlyEnergyLimits(line, HourlyEnergyLimitsRegex)
-	//result.LocalHourlyEnergyLimits = parseHourlyEnergyLimits(line, LocalHourlyEnergyLimitsRegex)
-
-	if result.MeterMode != 0 || result.LoadSheddingDailyEnergyBudget != 0 || result.LocalSheddingDailyEnergyBudget != 0 || result.Name != "" { // todo
-		return &result
+	meterModeString := parseFieldInBracketsAsString(line, MeterModeRegex)
+	maxActivePowerstring := parseFieldInBracketsAsString(line, MaxActivePowerRegex)
+	loadSheddingDailyEnergyBudgetString := parseFieldInBracketsAsString(line, LoadSheddingDailyEnergyBudgetRegex)
+	localSheddingDailyEnergyBudgetString := parseFieldInBracketsAsString(line, LocalSheddingDailyEnergyBudgetRegex)
+	inServiceString := parseFieldInBracketsAsString(line, InServiceRegex)
+	if meterModeString == "" && maxActivePowerstring == "" && loadSheddingDailyEnergyBudgetString == "" && localSheddingDailyEnergyBudgetString == "" && inServiceString == "" {
+		// if we could not parse any of these fields, than most likely we will not be able to parse the remaining
+		return nil
 	}
 
-	// todo: ellenőrzés
-	return nil
+	meterMode := tryParseIntFromString(meterModeString)
+	maxActivePower := tryParseIntFromString(maxActivePowerstring)
+	loadSheddingDailyEnergyBudget := tryParseIntFromString(loadSheddingDailyEnergyBudgetString)
+	localSheddingDailyEnergyBudget := tryParseIntFromString(localSheddingDailyEnergyBudgetString)
+	inService := tryParseIntFromString(inServiceString) == 1
+
+	startHourDailyCycle := parseFieldInBracketsAsString(line, StartHourDailyCycleRegex)
+	name := parseFieldInBracketsAsString(line, NameRegex)
+
+	hourlyEnergyLimits := parseHourlyEnergyLimits(line, HourlyEnergyLimitsRegex)
+	localHourlyEnergyLimits := parseHourlyEnergyLimits(line, LocalHourlyEnergyLimitsRegex)
+
+	result := ServiceLevelPayload{MeterMode: meterMode, MaxActivePower: maxActivePower, LoadSheddingDailyEnergyBudget: loadSheddingDailyEnergyBudget, LocalSheddingDailyEnergyBudget: localSheddingDailyEnergyBudget, InService: inService, StartHourDailyCycle: startHourDailyCycle, Name: name}
+	result.HourlyEnergyLimits = hourlyEnergyLimits
+	result.LocalHourlyEnergyLimits = localHourlyEnergyLimits
+	return &result
 }
 
 func parseHourlyEnergyLimits(line string, energyLimitRegex string) [24]HourlyEnergyLimit {
 	var result [24]HourlyEnergyLimit
-	hourlyLimitsString := parseFieldInBracketsAsString(line, energyLimitRegex)
+	hourlyLimitsString := parseFieldInDoubleBracketsAsString(line, energyLimitRegex)
 	if hourlyLimitsString != "" {
-		hourlyLimitsString = strings.TrimLeft(hourlyLimitsString, "[")
-		hourlyLimitsString = strings.TrimRight(hourlyLimitsString, "]")
 		limitParts := strings.Split(hourlyLimitsString, " ")
 		if len(limitParts) == 24 {
 			for i, val := range limitParts {
