@@ -133,10 +133,10 @@ type ServiceLevelPayload struct {
 	LoadSheddingDailyEnergyBudget  int
 	LocalSheddingDailyEnergyBudget int
 	MaxActivePower                 int
-	InService                      int
+	InService                      bool
 	Name                           string
-	HourlyEnergyLimits             []HourlyEnergyLimit
-	LocalHourlyEnergyLimits        []HourlyEnergyLimit
+	HourlyEnergyLimits             [24]HourlyEnergyLimit
+	LocalHourlyEnergyLimits        [24]HourlyEnergyLimit
 }
 
 type HourlyEnergyLimit struct {
@@ -156,8 +156,8 @@ type SmcConfigPayload struct {
 }
 
 type MessagePayload struct {
-	Current float32
-	Total   float32
+	Current float64
+	Total   float64
 	URL     string
 	Topic   string
 }

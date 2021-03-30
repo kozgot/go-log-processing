@@ -87,7 +87,7 @@ type DCMessageParams struct {
 	IsInComing       bool
 	SourceOrDestName string
 	MessageType      string // todo: prepare enums for message types
-	Payload          DcMessagePayload
+	Payload          *DcMessagePayload
 }
 
 /* Dc Message Payload types*/
@@ -99,17 +99,17 @@ type DcMessagePayload struct {
 	Value          int
 	Time           time.Time
 
-	TimeRange TimeRange
+	TimeRange *TimeRange
 
-	ConnectOrDisconnectPayload ConnectOrDisconnectPayload
-	DLMSLogPayload             DLMSLogPayload
-	IndexPayload               IndexPayload
-	MessagePayload             MessagePayload
-	SettingsPayload            SettingsPayload
-	ServiceLevelPayload        ServiceLevelPayload
-	SmcAddressPayload          SmcAddressParams
-	SmcConfigPayload           SmcConfigPayload
-	PodConfigPayload           PodConfigPayload
+	ConnectOrDisconnectPayload *ConnectOrDisconnectPayload
+	DLMSLogPayload             *DLMSLogPayload
+	IndexPayload               *IndexPayload
+	MessagePayload             *MessagePayload
+	SettingsPayload            *SettingsPayload
+	ServiceLevelPayload        *ServiceLevelPayload
+	SmcAddressPayload          *SmcAddressParams
+	SmcConfigPayload           *SmcConfigPayload
+	PodConfigPayload           *PodConfigPayload
 }
 
 type SettingsPayload struct {
@@ -134,10 +134,10 @@ type ServiceLevelPayload struct {
 	LoadSheddingDailyEnergyBudget  int
 	LocalSheddingDailyEnergyBudget int
 	MaxActivePower                 int
-	InService                      int
+	InService                      bool
 	Name                           string
-	HourlyEnergyLimits             []HourlyEnergyLimit
-	LocalHourlyEnergyLimits        []HourlyEnergyLimit
+	HourlyEnergyLimits             [24]HourlyEnergyLimit
+	LocalHourlyEnergyLimits        [24]HourlyEnergyLimit
 }
 
 type HourlyEnergyLimit struct {
@@ -157,8 +157,8 @@ type SmcConfigPayload struct {
 }
 
 type MessagePayload struct {
-	Current float32
-	Total   float32
+	Current float64
+	Total   float64
 	URL     string
 	Topic   string
 }

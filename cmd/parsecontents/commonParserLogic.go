@@ -73,3 +73,16 @@ func tryParseInt64FromString(stringRepresentation string) int64 {
 
 	return 0
 }
+
+func tryParseFloat64FromString(stringRepresentation string) float64 {
+	if stringRepresentation != "" {
+		parsedNumber, err := strconv.ParseFloat(stringRepresentation, 64)
+		if err != nil {
+			panic(err)
+		}
+
+		return parsedNumber
+	}
+
+	return 0
+}

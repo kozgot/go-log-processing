@@ -1,6 +1,8 @@
 package parsecontents
 
 import (
+	"log"
+	"strings"
 	"time"
 )
 
@@ -17,6 +19,8 @@ func parseDCMessage(lin string) *DCMessageParams {
 		dcMessageParams.IsInComing = false
 		dcMessageParams.SourceOrDestName = dest
 		dcMessageParams.MessageType = parseFieldInBracketsAsString(lin, OutGoingMessageTypeRegex)
+	} else {
+		return nil
 	}
 
 	dcMessageParams.Payload = parseDCMessagePayload(lin)
@@ -34,7 +38,7 @@ func parseDCMessageDest(line string) string {
 	return outGoingMessageSource
 }
 
-func parseDCMessagePayload(line string) DcMessagePayload {
+func parseDCMessagePayload(line string) *DcMessagePayload {
 	payload := DcMessagePayload{}
 	payload.SmcUID = parseFieldInBracketsAsString(line, SmcUidRegex)
 	payload.PodUID = parseFieldInBracketsAsString(line, PodUidRegex)
@@ -46,7 +50,7 @@ func parseDCMessagePayload(line string) DcMessagePayload {
 	if dateTime.Year() > 1000 {
 		payload.Time = dateTime // for some reason, it can parse the long date format to int, so that needs to be handled as well (hence the if-else)
 	} else {
-		datefromSeconds := parseTimeFieldFromTimeStamp(line, TimeTicksRegex)
+		datefromSeconds := parseTimeFieldFromSeconds(line, TimeTicksRegex)
 		if datefromSeconds.Year() > 1000 {
 			payload.Time = datefromSeconds
 		}
@@ -55,45 +59,66 @@ func parseDCMessagePayload(line string) DcMessagePayload {
 	payload.TimeRange = parseTimeRange(line)
 
 	payload.ConnectOrDisconnectPayload = parseConnectOrDisconnectPayload(line)
-	payload.DLMSLogPayload = parseDLMSLogPayload(line)
-	payload.IndexPayload = parseIndexPayload(line)
-	payload.MessagePayload = parseMessagePayload(line)
-	payload.PodConfigPayload = parsePodConfigPayload(line)
-	payload.SmcConfigPayload = parseSmcConfigPayload(line)
-	payload.SmcAddressPayload = parseSmcAddressPayload(line)
-	payload.SettingsPayload = parseSettingsPayload(line)
-	payload.ServiceLevelPayload = parseServiceLevelPayload(line)
+	if payload.ConnectOrDisconnectPayload != nil {
+		return &payload
+	}
 
-	return payload
+	payload.DLMSLogPayload = parseDLMSLogPayload(line)
+	if payload.DLMSLogPayload != nil {
+		return &payload
+	}
+	payload.IndexPayload = parseIndexPayload(line)
+	if payload.IndexPayload != nil {
+		return &payload
+	}
+	payload.MessagePayload = parseMessagePayload(line)
+	if payload.MessagePayload != nil {
+		return &payload
+	}
+	payload.PodConfigPayload = parsePodConfigPayload(line)
+	if payload.PodConfigPayload != nil {
+		return &payload
+	}
+	payload.SmcConfigPayload = parseSmcConfigPayload(line)
+	if payload.SmcConfigPayload != nil {
+		return &payload
+	}
+	payload.SmcAddressPayload = parseSmcAddressPayload(line)
+	if payload.SmcAddressPayload != nil {
+		return &payload
+	}
+	payload.SettingsPayload = parseSettingsPayload(line)
+	if payload.SettingsPayload != nil {
+		return &payload
+	}
+	payload.ServiceLevelPayload = parseServiceLevelPayload(line)
+	if payload.ServiceLevelPayload != nil {
+		return &payload
+	}
+
+	return &payload
 }
 
-func parseTimeRange(line string) TimeRange {
-	timeRange := TimeRange{}
-
+func parseTimeRange(line string) *TimeRange {
 	from := parseDateTimeField(line, TimeRangeFromRegex)
-	if from.Year() > 1000 {
-		timeRange.From = from
-	} else {
-		start := parseTimeFieldFromTimeStamp(line, TimeRangeStartTicksRegex)
-		if start.Year() > 1000 {
-			timeRange.From = start
-		}
+	if from.Year() < 1500 {
+		from = parseTimeFieldFromSeconds(line, TimeRangeStartTicksRegex)
 	}
 
 	to := parseDateTimeField(line, TimeRangeToRegex)
-	if to.Year() > 1000 {
-		timeRange.To = to
-	} else {
-		end := parseTimeFieldFromTimeStamp(line, TimeRangeEndTicksRegex)
-		if end.Year() > 1000 {
-			timeRange.To = end
-		}
+	if to.Year() < 1500 {
+		to = parseTimeFieldFromSeconds(line, TimeRangeEndTicksRegex)
 	}
 
-	return timeRange
+	if from.Year() > 1500 && to.Year() > 1500 {
+		result := TimeRange{From: from, To: to}
+		return &result
+	}
+
+	return nil
 }
 
-func parseTimeFieldFromTimeStamp(line string, timeStampRegex string) time.Time {
+func parseTimeFieldFromSeconds(line string, timeStampRegex string) time.Time {
 	seconds := tryParseInt64FromString(parseFieldInBracketsAsString(line, timeStampRegex))
 	if seconds != 0 {
 		dateTimeFromsSecs := time.Unix(seconds, 0)
@@ -103,117 +128,160 @@ func parseTimeFieldFromTimeStamp(line string, timeStampRegex string) time.Time {
 	return time.Time{}
 }
 
-func parseConnectOrDisconnectPayload(line string) ConnectOrDisconnectPayload {
-	result := ConnectOrDisconnectPayload{}
+func parseTimeFieldFromMilliSeconds(line string, timeStampRegex string) time.Time {
+	milliseconds := tryParseInt64FromString(parseFieldInBracketsAsString(line, timeStampRegex))
+	if milliseconds != 0 {
+		dateTimeFromsSecs := time.Unix(0, milliseconds*1000*1000)
+		return dateTimeFromsSecs
+	}
 
-	// todo
-	/*
-			type ConnectOrDisconnectPayload struct {
-			Type      int
-			ClientId  string
-			URL       string
-			Topic     string
-			Timeout   int
-			Connected bool
-		}
-	*/
-
-	return result
+	return time.Time{}
 }
 
-func parseDLMSLogPayload(line string) DLMSLogPayload {
-	result := DLMSLogPayload{}
+func parseConnectOrDisconnectPayload(line string) *ConnectOrDisconnectPayload {
+	resultType := tryParseIntFromString(parseFieldInBracketsAsString(line, ConnectOrDisconnectTypeRegex))
+	clientId := parseFieldInBracketsAsString(line, ClientIdRegex)
+	URL := parseFieldInBracketsAsString(line, URLRegex)
+	topic := parseFieldInBracketsAsString(line, TopicRegex)
+	timeout := tryParseIntFromString(parseFieldInBracketsAsString(line, TimeoutRegex))
+	connected := tryParseIntFromString(parseFieldInBracketsAsString(line, ConnectedRegex)) == 1
 
-	// todo
-	/*
-			type DLMSLogPayload struct {
-			DLMSRequestTime  time.Time
-			DLMSResponseTime time.Time
-			DLMSError        string
-		}
-	*/
+	if clientId != "" || resultType != 0 || URL != "" || topic != "" || timeout != 0 {
+		result := ConnectOrDisconnectPayload{ClientId: clientId, Type: resultType, URL: URL, Topic: topic, Timeout: timeout, Connected: connected}
+		return &result
+	}
 
-	return result
+	// todo: ellenőrzés
+	return nil
 }
 
-func parseIndexPayload(line string) IndexPayload {
+func parseDLMSLogPayload(line string) *DLMSLogPayload {
+	requestTimeFromSeconds := parseTimeFieldFromMilliSeconds(line, DLMSRequestTimeRegex)
+	responseTimeFromSeconds := parseTimeFieldFromMilliSeconds(line, DLMSResponseTimeRegex)
+	DLMSError := parseFieldInBracketsAsString(line, DLMSErrorRegex)
+
+	if requestTimeFromSeconds.Year() > 1500 || responseTimeFromSeconds.Year() > 1500 || DLMSError != "" {
+		result := DLMSLogPayload{DLMSRequestTime: requestTimeFromSeconds, DLMSResponseTime: responseTimeFromSeconds, DLMSError: DLMSError}
+		return &result
+	}
+	// todo: ellenőrzés
+	return nil
+}
+
+func parseIndexPayload(line string) *IndexPayload {
 	result := IndexPayload{}
+	previousTimeFromSeconds := parseTimeFieldFromSeconds(line, PreviousTimeRegex)
+	if previousTimeFromSeconds.Year() > 1000 {
+		result.PreviousTime = previousTimeFromSeconds
+	}
 
-	// todo
-	/*
-			type IndexPayload struct {
-			PreviousTime  time.Time // it might be ticks or something (eg. 1591776000)
-			PreviousValue int
-			SerialNumber  int
-		}
-	*/
+	result.PreviousValue = tryParseIntFromString(parseFieldInBracketsAsString(line, PreviousValueRegex))
+	result.SerialNumber = tryParseIntFromString(parseFieldInBracketsAsString(line, SerailNumberRegex))
 
-	return result
+	if result.PreviousValue != 0 || result.PreviousTime.Year() > 1500 || result.SerialNumber != 0 {
+		return &result
+	}
+
+	// todo: ellenőrzés
+	return nil
 }
 
-func parseMessagePayload(line string) MessagePayload {
+func parseMessagePayload(line string) *MessagePayload {
 	result := MessagePayload{}
+	result.Current = tryParseFloat64FromString(parseFieldInBracketsAsString(line, CurrentRegex))
+	result.Total = tryParseFloat64FromString(parseFieldInBracketsAsString(line, TotalRegex))
+	result.URL = parseFieldInBracketsAsString(line, URLRegex)
+	result.Topic = parseFieldInBracketsAsString(line, TopicRegex)
 
-	// todo
-	/*
-			type MessagePayload struct {
-			Current float32
-			Total   float32
-			URL     string
-			Topic   string
-		}
-	*/
+	if result.Current != 0 || result.URL != "" || result.Total != 0 || result.Topic != "" {
+		return &result
+	}
 
-	return result
+	// todo: ellenőrzés
+	return nil
 }
 
-func parseSettingsPayload(line string) SettingsPayload {
+func parseSettingsPayload(line string) *SettingsPayload {
 	result := SettingsPayload{}
+	result.DcUID = parseFieldInBracketsAsString(line, DcUidRegex)
+	result.Locality = parseFieldInBracketsAsString(line, LocalityRegex)
+	result.Region = parseFieldInBracketsAsString(line, RegionRegex)
+	result.Timezone = parseFieldInBracketsAsString(line, TimezoneRegex)
+	result.GlobalFtpAddress = parseFieldInBracketsAsString(line, GlobalFtpAddressRegex)
+	result.TargetFirmwareVersion = parseFieldInBracketsAsString(line, TargetFirmwareVersionRegex)
 
-	// todo
-	/*
-			type SettingsPayload struct {
-			DcUID                         string
-			Locality                      string
-			Region                        string
-			Timezone                      string
-			GlobalFtpAddress              string
-			TargetFirmwareVersion         string
-			IndexCollection               int
-			DataPublish                   int
-			LastServerCommunicationTime   time.Time
-			DcDistroTargetFirmwareVersion string
-			LastDcStartTime               time.Time // it might be ticks or something (eg. 1591780709)
-			FrequencyBandChanged          bool
-			FrequencyBandRollBackDone     bool
-		}
-	*/
+	result.IndexCollection = tryParseIntFromString(parseFieldInBracketsAsString(line, IndexCollectionRegex))
+	result.DataPublish = tryParseIntFromString(parseFieldInBracketsAsString(line, DataPublishRegex))
+	lastServerCommTimeFromSeconds := parseTimeFieldFromSeconds(line, LastServerCommunicationTimeRegex)
+	if lastServerCommTimeFromSeconds.Year() > 1000 {
+		result.LastServerCommunicationTime = lastServerCommTimeFromSeconds
+	}
 
-	return result
+	result.DcDistroTargetFirmwareVersion = parseFieldInBracketsAsString(line, DcDistroTargetFirmwareVersionRegex)
+
+	lastDcStartTimeFromSeconds := parseTimeFieldFromSeconds(line, LastDcStartTimeRegex)
+	if lastDcStartTimeFromSeconds.Year() > 1000 {
+		result.LastDcStartTime = lastDcStartTimeFromSeconds
+	}
+
+	result.FrequencyBandChanged = tryParseIntFromString(parseFieldInBracketsAsString(line, FrequencyBandChangedRegex)) == 1
+	result.FrequencyBandRollBackDone = tryParseIntFromString(parseFieldInBracketsAsString(line, FrequencyBandRollbackDoneRegex)) == 1
+
+	if result.IndexCollection != 0 || result.LastServerCommunicationTime.Year() > 1500 || result.LastDcStartTime.Year() > 1500 || result.DataPublish != 0 || result.Timezone != "" { // todo
+		return &result
+	}
+
+	// todo: ellenőrzés
+	return nil
 }
 
-func parseServiceLevelPayload(line string) ServiceLevelPayload {
+func parseServiceLevelPayload(line string) *ServiceLevelPayload {
 	result := ServiceLevelPayload{}
+	result.MeterMode = tryParseIntFromString(parseFieldInBracketsAsString(line, MeterModeRegex))
 
-	// todo
-	/*
-			type ServiceLevelPayload struct {
-			MeterMode                      int
-			StartHourDailyCycle            string // eg. 20h, todo: better type??
-			LoadSheddingDailyEnergyBudget  int
-			LocalSheddingDailyEnergyBudget int
-			MaxActivePower                 int
-			InService                      int
-			Name                           string
-			HourlyEnergyLimits             []HourlyEnergyLimit
-			LocalHourlyEnergyLimits        []HourlyEnergyLimit
+	result.StartHourDailyCycle = parseFieldInBracketsAsString(line, StartHourDailyCycleRegex)
+
+	result.LoadSheddingDailyEnergyBudget = tryParseIntFromString(parseFieldInBracketsAsString(line, LoadSheddingDailyEnergyBudgetRegex))
+	result.LocalSheddingDailyEnergyBudget = tryParseIntFromString(parseFieldInBracketsAsString(line, LocalSheddingDailyEnergyBudgetRegex))
+	result.MaxActivePower = tryParseIntFromString(parseFieldInBracketsAsString(line, MaxActivePowerRegex))
+
+	result.InService = tryParseIntFromString(parseFieldInBracketsAsString(line, InServiceRegex)) == 1
+
+	result.Name = parseFieldInBracketsAsString(line, NameRegex)
+
+	//result.HourlyEnergyLimits = parseHourlyEnergyLimits(line, HourlyEnergyLimitsRegex)
+	//result.LocalHourlyEnergyLimits = parseHourlyEnergyLimits(line, LocalHourlyEnergyLimitsRegex)
+
+	if result.MeterMode != 0 || result.LoadSheddingDailyEnergyBudget != 0 || result.LocalSheddingDailyEnergyBudget != 0 || result.Name != "" { // todo
+		return &result
+	}
+
+	// todo: ellenőrzés
+	return nil
+}
+
+func parseHourlyEnergyLimits(line string, energyLimitRegex string) [24]HourlyEnergyLimit {
+	var result [24]HourlyEnergyLimit
+	hourlyLimitsString := parseFieldInBracketsAsString(line, energyLimitRegex)
+	if hourlyLimitsString != "" {
+		hourlyLimitsString = strings.TrimLeft(hourlyLimitsString, "[")
+		hourlyLimitsString = strings.TrimRight(hourlyLimitsString, "]")
+		limitParts := strings.Split(hourlyLimitsString, " ")
+		if len(limitParts) == 24 {
+			for i, val := range limitParts {
+				result[i] = HourlyEnergyLimit{HourNumber: i, Limit: tryParseIntFromString(val)}
+			}
+
+			return result
+		} else {
+			log.Println(limitParts)
 		}
-	*/
+	}
 
 	return result
 }
 
-func parseSmcAddressPayload(line string) SmcAddressParams {
+func parseSmcAddressPayload(line string) *SmcAddressParams {
 	result := SmcAddressParams{}
 
 	// todo
@@ -227,10 +295,14 @@ func parseSmcAddressPayload(line string) SmcAddressParams {
 		}
 	*/
 
-	return result
+	if result.SmcUID != "" {
+		return &result
+	}
+
+	return nil
 }
 
-func parseSmcConfigPayload(line string) SmcConfigPayload {
+func parseSmcConfigPayload(line string) *SmcConfigPayload {
 	result := SmcConfigPayload{}
 
 	// todo
@@ -247,10 +319,14 @@ func parseSmcConfigPayload(line string) SmcConfigPayload {
 		}
 	*/
 
-	return result
+	if result.CustomerSerialNumber != "" {
+		return &result
+	}
+
+	return nil
 }
 
-func parsePodConfigPayload(line string) PodConfigPayload {
+func parsePodConfigPayload(line string) *PodConfigPayload {
 	result := PodConfigPayload{}
 
 	// todo
@@ -263,5 +339,9 @@ func parsePodConfigPayload(line string) PodConfigPayload {
 		}
 	*/
 
-	return result
+	if result.SerialNumber != 0 {
+		return &result
+	}
+
+	return nil
 }
