@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -26,34 +25,9 @@ func failOnError(err error, msg string) {
 	}
 }
 
-// ErrorParams contains the parsed error parameters
-type ErrorParams struct {
-	ErrorCode   int
-	Message     string
-	Severity    int
-	Description string
-	Source      string
-}
-
-// WarningParams contains the parsed warning parameters
-type WarningParams struct {
-	Name          string
-	SmcUID        string
-	UID           int
-	Priority      int
-	Retry         int
-	Creation      time.Time
-	MinLaunchTime time.Time
-	ErrorParams   ErrorParams
-	FileName      string
-}
-
-// ParsedLine contains a parsed line from the log file
-type ParsedLine struct {
-	Timestamp     time.Time
-	Level         string
-	ErrorParams   ErrorParams
-	WarningParams WarningParams
+// Message contains the recieved message bytes
+type Message struct {
+	Content []byte
 }
 
 var numWorkers = 4
@@ -117,7 +91,7 @@ func main() {
 	)
 	failOnError(err, "Failed to register a consumer")
 
-	lines := []ParsedLine{}
+	lines := []Message{}
 	forever := make(chan bool)
 
 	go func() {
@@ -126,7 +100,6 @@ func main() {
 				indexNameMessageString := string(d.Body)
 				runes := []rune(indexNameMessageString)
 				indexName = string(runes[len("[INDEXNAME] ")+1 : len(indexNameMessageString)-1])
-				log.Println("Creating index:  ", indexName)
 				createEsIndex(indexName)
 			} else if strings.Contains(string(d.Body), "[DONE]") {
 				// wait for the documents of the current index to arrive
@@ -134,16 +107,16 @@ func main() {
 				log.Printf("  Successfully indexed all %d documents (index name: %s)", documentID-1, indexName)
 
 				// cleanup...
-				lines = []ParsedLine{} // clear the buffer after uploading the contents
+				lines = []Message{} // clear the buffer after uploading the contents
 				documentID = 1
 				indexName = ""
 			} else {
 				// save messages until we hit the 1000 line treshold
-				line := deserializeLines(d.Body)
-				lines = append(lines, line)
+				message := Message{Content: d.Body}
+				lines = append(lines, message)
 				if len(lines) >= 1000 {
 					BulkIndexerUpload(lines)
-					lines = []ParsedLine{} // clear the buffer after uploading the contents
+					lines = []Message{} // clear the buffer after uploading the contents
 				}
 			}
 		}
@@ -152,18 +125,8 @@ func main() {
 	<-forever
 }
 
-func deserializeLines(bytes []byte) ParsedLine {
-	var line ParsedLine
-	err := json.Unmarshal(bytes, &line)
-	if err != nil {
-		fmt.Println("ERROR ----- Can't deserislize message: " + string(bytes))
-	}
-
-	return line
-}
-
 // BulkIndexerUpload uploads data to Elasticsearch using BulkIndexer from go-elasticsearch
-func BulkIndexerUpload(lines []ParsedLine) {
+func BulkIndexerUpload(lines []Message) {
 	var (
 		countSuccessful uint64
 
@@ -203,12 +166,7 @@ func BulkIndexerUpload(lines []ParsedLine) {
 
 	start := time.Now().UTC()
 
-	for i, a := range lines {
-		data, err := json.Marshal(a)
-		if err != nil {
-			log.Fatalf("Cannot encode line %d: %s", i, err)
-		}
-
+	for _, a := range lines {
 		// Add an item to the BulkIndexer
 		err = bi.Add(
 			context.Background(),
@@ -220,7 +178,7 @@ func BulkIndexerUpload(lines []ParsedLine) {
 				DocumentID: strconv.Itoa(documentID),
 
 				// Body is an `io.Reader` with the payload
-				Body: bytes.NewReader(data),
+				Body: bytes.NewReader(a.Content),
 
 				// OnSuccess is called for each successful operation
 				OnSuccess: func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem) {
@@ -277,15 +235,20 @@ func createEsIndex(index string) {
 		},
 		MaxRetries: 10,
 	})
+
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
 	}
+
+	log.Println("Deleting index:  ", index, "...")
 
 	// Re-create the index
 	if res, err = es.Indices.Delete([]string{index}, es.Indices.Delete.WithIgnoreUnavailable(true)); err != nil || res.IsError() {
 		log.Fatalf("Cannot delete index: %s", err)
 	}
 	res.Body.Close()
+
+	log.Println("Creating index:  ", index, "...")
 	res, err = es.Indices.Create(index)
 	if err != nil {
 		log.Fatalf("Cannot create index: %s", err)
