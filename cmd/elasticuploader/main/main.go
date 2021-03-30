@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -24,6 +23,11 @@ func failOnError(err error, msg string) {
 	if err != nil {
 		log.Fatalf("%s: %s", msg, err)
 	}
+}
+
+// Message contains the recieved message bytes
+type Message struct {
+	Content []byte
 }
 
 var numWorkers = 4
@@ -87,7 +91,7 @@ func main() {
 	)
 	failOnError(err, "Failed to register a consumer")
 
-	lines := []ParsedLine{}
+	lines := []Message{}
 	forever := make(chan bool)
 
 	go func() {
@@ -103,16 +107,16 @@ func main() {
 				log.Printf("  Successfully indexed all %d documents (index name: %s)", documentID-1, indexName)
 
 				// cleanup...
-				lines = []ParsedLine{} // clear the buffer after uploading the contents
+				lines = []Message{} // clear the buffer after uploading the contents
 				documentID = 1
 				indexName = ""
 			} else {
 				// save messages until we hit the 1000 line treshold
-				line := deserializeLines(d.Body)
-				lines = append(lines, line)
+				message := Message{Content: d.Body}
+				lines = append(lines, message)
 				if len(lines) >= 1000 {
 					BulkIndexerUpload(lines)
-					lines = []ParsedLine{} // clear the buffer after uploading the contents
+					lines = []Message{} // clear the buffer after uploading the contents
 				}
 			}
 		}
@@ -121,18 +125,8 @@ func main() {
 	<-forever
 }
 
-func deserializeLines(bytes []byte) ParsedLine {
-	var line ParsedLine
-	err := json.Unmarshal(bytes, &line)
-	if err != nil {
-		fmt.Println("ERROR ----- Can't deserislize message: " + string(bytes))
-	}
-
-	return line
-}
-
 // BulkIndexerUpload uploads data to Elasticsearch using BulkIndexer from go-elasticsearch
-func BulkIndexerUpload(lines []ParsedLine) {
+func BulkIndexerUpload(lines []Message) {
 	var (
 		countSuccessful uint64
 
@@ -172,12 +166,7 @@ func BulkIndexerUpload(lines []ParsedLine) {
 
 	start := time.Now().UTC()
 
-	for i, a := range lines {
-		data, err := json.Marshal(a)
-		if err != nil {
-			log.Fatalf("Cannot encode line %d: %s", i, err)
-		}
-
+	for _, a := range lines {
 		// Add an item to the BulkIndexer
 		err = bi.Add(
 			context.Background(),
@@ -189,7 +178,7 @@ func BulkIndexerUpload(lines []ParsedLine) {
 				DocumentID: strconv.Itoa(documentID),
 
 				// Body is an `io.Reader` with the payload
-				Body: bytes.NewReader(data),
+				Body: bytes.NewReader(a.Content),
 
 				// OnSuccess is called for each successful operation
 				OnSuccess: func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem) {
