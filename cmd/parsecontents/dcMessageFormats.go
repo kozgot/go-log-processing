@@ -171,7 +171,7 @@ const CurrentApp2FwRegex = "current_app2_fw" + AnythingBetweenBracketsRegex
 const CurrentPlcFwRegex = "current_plc_fw" + AnythingBetweenBracketsRegex
 
 // LastSuccessfulDlmsResponseDateRegex matches the last successful dlms response date field of a dc message, formatted like: last_successful_dlms_response_date [Wed Jun 10 07:58:11 2020].
-const LastSuccessfulDlmsResponseDateRegex = "last_successful_dlms_response_date\\[" + anyCharsExceptOpeningParentheses + "\\]"
+const LastSuccessfulDlmsResponseDateRegex = "last_successful_dlms_response_date \\[" + anyCharsExceptOpeningParentheses + "\\]"
 
 // NextHopRegex matches the next hop field of a dc message, formatted like: next_hop[0].
 const NextHopRegex = "next_hop" + LongNumberBetweenBracketsRegex
@@ -182,6 +182,9 @@ const PhaseRegex = "phase" + NumberBetweenBrackets
 
 // PositionInSmcRegex matches the position in smc field of a dc message, formatted like: position_in_smc[1].
 const PositionInSmcRegex = "position_in_smc" + LongNumberBetweenBracketsRegex
+
+// SerialNumberRegex matches the serial number field of a dc message, formatted like: serial_number[98020067330].
+const SerialNumberRegex = "serial_number" + LongNumberBetweenBracketsRegex
 
 // SoftwareFirmwareVersionRegex matches the software firmware version field of a dc message, formatted like: software_firmware_version[IMETER190801].
 const SoftwareFirmwareVersionRegex = "software_firmware_version" + AnythingBetweenBracketsRegex

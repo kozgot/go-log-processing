@@ -23,7 +23,7 @@ func parseDCMessage(lin string) *DCMessageParams {
 		return nil
 	}
 
-	dcMessageParams.Payload = parseDCMessagePayload(lin)
+	dcMessageParams.Payload = parseDCMessagePayload(lin, dcMessageParams.MessageType)
 
 	return &dcMessageParams
 }
@@ -38,7 +38,7 @@ func parseDCMessageDest(line string) string {
 	return outGoingMessageSource
 }
 
-func parseDCMessagePayload(line string) *DcMessagePayload {
+func parseDCMessagePayload(line string, messageType string) *DcMessagePayload {
 	payload := DcMessagePayload{}
 	payload.SmcUID = parseFieldInBracketsAsString(line, SmcUidRegex)
 	payload.PodUID = parseFieldInBracketsAsString(line, PodUidRegex)
@@ -58,84 +58,62 @@ func parseDCMessagePayload(line string) *DcMessagePayload {
 
 	payload.TimeRange = parseTimeRange(line)
 
-	payload.ConnectOrDisconnectPayload = parseConnectOrDisconnectPayload(line)
-	if payload.ConnectOrDisconnectPayload != nil {
-		return &payload
-	}
+	switch messageType {
+	case "message":
+		payload.MessagePayload = parseMessagePayload(line)
+		if payload.MessagePayload != nil {
+			return &payload
+		}
 
-	payload.DLMSLogPayload = parseDLMSLogPayload(line)
-	if payload.DLMSLogPayload != nil {
-		return &payload
-	}
-	payload.IndexPayload = parseIndexPayload(line)
-	if payload.IndexPayload != nil {
-		return &payload
-	}
-	payload.MessagePayload = parseMessagePayload(line)
-	if payload.MessagePayload != nil {
-		return &payload
-	}
-	payload.PodConfigPayload = parsePodConfigPayload(line)
-	if payload.PodConfigPayload != nil {
-		return &payload
-	}
-	payload.SmcConfigPayload = parseSmcConfigPayload(line)
-	if payload.SmcConfigPayload != nil {
-		return &payload
-	}
-	payload.SmcAddressPayload = parseSmcAddressPayload(line)
-	if payload.SmcAddressPayload != nil {
-		return &payload
-	}
-	payload.SettingsPayload = parseSettingsPayload(line)
-	if payload.SettingsPayload != nil {
-		return &payload
-	}
-	payload.ServiceLevelPayload = parseServiceLevelPayload(line)
-	if payload.ServiceLevelPayload != nil {
-		return &payload
+	case "connect":
+		payload.ConnectOrDisconnectPayload = parseConnectOrDisconnectPayload(line)
+		if payload.ConnectOrDisconnectPayload != nil {
+			return &payload
+		}
+
+	case "pod configuration":
+		payload.PodConfigPayload = parsePodConfigPayload(line)
+		if payload.PodConfigPayload != nil {
+			return &payload
+		}
+	case "smc configuration":
+		payload.SmcConfigPayload = parseSmcConfigPayload(line)
+		if payload.SmcConfigPayload != nil {
+			return &payload
+		}
+
+	case "smc address":
+		payload.SmcAddressPayload = parseSmcAddressPayload(line)
+		if payload.SmcAddressPayload != nil {
+			return &payload
+		}
+
+	case "service_level":
+		payload.ServiceLevelPayload = parseServiceLevelPayload(line)
+		if payload.ServiceLevelPayload != nil {
+			return &payload
+		}
+
+	case "settings":
+		payload.SettingsPayload = parseSettingsPayload(line)
+		if payload.SettingsPayload != nil {
+			return &payload
+		}
+
+	case "DLMS Logs":
+		payload.DLMSLogPayload = parseDLMSLogPayload(line)
+		if payload.DLMSLogPayload != nil {
+			return &payload
+		}
+
+	case "index":
+		payload.IndexPayload = parseIndexPayload(line)
+		if payload.IndexPayload != nil {
+			return &payload
+		}
 	}
 
 	return &payload
-}
-
-func parseTimeRange(line string) *TimeRange {
-	from := parseDateTimeField(line, TimeRangeFromRegex)
-	if from.Year() < 1500 {
-		from = parseTimeFieldFromSeconds(line, TimeRangeStartTicksRegex)
-	}
-
-	to := parseDateTimeField(line, TimeRangeToRegex)
-	if to.Year() < 1500 {
-		to = parseTimeFieldFromSeconds(line, TimeRangeEndTicksRegex)
-	}
-
-	if from.Year() > 1500 && to.Year() > 1500 {
-		result := TimeRange{From: from, To: to}
-		return &result
-	}
-
-	return nil
-}
-
-func parseTimeFieldFromSeconds(line string, timeStampRegex string) time.Time {
-	seconds := tryParseInt64FromString(parseFieldInBracketsAsString(line, timeStampRegex))
-	if seconds != 0 {
-		dateTimeFromsSecs := time.Unix(seconds, 0)
-		return dateTimeFromsSecs
-	}
-
-	return time.Time{}
-}
-
-func parseTimeFieldFromMilliSeconds(line string, timeStampRegex string) time.Time {
-	milliseconds := tryParseInt64FromString(parseFieldInBracketsAsString(line, timeStampRegex))
-	if milliseconds != 0 {
-		dateTimeFromsSecs := time.Unix(0, milliseconds*1000*1000)
-		return dateTimeFromsSecs
-	}
-
-	return time.Time{}
 }
 
 func parseConnectOrDisconnectPayload(line string) *ConnectOrDisconnectPayload {
@@ -169,70 +147,78 @@ func parseDLMSLogPayload(line string) *DLMSLogPayload {
 }
 
 func parseIndexPayload(line string) *IndexPayload {
-	result := IndexPayload{}
+	previousValueString := parseFieldInBracketsAsString(line, PreviousValueRegex)
+	serialNumberString := parseFieldInBracketsAsString(line, SerailNumberRegex)
 	previousTimeFromSeconds := parseTimeFieldFromSeconds(line, PreviousTimeRegex)
-	if previousTimeFromSeconds.Year() > 1000 {
-		result.PreviousTime = previousTimeFromSeconds
+	if previousTimeFromSeconds.Year() < 1000 && serialNumberString == "" && previousValueString == "" {
+		return nil
 	}
 
-	result.PreviousValue = tryParseIntFromString(parseFieldInBracketsAsString(line, PreviousValueRegex))
-	result.SerialNumber = tryParseIntFromString(parseFieldInBracketsAsString(line, SerailNumberRegex))
+	previousValue := tryParseIntFromString(previousValueString)
+	serialNumber := tryParseIntFromString(serialNumberString)
 
-	if result.PreviousValue != 0 || result.PreviousTime.Year() > 1500 || result.SerialNumber != 0 {
-		return &result
-	}
+	result := IndexPayload{}
+	result.PreviousTime = previousTimeFromSeconds
+	result.PreviousValue = previousValue
+	result.SerialNumber = serialNumber
 
-	// todo: ellenőrzés
-	return nil
+	return &result
 }
 
 func parseMessagePayload(line string) *MessagePayload {
+	currentString := parseFieldInBracketsAsString(line, CurrentRegex)
+	totalString := parseFieldInBracketsAsString(line, TotalRegex)
+	if currentString == "" && totalString == "" {
+		return nil
+	}
+
 	result := MessagePayload{}
-	result.Current = tryParseFloat64FromString(parseFieldInBracketsAsString(line, CurrentRegex))
+
+	result.Current = tryParseFloat64FromString(currentString)
 	result.Total = tryParseFloat64FromString(parseFieldInBracketsAsString(line, TotalRegex))
 	result.URL = parseFieldInBracketsAsString(line, URLRegex)
 	result.Topic = parseFieldInBracketsAsString(line, TopicRegex)
 
-	if result.Current != 0 || result.URL != "" || result.Total != 0 || result.Topic != "" {
-		return &result
-	}
-
-	// todo: ellenőrzés
-	return nil
+	return &result
 }
 
 func parseSettingsPayload(line string) *SettingsPayload {
-	result := SettingsPayload{}
-	result.DcUID = parseFieldInBracketsAsString(line, DcUidRegex)
-	result.Locality = parseFieldInBracketsAsString(line, LocalityRegex)
-	result.Region = parseFieldInBracketsAsString(line, RegionRegex)
-	result.Timezone = parseFieldInBracketsAsString(line, TimezoneRegex)
-	result.GlobalFtpAddress = parseFieldInBracketsAsString(line, GlobalFtpAddressRegex)
-	result.TargetFirmwareVersion = parseFieldInBracketsAsString(line, TargetFirmwareVersionRegex)
+	dcUID := parseFieldInBracketsAsString(line, DcUidRegex)
 
-	result.IndexCollection = tryParseIntFromString(parseFieldInBracketsAsString(line, IndexCollectionRegex))
-	result.DataPublish = tryParseIntFromString(parseFieldInBracketsAsString(line, DataPublishRegex))
+	indexCollectionString := parseFieldInBracketsAsString(line, IndexCollectionRegex)
+	dataPublishString := parseFieldInBracketsAsString(line, DataPublishRegex)
+	frequencyBandChangedString := parseFieldInBracketsAsString(line, FrequencyBandChangedRegex)
+	frequencyBandRollBackDonestirng := parseFieldInBracketsAsString(line, FrequencyBandRollbackDoneRegex)
+
 	lastServerCommTimeFromSeconds := parseTimeFieldFromSeconds(line, LastServerCommunicationTimeRegex)
-	if lastServerCommTimeFromSeconds.Year() > 1000 {
-		result.LastServerCommunicationTime = lastServerCommTimeFromSeconds
-	}
-
-	result.DcDistroTargetFirmwareVersion = parseFieldInBracketsAsString(line, DcDistroTargetFirmwareVersionRegex)
-
 	lastDcStartTimeFromSeconds := parseTimeFieldFromSeconds(line, LastDcStartTimeRegex)
-	if lastDcStartTimeFromSeconds.Year() > 1000 {
-		result.LastDcStartTime = lastDcStartTimeFromSeconds
+
+	if dcUID == "" && lastServerCommTimeFromSeconds.Year() < 1000 && lastDcStartTimeFromSeconds.Year() < 1000 && dataPublishString == "" && indexCollectionString == "" && frequencyBandChangedString == "" && frequencyBandRollBackDonestirng == "" {
+		return nil
 	}
 
-	result.FrequencyBandChanged = tryParseIntFromString(parseFieldInBracketsAsString(line, FrequencyBandChangedRegex)) == 1
-	result.FrequencyBandRollBackDone = tryParseIntFromString(parseFieldInBracketsAsString(line, FrequencyBandRollbackDoneRegex)) == 1
+	locality := parseFieldInBracketsAsString(line, LocalityRegex)
+	region := parseFieldInBracketsAsString(line, RegionRegex)
+	timezone := parseFieldInBracketsAsString(line, TimezoneRegex)
+	globalFtpAddress := parseFieldInBracketsAsString(line, GlobalFtpAddressRegex)
+	targetFirmwareVersion := parseFieldInBracketsAsString(line, TargetFirmwareVersionRegex)
+	dcDistroTargetFirmwareVersion := parseFieldInBracketsAsString(line, DcDistroTargetFirmwareVersionRegex)
 
-	if result.IndexCollection != 0 || result.LastServerCommunicationTime.Year() > 1500 || result.LastDcStartTime.Year() > 1500 || result.DataPublish != 0 || result.Timezone != "" { // todo
-		return &result
-	}
+	indexCollection := tryParseIntFromString(indexCollectionString)
+	dataPublish := tryParseIntFromString(dataPublishString)
+	frequencyBandChanged := tryParseIntFromString(frequencyBandChangedString) == 1
+	frequencyBandRollBackDone := tryParseIntFromString(frequencyBandRollBackDonestirng) == 1
 
-	// todo: ellenőrzés
-	return nil
+	result := SettingsPayload{DcUID: dcUID, Locality: locality, Region: region, Timezone: timezone, GlobalFtpAddress: globalFtpAddress}
+
+	result.TargetFirmwareVersion = targetFirmwareVersion
+	result.DcDistroTargetFirmwareVersion = dcDistroTargetFirmwareVersion
+	result.IndexCollection = indexCollection
+	result.DataPublish = dataPublish
+	result.FrequencyBandChanged = frequencyBandChanged
+	result.FrequencyBandRollBackDone = frequencyBandRollBackDone
+
+	return &result
 }
 
 func parseServiceLevelPayload(line string) *ServiceLevelPayload {
@@ -284,64 +270,101 @@ func parseHourlyEnergyLimits(line string, energyLimitRegex string) [24]HourlyEne
 }
 
 func parseSmcAddressPayload(line string) *SmcAddressParams {
-	result := SmcAddressParams{}
-
-	// todo
-	/*
-			type SmcAddressParams struct {
-			SmcUID          string
-			PhysicalAddress string
-			LogicalAddress  string
-			ShortAddress    int
-			LastJoiningDate time.Time
-		}
-	*/
-
-	if result.SmcUID != "" {
-		return &result
+	smcUID := parseFieldInBracketsAsString(line, SMCUIDRegex)
+	physicalAddress := parseFieldInBracketsAsString(line, PhysicalAddressRegex)
+	logicalAddress := parseFieldInBracketsAsString(line, LogicalAddressRegex)
+	shortAddressString := parseFieldInBracketsAsString(line, ShortAddressRegex)
+	if smcUID == "" && physicalAddress == "" && logicalAddress == "" && shortAddressString == "" {
+		return nil
 	}
 
-	return nil
+	lastJoiningDate := parseDateTimeField(line, LastJoiningDateRegex)
+	shortAddress := tryParseIntFromString(shortAddressString)
+
+	result := SmcAddressParams{SmcUID: smcUID, PhysicalAddress: physicalAddress, LogicalAddress: logicalAddress, ShortAddress: shortAddress, LastJoiningDate: lastJoiningDate}
+	return &result
 }
 
 func parseSmcConfigPayload(line string) *SmcConfigPayload {
-	result := SmcConfigPayload{}
+	customerSerialNumber := parseFieldInBracketsAsString(line, CustomerSerialNumberRegex)
+	physicalAddress := parseFieldInBracketsAsString(line, PhysicalAddressRegex)
+	smcStatus := parseFieldInBracketsAsString(line, SmcStatusRegex)
+	nextHopString := parseFieldInBracketsAsString(line, NextHopRegex)
 
-	// todo
-	/*
-			type SmcConfigPayload struct {
-			CustomerSerialNumber           string
-			PhysicalAddress                string
-			SmcStatus                      string
-			CurrentApp1Fw                  string
-			CurrentApp2Fw                  string
-			CurrentPlcFw                   string
-			LastSuccessfulDlmsResponseDate time.Time
-			NextHop                        int
-		}
-	*/
-
-	if result.CustomerSerialNumber != "" {
-		return &result
+	if customerSerialNumber == "" && physicalAddress == "" && smcStatus == "" && nextHopString == "" {
+		return nil
 	}
 
-	return nil
+	currentApp1Fw := parseFieldInBracketsAsString(line, CurrentApp1FwRegex)
+	currentApp2Fw := parseFieldInBracketsAsString(line, CurrentApp2FwRegex)
+	currentPlcFw := parseFieldInBracketsAsString(line, CurrentPlcFwRegex)
+
+	lastSuccessfulDlmsResponseDate := parseDateTimeField(line, LastSuccessfulDlmsResponseDateRegex)
+	nextHop := tryParseIntFromString(nextHopString)
+
+	result := SmcConfigPayload{}
+	result.CurrentApp1Fw = currentApp1Fw
+	result.CurrentApp2Fw = currentApp2Fw
+	result.CurrentPlcFw = currentPlcFw
+	result.CustomerSerialNumber = customerSerialNumber
+	result.PhysicalAddress = physicalAddress
+	result.SmcStatus = smcStatus
+	result.NextHop = nextHop
+	result.LastSuccessfulDlmsResponseDate = lastSuccessfulDlmsResponseDate
+
+	return &result
 }
 
 func parsePodConfigPayload(line string) *PodConfigPayload {
-	result := PodConfigPayload{}
+	serialNumberString := parseFieldInBracketsAsString(line, SerialNumberRegex)
+	phaseString := parseFieldInBracketsAsString(line, PhaseRegex)
+	positionInSmcString := parseFieldInBracketsAsString(line, PositionInSmcRegex)
+	softwareFirmwareVersion := parseFieldInBracketsAsString(line, SoftwareFirmwareVersionRegex)
+	if serialNumberString == "" && phaseString == "" && positionInSmcString == "" && softwareFirmwareVersion == "" {
+		return nil
+	}
 
-	// todo
-	/*
-			type PodConfigPayload struct {
-			SerialNumber            int
-			Phase                   int
-			PositionInSmc           int
-			SoftwareFirmwareVersion string
-		}
-	*/
+	serialNumber := tryParseIntFromString(serialNumberString)
+	phase := tryParseIntFromString(phaseString)
+	positionInSmc := tryParseIntFromString(positionInSmcString)
 
-	if result.SerialNumber != 0 {
+	result := PodConfigPayload{Phase: phase, SerialNumber: serialNumber, PositionInSmc: positionInSmc, SoftwareFirmwareVersion: softwareFirmwareVersion}
+	return &result
+}
+
+func parseTimeFieldFromSeconds(line string, timeStampRegex string) time.Time {
+	seconds := tryParseInt64FromString(parseFieldInBracketsAsString(line, timeStampRegex))
+	if seconds != 0 {
+		dateTimeFromsSecs := time.Unix(seconds, 0)
+		return dateTimeFromsSecs
+	}
+
+	return time.Time{}
+}
+
+func parseTimeFieldFromMilliSeconds(line string, timeStampRegex string) time.Time {
+	milliseconds := tryParseInt64FromString(parseFieldInBracketsAsString(line, timeStampRegex))
+	if milliseconds != 0 {
+		dateTimeFromsSecs := time.Unix(0, milliseconds*1000*1000)
+		return dateTimeFromsSecs
+	}
+
+	return time.Time{}
+}
+
+func parseTimeRange(line string) *TimeRange {
+	from := parseDateTimeField(line, TimeRangeFromRegex)
+	if from.Year() < 1500 {
+		from = parseTimeFieldFromSeconds(line, TimeRangeStartTicksRegex)
+	}
+
+	to := parseDateTimeField(line, TimeRangeToRegex)
+	if to.Year() < 1500 {
+		to = parseTimeFieldFromSeconds(line, TimeRangeEndTicksRegex)
+	}
+
+	if from.Year() > 1500 && to.Year() > 1500 {
+		result := TimeRange{From: from, To: to}
 		return &result
 	}
 
