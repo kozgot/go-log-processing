@@ -12,7 +12,7 @@
             "program": "${workspaceFolder}/cmd/main.go",
             "env": {},
             "args": [
-                "files.zip"
+                "test_input_files.zip"
             ]
         }
     ]
