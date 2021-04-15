@@ -23,7 +23,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Navigate to elasticuploader
-      run: cd elasticuploader
+      run: cd ./elasticuploader
 
     - name: Get dependencies
       run: |
