@@ -16,6 +16,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/elastic/go-elasticsearch/v7/esutil"
+	"github.com/kozgot/go-log-processing/elasticuploader/pkg/models"
 	"github.com/streadway/amqp"
 )
 
@@ -23,11 +24,6 @@ func failOnError(err error, msg string) {
 	if err != nil {
 		log.Fatalf("%s: %s", msg, err)
 	}
-}
-
-// Message contains the recieved message bytes
-type Message struct {
-	Content []byte
 }
 
 var numWorkers = 4
@@ -91,7 +87,7 @@ func main() {
 	)
 	failOnError(err, "Failed to register a consumer")
 
-	lines := []Message{}
+	lines := []models.Message{}
 	forever := make(chan bool)
 
 	go func() {
@@ -107,16 +103,16 @@ func main() {
 				log.Printf("  Successfully indexed all %d documents (index name: %s)", documentID-1, indexName)
 
 				// cleanup...
-				lines = []Message{} // clear the buffer after uploading the contents
+				lines = []models.Message{} // clear the buffer after uploading the contents
 				documentID = 1
 				indexName = ""
 			} else {
 				// save messages until we hit the 1000 line treshold
-				message := Message{Content: d.Body}
+				message := models.Message{Content: d.Body}
 				lines = append(lines, message)
 				if len(lines) >= 1000 {
 					BulkIndexerUpload(lines)
-					lines = []Message{} // clear the buffer after uploading the contents
+					lines = []models.Message{} // clear the buffer after uploading the contents
 				}
 			}
 		}
@@ -126,7 +122,7 @@ func main() {
 }
 
 // BulkIndexerUpload uploads data to Elasticsearch using BulkIndexer from go-elasticsearch
-func BulkIndexerUpload(lines []Message) {
+func BulkIndexerUpload(lines []models.Message) {
 	var (
 		countSuccessful uint64
 
