@@ -1,0 +1,4 @@
+github.com/kozgot/go-log-processing v0.0.0-20210330205820-f218a36878cd h1:B1X28zwUb5tEb+VzQCkg5Xic2RgZtNbzqU6W++olrxQ=
+github.com/kozgot/go-log-processing/cmd/parsedates v0.0.0-20210330205820-f218a36878cd h1:/raPFIy1EC496TKh24zWTY54YsB8tHk3bya8wyA8zjI=
+github.com/streadway/amqp v1.0.0 h1:kuuDrUJFZL1QYL9hUNuCxNObNzB0bV/ZG5jV3RWAQgo=
+github.com/streadway/amqp v1.0.0/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
