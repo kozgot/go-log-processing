@@ -34,7 +34,7 @@ jobs:
     - name: Build
       run: |
         cd ./elasticuploader
-        go build -v ./cmd
+        go build -o elasticuploader -v ./cmd
 
     - name: Test
       run: go test -v ./cmd
