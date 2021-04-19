@@ -17,10 +17,7 @@ func SendLinesToElastic(rabbitMqURL string, line models.ParsedLine) {
 
 // SendStringMessageToElastic sends a string message to the message queue.
 func SendStringMessageToElastic(rabbitMqURL string, indexName string) {
-	bytes, err := json.Marshal(indexName)
-	if err != nil {
-		fmt.Println("Can't serialize", indexName)
-	}
+	bytes := []byte(indexName)
 	sendData(rabbitMqURL, bytes)
 }
 

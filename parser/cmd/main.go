@@ -49,7 +49,7 @@ func processFile(rabbitMqURL string, filePath string) {
 	scanner := bufio.NewScanner(file)
 
 	// Send the name of the index
-	rabbitmq.SendStringMessageToElastic(rabbitMqURL, "[INDEXNAME] "+shortFileName)
+	rabbitmq.SendStringMessageToElastic(rabbitMqURL, "INDEXNAME|"+shortFileName)
 	log.Printf("  Creating index: %s ...", shortFileName)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -70,6 +70,6 @@ func processFile(rabbitMqURL string, filePath string) {
 	}
 
 	// Send a message indicating that this is the end of the current index
-	rabbitmq.SendStringMessageToElastic(rabbitMqURL, "[DONE]")
+	rabbitmq.SendStringMessageToElastic(rabbitMqURL, "DONE|")
 	log.Printf("  Done processing log file: %s", shortFileName)
 }
