@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -26,12 +27,8 @@ func failOnError(err error, msg string) {
 	}
 }
 
-var numWorkers = 4
-var flushBytes = 1000000
-
-// will be overwritten
-var indexName = "index"
-var documentID = 1
+const numWorkers = 4
+const flushBytes = 1000000
 
 func main() {
 	log.Println("Elastic Uploader starting...")
@@ -87,34 +84,42 @@ func main() {
 	)
 	failOnError(err, "Failed to register a consumer")
 
-	lines := []models.Message{}
+	linesByIndexNames := make(map[string][]models.Message)
 	forever := make(chan bool)
 	dataCountTreshold := 1000
+	documentID := 1
 
 	go func() {
 		for d := range msgs {
 			msgParts := strings.Split(string(d.Body), "|")
 			msgPrefix := msgParts[0]
 			switch msgPrefix {
-			case "INDEXNAME":
-				indexName = strings.Split(string(d.Body), "|")[1]
+			case "CREATEINDEX":
+				indexName := strings.Split(string(d.Body), "|")[1]
 				createEsIndex(indexName)
 			case "DONE":
-				// wait for the documents of the current index to arrive
-				BulkIndexerUpload(lines)
-				log.Printf("  Successfully indexed all %d documents (index name: %s)", documentID-1, indexName)
+				for key, value := range linesByIndexNames {
+					documentID = BulkIndexerUpload(value, documentID, key)
+					log.Printf("  Successfully indexed all %d documents (index name: %s)", documentID-1, key)
+				}
 
-				// cleanup...
-				lines = []models.Message{} // clear the buffer after uploading the contents
+				for k := range linesByIndexNames {
+					delete(linesByIndexNames, k)
+				}
+
 				documentID = 1
-				indexName = ""
 			default:
 				// save messages until we hit the 1000 line treshold
-				message := models.Message{Content: d.Body}
-				lines = append(lines, message)
-				if len(lines) >= dataCountTreshold {
-					BulkIndexerUpload(lines)
-					lines = []models.Message{} // clear the buffer after uploading the contents
+				data := deserialize(d.Body)
+				_, ok := linesByIndexNames[data.IndexName]
+				if !ok {
+					linesByIndexNames[data.IndexName] = []models.Message{}
+				}
+
+				linesByIndexNames[data.IndexName] = append(linesByIndexNames[data.IndexName], models.Message{Content: data.Data})
+				if len(linesByIndexNames[data.IndexName]) >= dataCountTreshold {
+					documentID = BulkIndexerUpload(linesByIndexNames[data.IndexName], documentID, data.IndexName)
+					linesByIndexNames[data.IndexName] = []models.Message{} // clear the buffer after uploading the contents
 				}
 			}
 		}
@@ -124,15 +129,23 @@ func main() {
 }
 
 // BulkIndexerUpload uploads data to Elasticsearch using BulkIndexer from go-elasticsearch.
-func BulkIndexerUpload(lines []models.Message) {
+func BulkIndexerUpload(lines []models.Message, currentDocumentID int, indexName string) int {
 	var (
 		countSuccessful uint64
 
 		err error
 	)
 
+	fmt.Println(len((lines)))
+	fmt.Println(currentDocumentID)
+	fmt.Println(indexName)
+
 	// Use a third-party package for implementing the backoff function
 	retryBackoff := backoff.NewExponentialBackOff()
+
+	documentID := currentDocumentID
+	maxRetries := 10
+	flushInterval := 30 * time.Second
 
 	// Create the Elasticsearch client
 	es, err := elasticsearch.NewClient(elasticsearch.Config{
@@ -144,7 +157,7 @@ func BulkIndexerUpload(lines []models.Message) {
 			}
 			return retryBackoff.NextBackOff()
 		},
-		MaxRetries: 10,
+		MaxRetries: maxRetries,
 	})
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
@@ -152,11 +165,11 @@ func BulkIndexerUpload(lines []models.Message) {
 
 	// Create the BulkIndexer
 	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
-		Index:         indexName,        // The default index name
-		Client:        es,               // The Elasticsearch client
-		NumWorkers:    numWorkers,       // The number of worker goroutines
-		FlushBytes:    int(flushBytes),  // The flush threshold in bytes
-		FlushInterval: 30 * time.Second, // The periodic flush interval
+		Index:         indexName,     // The default index name
+		Client:        es,            // The Elasticsearch client
+		NumWorkers:    numWorkers,    // The number of worker goroutines
+		FlushBytes:    flushBytes,    // The flush threshold in bytes
+		FlushInterval: flushInterval, // The periodic flush interval
 	})
 	if err != nil {
 		log.Fatalf("Error creating the indexer: %s", err)
@@ -210,6 +223,8 @@ func BulkIndexerUpload(lines []models.Message) {
 	biStats := bi.Stats()
 
 	reportBulkIndexerStats(biStats, dur)
+
+	return documentID
 }
 
 func createEsIndex(index string) {
@@ -261,6 +276,7 @@ func createEsIndex(index string) {
 
 func reportBulkIndexerStats(biStats esutil.BulkIndexerStats, dur time.Duration) {
 	if biStats.NumFailed > 0 {
+		// We got some errors while trying to index the documents
 		log.Fatalf(
 			"Indexed [%s] documents with [%s] errors in %s (%s docs/sec)",
 			humanize.Comma(int64(biStats.NumFlushed)),
@@ -269,6 +285,7 @@ func reportBulkIndexerStats(biStats esutil.BulkIndexerStats, dur time.Duration) 
 			humanize.Comma(int64(1000.0/float64(dur/time.Millisecond)*float64(biStats.NumFlushed))),
 		)
 	} else {
+		// Indexed evereything successfully
 		log.Printf(
 			"Successfully indexed [%s] documents in %s (%s docs/sec)",
 			humanize.Comma(int64(biStats.NumFlushed)),
@@ -278,4 +295,13 @@ func reportBulkIndexerStats(biStats esutil.BulkIndexerStats, dur time.Duration) 
 	}
 
 	log.Println(strings.Repeat("▔", 65))
+}
+
+func deserialize(dataBytes []byte) models.ReceivedDataUnit {
+	var data models.ReceivedDataUnit
+	if err := json.Unmarshal(dataBytes, &data); err != nil {
+		fmt.Println("failed to unmarshal:", err)
+	}
+
+	return data
 }

@@ -48,10 +48,12 @@ func parseDCMessagePayload(line string, messageType string) *models.DcMessagePay
 	payload.ServiceLevelId = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ServiceLevelIdRegex))
 	payload.Value = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ValueRegex))
 
-	// Parse the time[] field of the message. It can be a formatted date or in a date represented by a timestamp in seconds.
+	// Parse the time[] field of the message.
+	// It can be a formatted date or in a date represented by a timestamp in seconds.
 	dateTime := parseDateTimeField(line, formats.DateTimeFieldRegex)
 	if dateTime.Year() > 1000 {
-		payload.Time = dateTime // for some reason, it can parse the long date format to int, so that needs to be handled as well (hence the if-else)
+		// for some reason, it can parse the long date format to int, so that needs to be handled as well (hence the if-else)
+		payload.Time = dateTime
 	} else {
 		datefromSeconds := parseTimeFieldFromSeconds(line, formats.TimeTicksRegex)
 		if datefromSeconds.Year() > 1000 {
@@ -121,14 +123,20 @@ func parseDCMessagePayload(line string, messageType string) *models.DcMessagePay
 
 func parseConnectOrDisconnectPayload(line string) *models.ConnectOrDisconnectPayload {
 	resultType := tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ConnectOrDisconnectTypeRegex))
-	clientId := parseFieldInBracketsAsString(line, formats.ClientIdRegex)
+	clientID := parseFieldInBracketsAsString(line, formats.ClientIdRegex)
 	URL := parseFieldInBracketsAsString(line, formats.URLRegex)
 	topic := parseFieldInBracketsAsString(line, formats.TopicRegex)
 	timeout := tryParseIntFromString(parseFieldInBracketsAsString(line, formats.TimeoutRegex))
 	connected := tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ConnectedRegex)) == 1
 
-	if clientId != "" || resultType != 0 || URL != "" || topic != "" || timeout != 0 {
-		result := models.ConnectOrDisconnectPayload{ClientId: clientId, Type: resultType, URL: URL, Topic: topic, Timeout: timeout, Connected: connected}
+	if clientID != "" || resultType != 0 || URL != "" || topic != "" || timeout != 0 {
+		result := models.ConnectOrDisconnectPayload{
+			ClientId:  clientID,
+			Type:      resultType,
+			URL:       URL,
+			Topic:     topic,
+			Timeout:   timeout,
+			Connected: connected}
 		return &result
 	}
 
@@ -142,7 +150,10 @@ func parseDLMSLogPayload(line string) *models.DLMSLogPayload {
 	DLMSError := parseFieldInBracketsAsString(line, formats.DLMSErrorRegex)
 
 	if requestTimeFromSeconds.Year() > 1500 || responseTimeFromSeconds.Year() > 1500 || DLMSError != "" {
-		result := models.DLMSLogPayload{DLMSRequestTime: requestTimeFromSeconds, DLMSResponseTime: responseTimeFromSeconds, DLMSError: DLMSError}
+		result := models.DLMSLogPayload{
+			DLMSRequestTime:  requestTimeFromSeconds,
+			DLMSResponseTime: responseTimeFromSeconds,
+			DLMSError:        DLMSError}
 		return &result
 	}
 
@@ -196,7 +207,13 @@ func parseSettingsPayload(line string) *models.SettingsPayload {
 	lastServerCommTimeFromSeconds := parseTimeFieldFromSeconds(line, formats.LastServerCommunicationTimeRegex)
 	lastDcStartTimeFromSeconds := parseTimeFieldFromSeconds(line, formats.LastDcStartTimeRegex)
 
-	if dcUID == "" && lastServerCommTimeFromSeconds.Year() < 1000 && lastDcStartTimeFromSeconds.Year() < 1000 && dataPublishString == "" && indexCollectionString == "" && frequencyBandChangedString == "" && frequencyBandRollBackDonestirng == "" {
+	if dcUID == "" &&
+		lastServerCommTimeFromSeconds.Year() < 1000 &&
+		lastDcStartTimeFromSeconds.Year() < 1000 &&
+		dataPublishString == "" &&
+		indexCollectionString == "" &&
+		frequencyBandChangedString == "" &&
+		frequencyBandRollBackDonestirng == "" {
 		return nil
 	}
 
@@ -212,7 +229,12 @@ func parseSettingsPayload(line string) *models.SettingsPayload {
 	frequencyBandChanged := tryParseIntFromString(frequencyBandChangedString) == 1
 	frequencyBandRollBackDone := tryParseIntFromString(frequencyBandRollBackDonestirng) == 1
 
-	result := models.SettingsPayload{DcUID: dcUID, Locality: locality, Region: region, Timezone: timezone, GlobalFtpAddress: globalFtpAddress}
+	result := models.SettingsPayload{
+		DcUID:            dcUID,
+		Locality:         locality,
+		Region:           region,
+		Timezone:         timezone,
+		GlobalFtpAddress: globalFtpAddress}
 
 	result.TargetFirmwareVersion = targetFirmwareVersion
 	result.DcDistroTargetFirmwareVersion = dcDistroTargetFirmwareVersion
@@ -230,7 +252,11 @@ func parseServiceLevelPayload(line string) *models.ServiceLevelPayload {
 	loadSheddingDailyEnergyBudgetString := parseFieldInBracketsAsString(line, formats.LoadSheddingDailyEnergyBudgetRegex)
 	localSheddingDailyEnergyBudgetString := parseFieldInBracketsAsString(line, formats.LocalSheddingDailyEnergyBudgetRegex)
 	inServiceString := parseFieldInBracketsAsString(line, formats.InServiceRegex)
-	if meterModeString == "" && maxActivePowerstring == "" && loadSheddingDailyEnergyBudgetString == "" && localSheddingDailyEnergyBudgetString == "" && inServiceString == "" {
+	if meterModeString == "" &&
+		maxActivePowerstring == "" &&
+		loadSheddingDailyEnergyBudgetString == "" &&
+		localSheddingDailyEnergyBudgetString == "" &&
+		inServiceString == "" {
 		// if we could not parse any of these fields, than most likely we will not be able to parse the remaining
 		return nil
 	}
@@ -247,7 +273,14 @@ func parseServiceLevelPayload(line string) *models.ServiceLevelPayload {
 	hourlyEnergyLimits := parseHourlyEnergyLimits(line, formats.HourlyEnergyLimitsRegex)
 	localHourlyEnergyLimits := parseHourlyEnergyLimits(line, formats.LocalHourlyEnergyLimitsRegex)
 
-	result := models.ServiceLevelPayload{MeterMode: meterMode, MaxActivePower: maxActivePower, LoadSheddingDailyEnergyBudget: loadSheddingDailyEnergyBudget, LocalSheddingDailyEnergyBudget: localSheddingDailyEnergyBudget, InService: inService, StartHourDailyCycle: startHourDailyCycle, Name: name}
+	result := models.ServiceLevelPayload{
+		MeterMode:                      meterMode,
+		MaxActivePower:                 maxActivePower,
+		LoadSheddingDailyEnergyBudget:  loadSheddingDailyEnergyBudget,
+		LocalSheddingDailyEnergyBudget: localSheddingDailyEnergyBudget,
+		InService:                      inService,
+		StartHourDailyCycle:            startHourDailyCycle,
+		Name:                           name}
 	result.HourlyEnergyLimits = hourlyEnergyLimits
 	result.LocalHourlyEnergyLimits = localHourlyEnergyLimits
 	return &result
@@ -264,9 +297,10 @@ func parseHourlyEnergyLimits(line string, energyLimitRegex string) [24]models.Ho
 			}
 
 			return result
-		} else {
-			log.Println(limitParts)
 		}
+
+		// This is an unexpected format, we always expect the limits string to be 24-long
+		log.Println(limitParts)
 	}
 
 	return result
@@ -284,7 +318,12 @@ func parseSmcAddressPayload(line string) *models.SmcAddressParams {
 	lastJoiningDate := parseDateTimeField(line, formats.LastJoiningDateRegex)
 	shortAddress := tryParseIntFromString(shortAddressString)
 
-	result := models.SmcAddressParams{SmcUID: smcUID, PhysicalAddress: physicalAddress, LogicalAddress: logicalAddress, ShortAddress: shortAddress, LastJoiningDate: lastJoiningDate}
+	result := models.SmcAddressParams{
+		SmcUID:          smcUID,
+		PhysicalAddress: physicalAddress,
+		LogicalAddress:  logicalAddress,
+		ShortAddress:    shortAddress,
+		LastJoiningDate: lastJoiningDate}
 	return &result
 }
 
@@ -331,7 +370,11 @@ func parsePodConfigPayload(line string) *models.PodConfigPayload {
 	phase := tryParseIntFromString(phaseString)
 	positionInSmc := tryParseIntFromString(positionInSmcString)
 
-	result := models.PodConfigPayload{Phase: phase, SerialNumber: serialNumber, PositionInSmc: positionInSmc, SoftwareFirmwareVersion: softwareFirmwareVersion}
+	result := models.PodConfigPayload{
+		Phase:                   phase,
+		SerialNumber:            serialNumber,
+		PositionInSmc:           positionInSmc,
+		SoftwareFirmwareVersion: softwareFirmwareVersion}
 	return &result
 }
 
@@ -357,6 +400,7 @@ func parseTimeFieldFromMilliSeconds(line string, timeStampRegex string) time.Tim
 
 func parseTimeRange(line string) *models.TimeRange {
 	from := parseDateTimeField(line, formats.TimeRangeFromRegex)
+
 	if from.Year() < 1500 {
 		from = parseTimeFieldFromSeconds(line, formats.TimeRangeStartTicksRegex)
 	}

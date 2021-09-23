@@ -9,36 +9,30 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// DataUnit contains the sent data unit.
+type DataUnit struct {
+	IndexName string
+	Data      []byte
+}
+
+// SendLineToElastic sends the parsed log lines to the message queue.
+func SendLineToElastic(line models.ParsedLine, channel *amqp.Channel, indexName string) {
+	// TODO: actual index name
+	dataToSend := DataUnit{IndexName: indexName, Data: serializeLine(line)}
+	// byteData := serializeLine(line)
+	sendData(serializeDataUnit((dataToSend)), channel)
+}
+
 // SendLinesToElastic sends the parsed log lines to the message queue.
-func SendLinesToElastic(rabbitMqURL string, line models.ParsedLine) {
-	byteData := serializeLine(line)
-	sendData(rabbitMqURL, byteData)
-}
-
-// SendStringMessageToElastic sends a string message to the message queue.
-func SendStringMessageToElastic(rabbitMqURL string, indexName string) {
-	bytes := []byte(indexName)
-	sendData(rabbitMqURL, bytes)
-}
-
-func serializeLine(line models.ParsedLine) []byte {
-	bytes, err := json.Marshal(line)
-	if err != nil {
-		fmt.Println("Can't serialize", line)
-	}
-
-	return bytes
-}
-
-func sendData(rabbitMqURL string, data []byte) {
+func OpenChannelAndConnection(rabbitMqURL string) (*amqp.Channel, *amqp.Connection) {
 	conn, err := amqp.Dial(rabbitMqURL)
 	failOnError(err, "Failed to connect to RabbitMQ")
-	defer conn.Close()
+	fmt.Println("Created connection")
 
 	// create the channel
 	ch, err := conn.Channel()
 	failOnError(err, "Failed to open a channel")
-	defer ch.Close()
+	fmt.Println("Created channel")
 
 	err = ch.ExchangeDeclare(
 		"logs",   // name
@@ -51,9 +45,44 @@ func sendData(rabbitMqURL string, data []byte) {
 	)
 	failOnError(err, "Failed to declare an exchange")
 
+	return ch, conn
+}
+
+func CloseChannelAndConnection(channel *amqp.Channel, connection *amqp.Connection) {
+	connection.Close()
+	fmt.Println("Closed connection")
+	channel.Close()
+	fmt.Println("Closed channel")
+}
+
+// SendStringMessageToElastic sends a string message to the message queue.
+func SendStringMessageToElastic(indexName string, channel *amqp.Channel) {
+	bytes := []byte(indexName)
+	sendData(bytes, channel)
+}
+
+func serializeLine(line models.ParsedLine) []byte {
+	bytes, err := json.Marshal(line)
+	if err != nil {
+		fmt.Println("Can't serialize", line)
+	}
+
+	return bytes
+}
+
+func serializeDataUnit(data DataUnit) []byte {
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		fmt.Println("Can't serialize", data)
+	}
+
+	return bytes
+}
+
+func sendData(data []byte, channel *amqp.Channel) {
 	body := data
 
-	err = ch.Publish(
+	err := channel.Publish(
 		"logs", // exchange
 		"",     // routing key
 		false,  // mandatory
@@ -63,8 +92,6 @@ func sendData(rabbitMqURL string, data []byte) {
 			ContentType:  "application/json",
 			Body:         body,
 		})
-	failOnError(err, "Failed to publish a message")
-
 	failOnError(err, "Failed to publish a message")
 }
 

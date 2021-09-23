@@ -7,10 +7,12 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/kozgot/go-log-processing/parser/internal/files"
 	"github.com/kozgot/go-log-processing/parser/internal/rabbitmq"
 	"github.com/kozgot/go-log-processing/parser/internal/service"
+	"github.com/streadway/amqp"
 )
 
 const unzippedInputFileFolderName = "unzipped_input_files"
@@ -32,12 +34,25 @@ func main() {
 
 	fmt.Println("Unzipped:\n" + strings.Join(inputFiles, "\n"))
 
+	channel, conn := rabbitmq.OpenChannelAndConnection(rabbitMqURL)
+	defer rabbitmq.CloseChannelAndConnection(channel, conn)
+
+	var wg sync.WaitGroup
+
 	for _, file := range inputFiles {
-		processFile(rabbitMqURL, file)
+		wg.Add(1)
+		go processFile(file, &wg, channel)
 	}
+
+	wg.Wait()
+
+	// Send a message indicating that this is the end of the processing
+	rabbitmq.SendStringMessageToElastic("DONE|", channel)
 }
 
-func processFile(rabbitMqURL string, filePath string) {
+func processFile(filePath string, wg *sync.WaitGroup, channel *amqp.Channel) {
+	defer wg.Done()
+
 	file, ferr := os.Open(filePath)
 	if ferr != nil {
 		panic(ferr)
@@ -47,10 +62,11 @@ func processFile(rabbitMqURL string, filePath string) {
 
 	log.Printf("  Processing log file: %s ...", shortFileName)
 	scanner := bufio.NewScanner(file)
+	indexName := shortFileName
 
 	// Send the name of the index
-	rabbitmq.SendStringMessageToElastic(rabbitMqURL, "INDEXNAME|"+shortFileName)
-	log.Printf("  Creating index: %s ...", shortFileName)
+	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+indexName, channel)
+	log.Printf("  Creating index: %s ...", indexName)
 	for scanner.Scan() {
 		line := scanner.Text()
 		relevantLine, success := service.Filter(line)
@@ -65,11 +81,9 @@ func processFile(rabbitMqURL string, filePath string) {
 
 		finalParsedLine := service.ParseContents(*parsedLine)
 		if finalParsedLine != nil {
-			rabbitmq.SendLinesToElastic(rabbitMqURL, *finalParsedLine)
+			rabbitmq.SendLineToElastic(*finalParsedLine, channel, indexName)
 		}
 	}
 
-	// Send a message indicating that this is the end of the current index
-	rabbitmq.SendStringMessageToElastic(rabbitMqURL, "DONE|")
 	log.Printf("  Done processing log file: %s", shortFileName)
 }

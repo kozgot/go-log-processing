@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
 
@@ -9,7 +11,9 @@ func ParseContents(line models.LineWithDate) *models.ParsedLine {
 	parsedLine := models.ParsedLine{Level: line.Level, Timestamp: line.Timestamp}
 	switch line.Level {
 	case "ERROR":
-		errorParams := parseError(line) // todo: add these methods to the appropriate types, eg.: ErrorParams should have a method parse() that parses error params
+		// todo: add these methods to the appropriate types,
+		// eg.: ErrorParams should have a method parse() that parses error params
+		errorParams := parseError(line)
 		parsedLine.ErrorParams = *errorParams
 
 	case "WARN":
@@ -18,6 +22,9 @@ func ParseContents(line models.LineWithDate) *models.ParsedLine {
 			return nil
 		}
 		parsedLine.WarningParams = *warning
+
+	case "WARNING":
+		fmt.Println(line) // todo parse warning lines
 
 	case "INFO":
 		info := parseInfo(line)
