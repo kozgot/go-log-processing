@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -16,6 +17,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/elastic/go-elasticsearch/v7/esutil"
+	"github.com/kozgot/go-log-processing/elasticuploader/pkg/models"
 	"github.com/streadway/amqp"
 )
 
@@ -25,17 +27,8 @@ func failOnError(err error, msg string) {
 	}
 }
 
-// Message contains the recieved message bytes
-type Message struct {
-	Content []byte
-}
-
-var numWorkers = 4
-var flushBytes = 1000000
-
-// will be overwritten
-var indexName = "index"
-var documentID = 1
+const numWorkers = 4
+const flushBytes = 1000000
 
 func main() {
 	log.Println("Elastic Uploader starting...")
@@ -91,32 +84,42 @@ func main() {
 	)
 	failOnError(err, "Failed to register a consumer")
 
-	lines := []Message{}
+	linesByIndexNames := make(map[string][]models.Message)
 	forever := make(chan bool)
+	dataCountTreshold := 1000
+	documentID := 1
 
 	go func() {
 		for d := range msgs {
-			if strings.Contains(string(d.Body), "[INDEXNAME] ") {
-				indexNameMessageString := string(d.Body)
-				runes := []rune(indexNameMessageString)
-				indexName = string(runes[len("[INDEXNAME] ")+1 : len(indexNameMessageString)-1])
+			msgParts := strings.Split(string(d.Body), "|")
+			msgPrefix := msgParts[0]
+			switch msgPrefix {
+			case "CREATEINDEX":
+				indexName := strings.Split(string(d.Body), "|")[1]
 				createEsIndex(indexName)
-			} else if strings.Contains(string(d.Body), "[DONE]") {
-				// wait for the documents of the current index to arrive
-				BulkIndexerUpload(lines)
-				log.Printf("  Successfully indexed all %d documents (index name: %s)", documentID-1, indexName)
+			case "DONE":
+				for key, value := range linesByIndexNames {
+					documentID = BulkIndexerUpload(value, documentID, key)
+					log.Printf("  Successfully indexed all %d documents (index name: %s)", documentID-1, key)
+				}
 
-				// cleanup...
-				lines = []Message{} // clear the buffer after uploading the contents
+				for k := range linesByIndexNames {
+					delete(linesByIndexNames, k)
+				}
+
 				documentID = 1
-				indexName = ""
-			} else {
+			default:
 				// save messages until we hit the 1000 line treshold
-				message := Message{Content: d.Body}
-				lines = append(lines, message)
-				if len(lines) >= 1000 {
-					BulkIndexerUpload(lines)
-					lines = []Message{} // clear the buffer after uploading the contents
+				data := deserialize(d.Body)
+				_, ok := linesByIndexNames[data.IndexName]
+				if !ok {
+					linesByIndexNames[data.IndexName] = []models.Message{}
+				}
+
+				linesByIndexNames[data.IndexName] = append(linesByIndexNames[data.IndexName], models.Message{Content: data.Data})
+				if len(linesByIndexNames[data.IndexName]) >= dataCountTreshold {
+					documentID = BulkIndexerUpload(linesByIndexNames[data.IndexName], documentID, data.IndexName)
+					linesByIndexNames[data.IndexName] = []models.Message{} // clear the buffer after uploading the contents
 				}
 			}
 		}
@@ -125,16 +128,24 @@ func main() {
 	<-forever
 }
 
-// BulkIndexerUpload uploads data to Elasticsearch using BulkIndexer from go-elasticsearch
-func BulkIndexerUpload(lines []Message) {
+// BulkIndexerUpload uploads data to Elasticsearch using BulkIndexer from go-elasticsearch.
+func BulkIndexerUpload(lines []models.Message, currentDocumentID int, indexName string) int {
 	var (
 		countSuccessful uint64
 
 		err error
 	)
 
+	fmt.Println(len((lines)))
+	fmt.Println(currentDocumentID)
+	fmt.Println(indexName)
+
 	// Use a third-party package for implementing the backoff function
 	retryBackoff := backoff.NewExponentialBackOff()
+
+	documentID := currentDocumentID
+	maxRetries := 10
+	flushInterval := 30 * time.Second
 
 	// Create the Elasticsearch client
 	es, err := elasticsearch.NewClient(elasticsearch.Config{
@@ -146,7 +157,7 @@ func BulkIndexerUpload(lines []Message) {
 			}
 			return retryBackoff.NextBackOff()
 		},
-		MaxRetries: 10,
+		MaxRetries: maxRetries,
 	})
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
@@ -154,11 +165,11 @@ func BulkIndexerUpload(lines []Message) {
 
 	// Create the BulkIndexer
 	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
-		Index:         indexName,        // The default index name
-		Client:        es,               // The Elasticsearch client
-		NumWorkers:    numWorkers,       // The number of worker goroutines
-		FlushBytes:    int(flushBytes),  // The flush threshold in bytes
-		FlushInterval: 30 * time.Second, // The periodic flush interval
+		Index:         indexName,     // The default index name
+		Client:        es,            // The Elasticsearch client
+		NumWorkers:    numWorkers,    // The number of worker goroutines
+		FlushBytes:    flushBytes,    // The flush threshold in bytes
+		FlushInterval: flushInterval, // The periodic flush interval
 	})
 	if err != nil {
 		log.Fatalf("Error creating the indexer: %s", err)
@@ -212,6 +223,8 @@ func BulkIndexerUpload(lines []Message) {
 	biStats := bi.Stats()
 
 	reportBulkIndexerStats(biStats, dur)
+
+	return documentID
 }
 
 func createEsIndex(index string) {
@@ -243,7 +256,9 @@ func createEsIndex(index string) {
 	log.Println("Deleting index:  ", index, "...")
 
 	// Re-create the index
-	if res, err = es.Indices.Delete([]string{index}, es.Indices.Delete.WithIgnoreUnavailable(true)); err != nil || res.IsError() {
+	if res, err = es.Indices.Delete(
+		[]string{index},
+		es.Indices.Delete.WithIgnoreUnavailable(true)); err != nil || res.IsError() {
 		log.Fatalf("Cannot delete index: %s", err)
 	}
 	res.Body.Close()
@@ -257,12 +272,11 @@ func createEsIndex(index string) {
 		log.Fatalf("Cannot create index: %s", res)
 	}
 	res.Body.Close()
-
 }
 
 func reportBulkIndexerStats(biStats esutil.BulkIndexerStats, dur time.Duration) {
-
 	if biStats.NumFailed > 0 {
+		// We got some errors while trying to index the documents
 		log.Fatalf(
 			"Indexed [%s] documents with [%s] errors in %s (%s docs/sec)",
 			humanize.Comma(int64(biStats.NumFlushed)),
@@ -271,8 +285,9 @@ func reportBulkIndexerStats(biStats esutil.BulkIndexerStats, dur time.Duration) 
 			humanize.Comma(int64(1000.0/float64(dur/time.Millisecond)*float64(biStats.NumFlushed))),
 		)
 	} else {
+		// Indexed evereything successfully
 		log.Printf(
-			"Sucessfuly indexed [%s] documents in %s (%s docs/sec)",
+			"Successfully indexed [%s] documents in %s (%s docs/sec)",
 			humanize.Comma(int64(biStats.NumFlushed)),
 			dur.Truncate(time.Millisecond),
 			humanize.Comma(int64(1000.0/float64(dur/time.Millisecond)*float64(biStats.NumFlushed))),
@@ -280,4 +295,13 @@ func reportBulkIndexerStats(biStats esutil.BulkIndexerStats, dur time.Duration) 
 	}
 
 	log.Println(strings.Repeat("▔", 65))
+}
+
+func deserialize(dataBytes []byte) models.ReceivedDataUnit {
+	var data models.ReceivedDataUnit
+	if err := json.Unmarshal(dataBytes, &data); err != nil {
+		fmt.Println("failed to unmarshal:", err)
+	}
+
+	return data
 }

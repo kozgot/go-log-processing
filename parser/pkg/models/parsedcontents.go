@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-// ParsedLine contains a parsed line from the log file
+// ParsedLine contains a parsed line from the log file.
 type ParsedLine struct {
 	Timestamp     time.Time
 	Level         string
@@ -194,7 +194,7 @@ type Calendar struct {
 
 type CalendarName struct {
 	IsActive      bool
-	SeasonProfile string // for now, the exact type is unkown
-	WeekProfile   string // for now, the exact type is unkown
-	DayProfile    string // for now, the exact type is unkown
+	SeasonProfile string // for now, the exact type is unknown
+	WeekProfile   string // for now, the exact type is unknown
+	DayProfile    string // for now, the exact type is unknown
 }

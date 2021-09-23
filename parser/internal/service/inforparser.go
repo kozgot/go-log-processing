@@ -25,14 +25,14 @@ func parseInfo(line models.LineWithDate) *models.InfoParams {
 		return &infoParams
 	}
 
-	statusMessage := parseStatusLine(line.Rest) // done
+	statusMessage := parseStatusLine(line.Rest)
 	if statusMessage != nil {
 		infoParams.StatusMessage = *statusMessage
 		infoParams.MessageType = models.StatusMessageType
 		return &infoParams
 	}
 
-	dcMessage := parseDCMessage(line.Rest) // todo: whole implementation
+	dcMessage := parseDCMessage(line.Rest)
 	if dcMessage != nil {
 		infoParams.DCMessage = *dcMessage
 		infoParams.MessageType = models.DCMessageType
@@ -81,7 +81,8 @@ func parseSmcJoinLine(line string) *models.SmcJoinMessageParams {
 	smcJoinLine := models.SmcJoinMessageParams{}
 
 	lineRest := strings.Replace(line, smcJoinstring, "", 1)
-	// OK [Confirmed] <-- [join_type[LBA] smc_uid[dc18-smc28] physical_address[EEBEDDFFFE6210A5] logical_address[FE80::4021:FF:FE00:000e:61616] short_address[14] last_joining_date[Wed Jun 10 09:37:35 2020]]--(PLC)
+	// OK [Confirmed] <-- [join_type[LBA] smc_uid[dc18-smc28] physical_address[EEBEDDFFFE6210A5]
+	// logical_address[FE80::4021:FF:FE00:000e:61616] short_address[14] last_joining_date[Wed Jun 10 09:37:35 2020]]--(PLC)
 
 	// split the string by the <-- arrow
 	// join messages are always directed towards the dc
@@ -107,9 +108,9 @@ func parseSmcJoinLine(line string) *models.SmcJoinMessageParams {
 
 	smcAddress := models.SmcAddressParams{}
 
-	smcUid := parseFieldInBracketsAsString(payloadString, formats.SmcUidRegex)
-	if smcUid != "" {
-		smcAddress.SmcUID = smcUid
+	smcUID := parseFieldInBracketsAsString(payloadString, formats.SmcUidRegex)
+	if smcUID != "" {
+		smcAddress.SmcUID = smcUID
 	}
 
 	physicalAddress := parseFieldInBracketsAsString(payloadString, formats.PhysicalAddressRegex)
