@@ -57,6 +57,23 @@ services:
       - container-elasticuploader
     networks:
       - parser-network
+  container-postprocessor:
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
+    build:
+      context: .
+      dockerfile: ./postprocessor/.devcontainer/Dockerfile
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - ./postprocessor:/workspace
+    command: sleep infinity
+    links:
+      - container-elasticuploader
+    networks:
+      - parser-network
   rabbitmq:
     image: rabbitmq
     command: rabbitmq-server

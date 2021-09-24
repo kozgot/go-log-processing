@@ -16,7 +16,7 @@ type DataUnit struct {
 }
 
 // SendLineToElastic sends the parsed log lines to the message queue.
-func SendLineToElastic(line models.ParsedLine, channel *amqp.Channel, indexName string) {
+func SendLineToElastic(line models.ParsedLogEntry, channel *amqp.Channel, indexName string) {
 	// TODO: actual index name
 	dataToSend := DataUnit{IndexName: indexName, Data: serializeLine(line)}
 	// byteData := serializeLine(line)
@@ -61,7 +61,7 @@ func SendStringMessageToElastic(indexName string, channel *amqp.Channel) {
 	sendData(bytes, channel)
 }
 
-func serializeLine(line models.ParsedLine) []byte {
+func serializeLine(line models.ParsedLogEntry) []byte {
 	bytes, err := json.Marshal(line)
 	if err != nil {
 		fmt.Println("Can't serialize", line)

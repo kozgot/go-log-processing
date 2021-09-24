@@ -2,8 +2,8 @@ package models
 
 import "time"
 
-// ParsedLine contains a parsed line from the log file.
-type ParsedLine struct {
+// ParsedLogEntry contains a parsed line from the log file.
+type ParsedLogEntry struct {
 	Timestamp     time.Time
 	Level         string
 	ErrorParams   ErrorParams
@@ -87,7 +87,7 @@ type DCMessageParams struct {
 type DcMessagePayload struct {
 	SmcUID         string
 	PodUID         string
-	ServiceLevelId int
+	ServiceLevelID int
 	Value          int
 	Time           time.Time
 
@@ -181,7 +181,7 @@ type IndexPayload struct {
 
 type ConnectOrDisconnectPayload struct {
 	Type      int
-	ClientId  string
+	ClientID  string
 	URL       string
 	Topic     string
 	Timeout   int
