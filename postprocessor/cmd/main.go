@@ -1,11 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
+	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
 	"github.com/streadway/amqp"
 )
 
@@ -73,11 +74,26 @@ func main() {
 
 	go func() {
 		for d := range msgs {
-			msgParts := strings.Split(string(d.Body), "|")
-			msgPrefix := msgParts[0]
-
+			entry := deserializeMessage(d.Body)
+			process(entry)
 		}
 	}()
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
 	<-forever
+}
+
+func deserializeMessage(message []byte) parsermodels.ParsedLine {
+	var data parsermodels.ParsedLine
+	if err := json.Unmarshal(message, &data); err != nil {
+		fmt.Println("failed to unmarshal:", err)
+	}
+
+	return data
+}
+
+func process(logEntry parsermodels.ParsedLine) {
+	// todo
+	if logEntry.ErrorParams.Source != "" {
+		fmt.Println(logEntry)
+	}
 }
