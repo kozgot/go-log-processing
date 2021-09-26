@@ -1,8 +1,6 @@
 package service
 
 import (
-	"fmt"
-
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
 
@@ -26,8 +24,11 @@ func ParseContents(line models.LineWithDate) *models.ParsedLogEntry {
 		}
 		parsedLine.WarningParams = *warning
 
+	// Log entries with 'WARNING' log level come from a different log file,
+	// and they have a completely different format, so they are handled separately.
 	case "WARNING":
-		fmt.Println(line) // todo parse warning lines
+		warning := parseWarning(line)
+		parsedLine.WarningParams = *warning
 
 	case "INFO":
 		info := parseInfo(line)
