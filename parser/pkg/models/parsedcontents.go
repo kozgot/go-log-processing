@@ -11,7 +11,7 @@ type ParsedLine struct {
 	InfoParams    InfoParams
 }
 
-// ErrorParams contains the parsed error parameters
+// ErrorParams contains the parsed error parameters.
 type ErrorParams struct {
 	ErrorCode   int
 	Message     string
@@ -20,20 +20,21 @@ type ErrorParams struct {
 	Source      string
 }
 
-// WarningParams contains the parsed warning parameters
+// WarningParams contains the parsed warning parameters.
 type WarningParams struct {
-	Name          string
-	SmcUID        string
-	UID           int
-	Priority      int
-	Retry         int
-	Creation      time.Time
-	MinLaunchTime time.Time
-	Details       ErrorParams
-	FileName      string
+	Name              string
+	SmcUID            string
+	UID               int
+	Priority          int
+	Retry             int
+	Creation          time.Time
+	MinLaunchTime     time.Time
+	Details           ErrorParams
+	FileName          string
+	JoinMessageParams SmcJoinMessageParams
 }
 
-// InfoParams contains the parsed info parameters
+// InfoParams contains the parsed info parameters.
 type InfoParams struct {
 	MessageType    string // one of 'ROUTING', 'JOIN', 'STATUS', or 'DC'
 	RoutingMessage RoutingTableParams
@@ -42,7 +43,7 @@ type InfoParams struct {
 	DCMessage      DCMessageParams
 }
 
-// RoutingTableParams contains the parsed routing table message parameters
+// RoutingTableParams contains the parsed routing table message parameters.
 type RoutingTableParams struct {
 	Address        string
 	NextHopAddress string
@@ -52,7 +53,7 @@ type RoutingTableParams struct {
 	ValidTimeMins  int
 }
 
-// SmcJoinMessageParams contains the parsed SMC join message parameters
+// SmcJoinMessageParams contains the parsed SMC join message parameters.
 type SmcJoinMessageParams struct {
 	Ok         bool
 	Response   string
@@ -68,13 +69,13 @@ type SmcAddressParams struct {
 	LastJoiningDate time.Time
 }
 
-// StatusMessageParams contains the parsed message lines from plc_manager.log
+// StatusMessageParams contains the parsed message lines from plc_manager.log.
 type StatusMessageParams struct {
 	Message    string
 	StatusByte string
 }
 
-// DCMessageParams contains the parsed info level messages that have been sent or recieved by the dc
+// DCMessageParams contains the parsed info level messages that have been sent or received by the dc.
 type DCMessageParams struct {
 	IsInComing       bool
 	SourceOrDestName string
@@ -83,7 +84,7 @@ type DCMessageParams struct {
 }
 
 /* Dc Message Payload types*/
-// DcMessagePayload contains the parsed payload of info level messages that have been sent or recieved by the dc
+// DcMessagePayload contains the parsed payload of info level messages that have been sent or received by the dc.
 type DcMessagePayload struct {
 	SmcUID         string
 	PodUID         string
