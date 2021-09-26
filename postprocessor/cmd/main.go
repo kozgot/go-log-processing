@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
 	"github.com/streadway/amqp"
 )
+
+const logEntriesExchangeName = "logentries"
 
 func failOnError(err error, msg string) {
 	if err != nil {
@@ -30,13 +33,13 @@ func main() {
 	defer ch.Close()
 
 	err = ch.ExchangeDeclare(
-		"logs",   // name
-		"fanout", // type
-		true,     // durable
-		false,    // auto-deleted
-		false,    // internal
-		false,    // no-wait
-		nil,      // arguments
+		logEntriesExchangeName, // name
+		"fanout",               // type
+		true,                   // durable
+		false,                  // auto-deleted
+		false,                  // internal
+		false,                  // no-wait
+		nil,                    // arguments
 	)
 	failOnError(err, "Failed to declare an exchange")
 
@@ -51,9 +54,9 @@ func main() {
 	failOnError(err, "Failed to declare a queue")
 
 	err = ch.QueueBind(
-		q.Name, // queue name
-		"",     // routing key
-		"logs", // exchange
+		q.Name,                 // queue name
+		"",                     // routing key
+		logEntriesExchangeName, // exchange
 		false,
 		nil,
 	)
@@ -74,6 +77,15 @@ func main() {
 
 	go func() {
 		for d := range msgs {
+			if strings.Contains(string(d.Body), "START") {
+				fmt.Println("Start of entries...")
+				continue
+			} else if strings.Contains(string(d.Body), "END") {
+				fmt.Println("End of entries...")
+				continue
+			}
+
+			// fmt.Println(d.Body)
 			entry := deserializeMessage(d.Body)
 			process(entry)
 		}
@@ -93,7 +105,7 @@ func deserializeMessage(message []byte) parsermodels.ParsedLine {
 
 func process(logEntry parsermodels.ParsedLine) {
 	// todo
-	if logEntry.ErrorParams.Source != "" {
-		fmt.Println(logEntry)
+	if logEntry.ErrorParams.Severity != 0 {
+		fmt.Println(logEntry.Level)
 	}
 }

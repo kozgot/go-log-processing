@@ -47,7 +47,8 @@ func main() {
 	wg.Wait()
 
 	// Send a message indicating that this is the end of the processing
-	rabbitmq.SendStringMessageToElastic("DONE|", channel)
+	rabbitmq.SendStringMessageToPostProcessor("END", channel)
+	log.Printf("  Sent END to Postprocessing service ...")
 }
 
 func processFile(filePath string, wg *sync.WaitGroup, channel *amqp.Channel) {
@@ -62,11 +63,10 @@ func processFile(filePath string, wg *sync.WaitGroup, channel *amqp.Channel) {
 
 	log.Printf("  Processing log file: %s ...", shortFileName)
 	scanner := bufio.NewScanner(file)
-	indexName := shortFileName
 
 	// Send the name of the index
-	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+indexName, channel)
-	log.Printf("  Creating index: %s ...", indexName)
+	rabbitmq.SendStringMessageToPostProcessor("START", channel)
+	log.Printf("  Sent START to Postprocessing service ...")
 	for scanner.Scan() {
 		line := scanner.Text()
 		relevantLine, success := service.Filter(line)
@@ -81,7 +81,7 @@ func processFile(filePath string, wg *sync.WaitGroup, channel *amqp.Channel) {
 
 		finalParsedLine := service.ParseContents(*parsedLine)
 		if finalParsedLine != nil {
-			rabbitmq.SendLineToElastic(*finalParsedLine, channel, indexName)
+			rabbitmq.SendLineToPostProcessor(*finalParsedLine, channel)
 		}
 	}
 
