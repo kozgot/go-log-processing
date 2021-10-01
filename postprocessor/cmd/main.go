@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
-	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
+	"github.com/kozgot/go-log-processing/postprocessor/internal/processing"
 	"github.com/streadway/amqp"
 )
 
@@ -87,7 +87,7 @@ func main() {
 			}
 
 			entry := deserializeMessage(d.Body)
-			process(entry)
+			processing.Process(entry)
 		}
 	}()
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
@@ -101,142 +101,4 @@ func deserializeMessage(message []byte) parsermodels.ParsedLine {
 	}
 
 	return data
-}
-
-func process(logEntry parsermodels.ParsedLine) models.ProcessedEntries {
-	entriesBySmcUID := make(map[string][]models.SmcEntry)
-	routingEntries := []models.RoutingEntry{}
-	statusEntries := []models.StatusEntry{}
-
-	result := models.ProcessedEntries{}
-
-	switch logEntry.Level {
-	case "INFO":
-		smcEntry, routingEntry, statusEntry := processInfo(logEntry)
-		if smcEntry != nil {
-			uid := smcEntry.UID
-			_, ok := entriesBySmcUID[uid]
-			if !ok {
-				entriesBySmcUID[uid] = []models.SmcEntry{}
-			}
-
-			entriesBySmcUID[uid] = append(entriesBySmcUID[uid], *smcEntry)
-		}
-
-		if routingEntry != nil {
-			routingEntries = append(routingEntries, *routingEntry)
-		}
-		if statusEntry != nil {
-			statusEntries = append(statusEntries, *statusEntry)
-		}
-	case "WARN":
-		smcEntry := processWarn(logEntry)
-		if smcEntry != nil {
-			uid := smcEntry.UID
-			_, ok := entriesBySmcUID[uid]
-			if !ok {
-				entriesBySmcUID[uid] = []models.SmcEntry{}
-			}
-
-			entriesBySmcUID[uid] = append(entriesBySmcUID[uid], *smcEntry)
-		}
-	case "WARNING":
-		smcEntry := processWarning(logEntry)
-		if smcEntry != nil {
-			uid := smcEntry.UID
-			_, ok := entriesBySmcUID[uid]
-			if !ok {
-				entriesBySmcUID[uid] = []models.SmcEntry{}
-			}
-
-			entriesBySmcUID[uid] = append(entriesBySmcUID[uid], *smcEntry)
-		}
-	case "ERROR":
-		smcEntry := processError(logEntry)
-
-		if smcEntry != nil {
-			uid := smcEntry.UID
-			_, ok := entriesBySmcUID[uid]
-			if !ok {
-				entriesBySmcUID[uid] = []models.SmcEntry{}
-			}
-
-			entriesBySmcUID[uid] = append(entriesBySmcUID[uid], *smcEntry)
-		}
-	default:
-		fmt.Printf("Unknown log level %s", logEntry.Level)
-	}
-
-	result.RoutingEntries = routingEntries
-	result.StatusEntries = statusEntries
-	result.SmcEntries = entriesBySmcUID
-
-	return result
-}
-
-func processInfo(logEntry parsermodels.ParsedLine) (*models.SmcEntry, *models.RoutingEntry, *models.StatusEntry) {
-	// one of 'ROUTING', 'JOIN', 'STATUS', or 'DC'
-	switch logEntry.InfoParams.MessageType {
-	case "ROUTING":
-		routingEntry := processRoutingMessage(logEntry)
-		return nil, routingEntry, nil
-	case "JOIN":
-		joinEntry := processJoinMessage(logEntry)
-		return joinEntry, nil, nil
-	case "STATUS":
-		statusEntry := processStatusMessage(logEntry)
-		return nil, nil, statusEntry
-	case "DC":
-		dcMessage := processDCMessage(logEntry)
-		return dcMessage, nil, nil
-	default:
-		break
-	}
-
-	return nil, nil, nil
-}
-
-func processWarn(logEntry parsermodels.ParsedLine) *models.SmcEntry {
-	result := models.SmcEntry{}
-
-	// todo
-	return &result
-}
-
-func processWarning(logEntry parsermodels.ParsedLine) *models.SmcEntry {
-	result := models.SmcEntry{}
-
-	// todo
-	return &result
-}
-
-func processError(logEntry parsermodels.ParsedLine) *models.SmcEntry {
-	result := models.SmcEntry{}
-
-	// todo
-	return &result
-}
-
-func processDCMessage(logEntry parsermodels.ParsedLine) *models.SmcEntry {
-	result := models.SmcEntry{}
-
-	return &result
-}
-
-func processJoinMessage(logEntry parsermodels.ParsedLine) *models.SmcEntry {
-	result := models.SmcEntry{}
-
-	return &result
-}
-
-func processStatusMessage(logEntry parsermodels.ParsedLine) *models.StatusEntry {
-	result := models.StatusEntry{}
-
-	return &result
-}
-
-func processRoutingMessage(logEntry parsermodels.ParsedLine) *models.RoutingEntry {
-	result := models.RoutingEntry{}
-
-	return &result
 }
