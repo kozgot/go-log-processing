@@ -8,7 +8,11 @@ import (
 // ProcessError processes a log entry with ERROR log level.
 func ProcessError(logEntry parsermodels.ParsedLine) *models.SmcEntry {
 	result := models.SmcEntry{}
+	errorParams := logEntry.ErrorParams
+	result.TimeStamp = logEntry.Timestamp
+	result.EventType = logEntry.Level
+	result.UID = errorParams.Source
 
-	// todo
+	// todo more params?
 	return &result
 }

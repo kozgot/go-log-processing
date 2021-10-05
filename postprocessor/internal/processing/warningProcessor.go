@@ -8,14 +8,20 @@ import (
 // ProcessWarn processes a log entry with WARN log level.
 func ProcessWarn(logEntry parsermodels.ParsedLine) *models.SmcEntry {
 	result := models.SmcEntry{}
+	result.TimeStamp = logEntry.Timestamp
+	result.EventType = logEntry.Level
+	result.UID = logEntry.WarningParams.SmcUID
 
-	// todo
+	// todo more params?
 	return &result
 }
 
 // ProcessWarning processes a log entry with WARNING log level.
 func ProcessWarning(logEntry parsermodels.ParsedLine) *models.SmcEntry {
 	result := models.SmcEntry{}
+	result.TimeStamp = logEntry.Timestamp
+	result.EventType = logEntry.Level
+	result.UID = logEntry.WarningParams.JoinMessageParams.SmcAddress.SmcUID
 
 	// todo
 	return &result

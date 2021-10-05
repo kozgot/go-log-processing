@@ -4,10 +4,12 @@ import (
 	"fmt"
 
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
+	"github.com/kozgot/go-log-processing/postprocessor/internal/rabbitmq"
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
+	"github.com/streadway/amqp"
 )
 
-func Process(logEntry parsermodels.ParsedLine) models.ProcessedEntries {
+func Process(logEntry parsermodels.ParsedLine, channel *amqp.Channel) models.ProcessedEntries {
 	entriesBySmcUID := make(map[string][]models.SmcEntry)
 	routingEntries := []models.RoutingEntry{}
 	statusEntries := []models.StatusEntry{}
@@ -17,7 +19,7 @@ func Process(logEntry parsermodels.ParsedLine) models.ProcessedEntries {
 	switch logEntry.Level {
 	case "INFO":
 		smcEntry, routingEntry, statusEntry := ProcessInfo(logEntry)
-		if smcEntry != nil {
+		if smcEntry != nil && smcEntry.UID != "" {
 			uid := smcEntry.UID
 			_, ok := entriesBySmcUID[uid]
 			if !ok {
@@ -25,6 +27,7 @@ func Process(logEntry parsermodels.ParsedLine) models.ProcessedEntries {
 			}
 
 			entriesBySmcUID[uid] = append(entriesBySmcUID[uid], *smcEntry)
+			saveToDb(*smcEntry, uid, len(entriesBySmcUID[uid]), channel)
 		}
 
 		if routingEntry != nil {
@@ -43,6 +46,7 @@ func Process(logEntry parsermodels.ParsedLine) models.ProcessedEntries {
 			}
 
 			entriesBySmcUID[uid] = append(entriesBySmcUID[uid], *smcEntry)
+			saveToDb(*smcEntry, uid, len(entriesBySmcUID[uid]), channel)
 		}
 	case "WARNING":
 		smcEntry := ProcessWarning(logEntry)
@@ -54,6 +58,7 @@ func Process(logEntry parsermodels.ParsedLine) models.ProcessedEntries {
 			}
 
 			entriesBySmcUID[uid] = append(entriesBySmcUID[uid], *smcEntry)
+			saveToDb(*smcEntry, uid, len(entriesBySmcUID[uid]), channel)
 		}
 	case "ERROR":
 		smcEntry := ProcessError(logEntry)
@@ -66,6 +71,7 @@ func Process(logEntry parsermodels.ParsedLine) models.ProcessedEntries {
 			}
 
 			entriesBySmcUID[uid] = append(entriesBySmcUID[uid], *smcEntry)
+			saveToDb(*smcEntry, uid, len(entriesBySmcUID[uid]), channel)
 		}
 	default:
 		fmt.Printf("Unknown log level %s", logEntry.Level)
@@ -76,4 +82,11 @@ func Process(logEntry parsermodels.ParsedLine) models.ProcessedEntries {
 	result.SmcEntries = entriesBySmcUID
 
 	return result
+}
+
+func saveToDb(entry models.SmcEntry, uid string, entryCountForSmc int, channel *amqp.Channel) {
+	if entryCountForSmc == 1 {
+		rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+uid, channel)
+	}
+	rabbitmq.SendEntryToElasticUploader(entry, channel, uid)
 }

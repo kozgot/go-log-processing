@@ -9,6 +9,7 @@ import (
 
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
 	"github.com/kozgot/go-log-processing/postprocessor/internal/processing"
+	"github.com/kozgot/go-log-processing/postprocessor/internal/rabbitmq"
 	"github.com/streadway/amqp"
 )
 
@@ -76,6 +77,9 @@ func main() {
 
 	forever := make(chan bool)
 
+	channelToSendTo, connectionToSendTo := rabbitmq.OpenChannelAndConnection(rabbitMqURL)
+	defer rabbitmq.CloseChannelAndConnection(channelToSendTo, connectionToSendTo)
+
 	go func() {
 		for d := range msgs {
 			if strings.Contains(string(d.Body), "START") {
@@ -83,11 +87,12 @@ func main() {
 				continue
 			} else if strings.Contains(string(d.Body), "END") {
 				fmt.Println("End of entries...")
+				rabbitmq.SendStringMessageToElastic("DONE", channelToSendTo)
 				continue
 			}
 
 			entry := deserializeMessage(d.Body)
-			processing.Process(entry)
+			processing.Process(entry, channelToSendTo)
 		}
 	}()
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")

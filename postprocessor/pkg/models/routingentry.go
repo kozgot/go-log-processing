@@ -2,7 +2,13 @@ package models
 
 import "time"
 
-// SmcEntry contains data from a log entry related to a specific SMC.
+// RoutingEntry contains data from a log entry related to the current state of the routing table.
 type RoutingEntry struct {
-	TimeStamp time.Time // the exact time the event happened
+	TimeStamp      time.Time // the exact time the event happened
+	Address        string
+	NextHopAddress string
+	RouteCost      int
+	HopCount       int
+	WeakLink       int
+	ValidTimeMins  int
 }
