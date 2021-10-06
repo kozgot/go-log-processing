@@ -5,8 +5,11 @@ import (
 )
 
 // ParseContents extracts the params of an error level line in the log file
-func ParseContents(line models.LineWithDate) *models.ParsedLine {
-	parsedLine := models.ParsedLine{Level: line.Level, Timestamp: line.Timestamp}
+func ParseContents(line models.LineWithDate) *models.ParsedLogEntry {
+	parsedLine := models.ParsedLogEntry{
+		Level:     line.Level,
+		Timestamp: line.Timestamp}
+
 	switch line.Level {
 	case "ERROR":
 		// todo: add these methods to the appropriate types,

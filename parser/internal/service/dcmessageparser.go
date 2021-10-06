@@ -45,7 +45,7 @@ func parseDCMessagePayload(line string, messageType string) *models.DcMessagePay
 	payload := models.DcMessagePayload{}
 	payload.SmcUID = parseFieldInBracketsAsString(line, formats.SmcUidRegex)
 	payload.PodUID = parseFieldInBracketsAsString(line, formats.PodUidRegex)
-	payload.ServiceLevelId = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ServiceLevelIdRegex))
+	payload.ServiceLevelID = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ServiceLevelIdRegex))
 	payload.Value = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ValueRegex))
 
 	// Parse the time[] field of the message.
@@ -131,7 +131,7 @@ func parseConnectOrDisconnectPayload(line string) *models.ConnectOrDisconnectPay
 
 	if clientID != "" || resultType != 0 || URL != "" || topic != "" || timeout != 0 {
 		result := models.ConnectOrDisconnectPayload{
-			ClientId:  clientID,
+			ClientID:  clientID,
 			Type:      resultType,
 			URL:       URL,
 			Topic:     topic,

@@ -2,8 +2,8 @@ package models
 
 import "time"
 
-// ParsedLine contains a parsed line from the log file.
-type ParsedLine struct {
+// ParsedLogEntry contains a parsed line from the log file.
+type ParsedLogEntry struct {
 	Timestamp     time.Time
 	Level         string
 	ErrorParams   ErrorParams
@@ -17,7 +17,7 @@ type ErrorParams struct {
 	Message     string
 	Severity    int
 	Description string
-	Source      string
+	Source      string // If not empty, this is the UID of an smc.
 }
 
 // WarningParams contains the parsed warning parameters.
@@ -36,11 +36,11 @@ type WarningParams struct {
 
 // InfoParams contains the parsed info parameters.
 type InfoParams struct {
-	MessageType    string // one of 'ROUTING', 'JOIN', 'STATUS', or 'DC'
-	RoutingMessage RoutingTableParams
-	JoinMessage    SmcJoinMessageParams
-	StatusMessage  StatusMessageParams
-	DCMessage      DCMessageParams
+	MessageType    string               // one of 'ROUTING', 'JOIN', 'STATUS', or 'DC'
+	RoutingMessage RoutingTableParams   // no smc UID for this kind of entries
+	JoinMessage    SmcJoinMessageParams // has an SMC UID
+	StatusMessage  StatusMessageParams  // no smc UID for this kind of entries
+	DCMessage      DCMessageParams      // has an SMC UID
 }
 
 // RoutingTableParams contains the parsed routing table message parameters.
@@ -88,7 +88,7 @@ type DCMessageParams struct {
 type DcMessagePayload struct {
 	SmcUID         string
 	PodUID         string
-	ServiceLevelId int
+	ServiceLevelID int
 	Value          int
 	Time           time.Time
 
@@ -182,7 +182,7 @@ type IndexPayload struct {
 
 type ConnectOrDisconnectPayload struct {
 	Type      int
-	ClientId  string
+	ClientID  string
 	URL       string
 	Topic     string
 	Timeout   int

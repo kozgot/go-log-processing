@@ -29,6 +29,7 @@ func failOnError(err error, msg string) {
 
 const numWorkers = 4
 const flushBytes = 1000000
+const processedDataExchangeName = "processeddata"
 
 func main() {
 	log.Println("Elastic Uploader starting...")
@@ -44,13 +45,13 @@ func main() {
 	defer ch.Close()
 
 	err = ch.ExchangeDeclare(
-		"logs",   // name
-		"fanout", // type
-		true,     // durable
-		false,    // auto-deleted
-		false,    // internal
-		false,    // no-wait
-		nil,      // arguments
+		processedDataExchangeName, // name
+		"fanout",                  // type
+		true,                      // durable
+		false,                     // auto-deleted
+		false,                     // internal
+		false,                     // no-wait
+		nil,                       // arguments
 	)
 	failOnError(err, "Failed to declare an exchange")
 
@@ -65,9 +66,9 @@ func main() {
 	failOnError(err, "Failed to declare a queue")
 
 	err = ch.QueueBind(
-		q.Name, // queue name
-		"",     // routing key
-		"logs", // exchange
+		q.Name,                    // queue name
+		"",                        // routing key
+		processedDataExchangeName, // exchange
 		false,
 		nil,
 	)
