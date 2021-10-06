@@ -85,8 +85,5 @@ func Process(logEntry parsermodels.ParsedLine, channel *amqp.Channel) models.Pro
 }
 
 func saveToDb(entry models.SmcEntry, uid string, entryCountForSmc int, channel *amqp.Channel) {
-	if entryCountForSmc == 1 {
-		rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+uid, channel)
-	}
-	rabbitmq.SendEntryToElasticUploader(entry, channel, uid)
+	rabbitmq.SendEntryToElasticUploader(entry, channel, "smc")
 }

@@ -80,6 +80,10 @@ func main() {
 	channelToSendTo, connectionToSendTo := rabbitmq.OpenChannelAndConnection(rabbitMqURL)
 	defer rabbitmq.CloseChannelAndConnection(channelToSendTo, connectionToSendTo)
 
+	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"smc", channelToSendTo)
+	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"routing", channelToSendTo)
+	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"status", channelToSendTo)
+
 	go func() {
 		for d := range msgs {
 			if strings.Contains(string(d.Body), "START") {
