@@ -1,4 +1,5 @@
 ![Go](https://github.com/kozgot/go-log-processing/workflows/Go/badge.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/kozgot/go-log-processing)](https://goreportcard.com/report/github.com/kozgot/go-log-processing)
 
 # Diagnostic log processing and analysis
 
