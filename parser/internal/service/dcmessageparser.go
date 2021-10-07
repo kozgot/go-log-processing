@@ -41,81 +41,58 @@ func parseDCMessageDest(line string) string {
 	return outGoingMessageSource
 }
 
+func parsePayloadTime(line string) time.Time {
+	// Parse the time[] field of the message.
+	// It can be a formatted date or in a date represented by a timestamp in seconds.
+	dateTime := parseDateTimeField(line, formats.DateTimeFieldRegex)
+	if isValidDate(dateTime) {
+		// for some reason, it can parse the long date format to int, so that needs to be handled as well (hence the if-else)
+		return dateTime
+	}
+	datefromSeconds := parseTimeFieldFromSeconds(line, formats.TimeTicksRegex)
+	if isValidDate(datefromSeconds) {
+		return datefromSeconds
+	}
+
+	return time.Time{}
+}
+
 func parseDCMessagePayload(line string, messageType string) *models.DcMessagePayload {
 	payload := models.DcMessagePayload{}
 	payload.SmcUID = parseFieldInBracketsAsString(line, formats.SmcUIDRegex)
 	payload.PodUID = parseFieldInBracketsAsString(line, formats.PodUIDRegex)
 	payload.ServiceLevelID = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ServiceLevelIDRegex))
 	payload.Value = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ValueRegex))
-
-	// Parse the time[] field of the message.
-	// It can be a formatted date or in a date represented by a timestamp in seconds.
-	dateTime := parseDateTimeField(line, formats.DateTimeFieldRegex)
-	if isValidDate(dateTime) {
-		// for some reason, it can parse the long date format to int, so that needs to be handled as well (hence the if-else)
-		payload.Time = dateTime
-	} else {
-		datefromSeconds := parseTimeFieldFromSeconds(line, formats.TimeTicksRegex)
-		if isValidDate(datefromSeconds) {
-			payload.Time = datefromSeconds
-		}
-	}
-
+	payload.Time = parsePayloadTime(line)
 	payload.TimeRange = parseTimeRange(line)
 
 	switch messageType {
 	case "message":
 		payload.MessagePayload = parseMessagePayload(line)
-		if payload.MessagePayload != nil {
-			return &payload
-		}
 
 	case "connect":
 		payload.ConnectOrDisconnectPayload = parseConnectOrDisconnectPayload(line)
-		if payload.ConnectOrDisconnectPayload != nil {
-			return &payload
-		}
 
 	case "pod configuration":
 		payload.PodConfigPayload = parsePodConfigPayload(line)
-		if payload.PodConfigPayload != nil {
-			return &payload
-		}
+
 	case "smc configuration":
 		payload.SmcConfigPayload = parseSmcConfigPayload(line)
-		if payload.SmcConfigPayload != nil {
-			return &payload
-		}
 
 	case "smc address":
 		payload.SmcAddressPayload = parseSmcAddressPayload(line)
-		if payload.SmcAddressPayload != nil {
-			return &payload
-		}
 
 	case "service_level":
 		payload.ServiceLevelPayload = parseServiceLevelPayload(line)
-		if payload.ServiceLevelPayload != nil {
-			return &payload
-		}
 
 	case "settings":
 		payload.SettingsPayload = parseSettingsPayload(line)
-		if payload.SettingsPayload != nil {
-			return &payload
-		}
 
 	case "DLMS Logs":
 		payload.DLMSLogPayload = parseDLMSLogPayload(line)
-		if payload.DLMSLogPayload != nil {
-			return &payload
-		}
 
 	case "index":
 		payload.IndexPayload = parseIndexPayload(line)
-		if payload.IndexPayload != nil {
-			return &payload
-		}
 	}
 
 	return &payload
