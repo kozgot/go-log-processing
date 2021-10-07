@@ -52,7 +52,6 @@ type DCMessageParams struct {
 	Payload          *DcMessagePayload
 }
 
-/* Dc Message Payload types*/
 // DcMessagePayload contains the parsed payload of info level messages that have been sent or received by the dc.
 type DcMessagePayload struct {
 	SmcUID         string

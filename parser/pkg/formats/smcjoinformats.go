@@ -10,6 +10,7 @@ const SmcJoinRegex = "SMC Join "
 // JoinStatusResponseRegex represents the regular expression that matches the response status of an SMC join event
 const JoinStatusResponseRegex = "(NOT OK|OK)"
 
+// JoinTypeRegex matches the join type field of a log entry.
 const JoinTypeRegex = "join_type" + AnyLettersBetweenBrackets
 
 // SmcUIDRegex matches the smc uid field of a log line, formatted like: smc_uid[dc18-smc18].

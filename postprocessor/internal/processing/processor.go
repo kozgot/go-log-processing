@@ -9,6 +9,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// Process processes the log entry received as a parameter.
 func Process(logEntry parsermodels.ParsedLine, channel *amqp.Channel) models.ProcessedEntries {
 	entriesBySmcUID := make(map[string][]models.SmcEntry)
 	routingEntries := []models.RoutingEntry{}

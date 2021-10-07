@@ -67,7 +67,7 @@ const TimeoutRegex = "timeout" + LongNumberBetweenBracketsRegex
 // ConnectedRegex matches the connected field of a log entry.
 const ConnectedRegex = "connected" + NumberBetweenBrackets
 
-// DateTimeRegexFieldRegex matches the time field of a dc message, formatted like: time[Wed Jun 10 10:02:35 2020].
+// DateTimeFieldRegex matches the time field of a dc message, formatted like: time[Wed Jun 10 10:02:35 2020].
 const DateTimeFieldRegex = "time\\[" + anyCharsExceptOpeningParentheses + "\\]"
 
 // DLMSRequestTimeRegex matches the dlms request time field of a dc message, eg.: dlms_request_time[1591783353632].
@@ -196,7 +196,6 @@ const LastSuccessfulDlmsResponseDateRegex = "last_successful_dlms_response_date 
 // NextHopRegex matches the next hop field of a dc message, formatted like: next_hop[0].
 const NextHopRegex = "next_hop" + LongNumberBetweenBracketsRegex
 
-// PodConfigPayload rest props coming up
 // PhaseRegex matches the phase field of a dc message, formatted like: phase[2].
 const PhaseRegex = "phase" + NumberBetweenBrackets
 

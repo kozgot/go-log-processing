@@ -18,7 +18,7 @@ func SendEntryToElasticUploader(entry models.SmcEntry, channel *amqp.Channel, in
 	sendData(serializeDataUnit((dataToSend)), channel)
 }
 
-// SendLinesToElastic sends the parsed log lines to the message queue.
+// OpenChannelAndConnection opens a channel and a connection and returns pointers to them.
 func OpenChannelAndConnection(rabbitMqURL string) (*amqp.Channel, *amqp.Connection) {
 	conn, err := amqp.Dial(rabbitMqURL)
 	failOnError(err, "Failed to connect to RabbitMQ")
@@ -43,6 +43,7 @@ func OpenChannelAndConnection(rabbitMqURL string) (*amqp.Channel, *amqp.Connecti
 	return ch, conn
 }
 
+// CloseChannelAndConnection closes the channel and connection received in parameter.
 func CloseChannelAndConnection(channel *amqp.Channel, connection *amqp.Connection) {
 	connection.Close()
 	fmt.Println("Closed connection")

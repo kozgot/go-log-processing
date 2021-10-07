@@ -7,5 +7,5 @@ package formats
 // that contains data regarding a status message.
 const StatusMessageRegex = AnyStringUntilFirstSpaceRegex
 
-// JoinStatusResponseRegex represents the regular expression that matches the response status of an SMC join event.
+// StatusByteRegex  represents the regular expression that matches the status byte field of a log entry.
 const StatusByteRegex = "status_byte" + AnyLettersBetweenBrackets
