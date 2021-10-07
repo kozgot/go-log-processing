@@ -22,13 +22,10 @@ func Process(logEntry parsermodels.ParsedLine, channel *amqp.Channel) models.Pro
 		smcEntry, routingEntry, statusEntry := ProcessInfo(logEntry)
 		if smcEntry != nil && smcEntry.UID != "" {
 			uid := smcEntry.UID
-			_, ok := entriesBySmcUID[uid]
-			if !ok {
-				entriesBySmcUID[uid] = []models.SmcEntry{}
-			}
+			initArrayIfNeeded(entriesBySmcUID, uid)
 
 			entriesBySmcUID[uid] = append(entriesBySmcUID[uid], *smcEntry)
-			saveToDb(*smcEntry, uid, len(entriesBySmcUID[uid]), channel)
+			saveToDb(*smcEntry, channel)
 		}
 
 		if routingEntry != nil {
@@ -41,38 +38,29 @@ func Process(logEntry parsermodels.ParsedLine, channel *amqp.Channel) models.Pro
 		smcEntry := ProcessWarn(logEntry)
 		if smcEntry != nil {
 			uid := smcEntry.UID
-			_, ok := entriesBySmcUID[uid]
-			if !ok {
-				entriesBySmcUID[uid] = []models.SmcEntry{}
-			}
+			initArrayIfNeeded(entriesBySmcUID, uid)
 
 			entriesBySmcUID[uid] = append(entriesBySmcUID[uid], *smcEntry)
-			saveToDb(*smcEntry, uid, len(entriesBySmcUID[uid]), channel)
+			saveToDb(*smcEntry, channel)
 		}
 	case "WARNING":
 		smcEntry := ProcessWarning(logEntry)
 		if smcEntry != nil {
 			uid := smcEntry.UID
-			_, ok := entriesBySmcUID[uid]
-			if !ok {
-				entriesBySmcUID[uid] = []models.SmcEntry{}
-			}
+			initArrayIfNeeded(entriesBySmcUID, uid)
 
 			entriesBySmcUID[uid] = append(entriesBySmcUID[uid], *smcEntry)
-			saveToDb(*smcEntry, uid, len(entriesBySmcUID[uid]), channel)
+			saveToDb(*smcEntry, channel)
 		}
 	case "ERROR":
 		smcEntry := ProcessError(logEntry)
 
 		if smcEntry != nil {
 			uid := smcEntry.UID
-			_, ok := entriesBySmcUID[uid]
-			if !ok {
-				entriesBySmcUID[uid] = []models.SmcEntry{}
-			}
+			initArrayIfNeeded(entriesBySmcUID, uid)
 
 			entriesBySmcUID[uid] = append(entriesBySmcUID[uid], *smcEntry)
-			saveToDb(*smcEntry, uid, len(entriesBySmcUID[uid]), channel)
+			saveToDb(*smcEntry, channel)
 		}
 	default:
 		fmt.Printf("Unknown log level %s", logEntry.Level)
@@ -85,6 +73,13 @@ func Process(logEntry parsermodels.ParsedLine, channel *amqp.Channel) models.Pro
 	return result
 }
 
-func saveToDb(entry models.SmcEntry, uid string, entryCountForSmc int, channel *amqp.Channel) {
+func saveToDb(entry models.SmcEntry, channel *amqp.Channel) {
 	rabbitmq.SendEntryToElasticUploader(entry, channel, "smc")
+}
+
+func initArrayIfNeeded(entriesBySmcUID map[string][]models.SmcEntry, uid string) {
+	_, ok := entriesBySmcUID[uid]
+	if !ok {
+		entriesBySmcUID[uid] = []models.SmcEntry{}
+	}
 }
