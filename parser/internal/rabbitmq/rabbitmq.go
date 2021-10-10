@@ -16,7 +16,7 @@ func SendLineToPostProcessor(line models.ParsedLogEntry, channel *amqp.Channel) 
 	sendData(serializeLine(line), channel)
 }
 
-// SendLinesToElastic sends the parsed log lines to the message queue.
+// OpenChannelAndConnection opens a channel and a connection.
 func OpenChannelAndConnection(rabbitMqURL string) (*amqp.Channel, *amqp.Connection) {
 	conn, err := amqp.Dial(rabbitMqURL)
 	failOnError(err, "Failed to connect to RabbitMQ")
@@ -41,6 +41,7 @@ func OpenChannelAndConnection(rabbitMqURL string) (*amqp.Channel, *amqp.Connecti
 	return ch, conn
 }
 
+// CloseChannelAndConnection closes the channel and connection received in params.
 func CloseChannelAndConnection(channel *amqp.Channel, connection *amqp.Connection) {
 	connection.Close()
 	fmt.Println("Closed connection")

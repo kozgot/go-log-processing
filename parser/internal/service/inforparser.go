@@ -87,7 +87,8 @@ func parseSmcJoinLine(line string) *models.SmcJoinMessageParams {
 	// split the string by the <-- arrow
 	// join messages are always directed towards the dc
 	messageParts := strings.Split(lineRest, formats.InComingArrow)
-	if len(messageParts) < 2 {
+	expectedMessagePartsLength := 2
+	if len(messageParts) < expectedMessagePartsLength {
 		log.Fatalf("There was no direction indicator in Join message: %s", line)
 	}
 
@@ -108,7 +109,7 @@ func parseSmcJoinLine(line string) *models.SmcJoinMessageParams {
 
 	smcAddress := models.SmcAddressParams{}
 
-	smcUID := parseFieldInBracketsAsString(payloadString, formats.SmcUidRegex)
+	smcUID := parseFieldInBracketsAsString(payloadString, formats.SmcUIDRegex)
 	if smcUID != "" {
 		smcAddress.SmcUID = smcUID
 	}

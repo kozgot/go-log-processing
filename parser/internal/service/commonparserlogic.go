@@ -77,7 +77,9 @@ func tryParseIntFromString(stringRepresentation string) int {
 
 func tryParseInt64FromString(stringRepresentation string) int64 {
 	if stringRepresentation != "" {
-		parsedNumber, err := strconv.ParseInt(stringRepresentation, 10, 64)
+		base := 10
+		bitSize := 64
+		parsedNumber, err := strconv.ParseInt(stringRepresentation, base, bitSize)
 		if err != nil {
 			panic(err)
 		}
@@ -90,7 +92,8 @@ func tryParseInt64FromString(stringRepresentation string) int64 {
 
 func tryParseFloat64FromString(stringRepresentation string) float64 {
 	if stringRepresentation != "" {
-		parsedNumber, err := strconv.ParseFloat(stringRepresentation, 64)
+		bitSize := 64
+		parsedNumber, err := strconv.ParseFloat(stringRepresentation, bitSize)
 		if err != nil {
 			panic(err)
 		}

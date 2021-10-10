@@ -41,81 +41,58 @@ func parseDCMessageDest(line string) string {
 	return outGoingMessageSource
 }
 
-func parseDCMessagePayload(line string, messageType string) *models.DcMessagePayload {
-	payload := models.DcMessagePayload{}
-	payload.SmcUID = parseFieldInBracketsAsString(line, formats.SmcUidRegex)
-	payload.PodUID = parseFieldInBracketsAsString(line, formats.PodUidRegex)
-	payload.ServiceLevelID = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ServiceLevelIdRegex))
-	payload.Value = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ValueRegex))
-
+func parsePayloadTime(line string) time.Time {
 	// Parse the time[] field of the message.
 	// It can be a formatted date or in a date represented by a timestamp in seconds.
 	dateTime := parseDateTimeField(line, formats.DateTimeFieldRegex)
-	if dateTime.Year() > 1000 {
+	if isValidDate(dateTime) {
 		// for some reason, it can parse the long date format to int, so that needs to be handled as well (hence the if-else)
-		payload.Time = dateTime
-	} else {
-		datefromSeconds := parseTimeFieldFromSeconds(line, formats.TimeTicksRegex)
-		if datefromSeconds.Year() > 1000 {
-			payload.Time = datefromSeconds
-		}
+		return dateTime
+	}
+	datefromSeconds := parseTimeFieldFromSeconds(line, formats.TimeTicksRegex)
+	if isValidDate(datefromSeconds) {
+		return datefromSeconds
 	}
 
+	return time.Time{}
+}
+
+func parseDCMessagePayload(line string, messageType string) *models.DcMessagePayload {
+	payload := models.DcMessagePayload{}
+	payload.SmcUID = parseFieldInBracketsAsString(line, formats.SmcUIDRegex)
+	payload.PodUID = parseFieldInBracketsAsString(line, formats.PodUIDRegex)
+	payload.ServiceLevelID = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ServiceLevelIDRegex))
+	payload.Value = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ValueRegex))
+	payload.Time = parsePayloadTime(line)
 	payload.TimeRange = parseTimeRange(line)
 
 	switch messageType {
 	case "message":
 		payload.MessagePayload = parseMessagePayload(line)
-		if payload.MessagePayload != nil {
-			return &payload
-		}
 
 	case "connect":
 		payload.ConnectOrDisconnectPayload = parseConnectOrDisconnectPayload(line)
-		if payload.ConnectOrDisconnectPayload != nil {
-			return &payload
-		}
 
 	case "pod configuration":
 		payload.PodConfigPayload = parsePodConfigPayload(line)
-		if payload.PodConfigPayload != nil {
-			return &payload
-		}
+
 	case "smc configuration":
 		payload.SmcConfigPayload = parseSmcConfigPayload(line)
-		if payload.SmcConfigPayload != nil {
-			return &payload
-		}
 
 	case "smc address":
 		payload.SmcAddressPayload = parseSmcAddressPayload(line)
-		if payload.SmcAddressPayload != nil {
-			return &payload
-		}
 
 	case "service_level":
 		payload.ServiceLevelPayload = parseServiceLevelPayload(line)
-		if payload.ServiceLevelPayload != nil {
-			return &payload
-		}
 
 	case "settings":
 		payload.SettingsPayload = parseSettingsPayload(line)
-		if payload.SettingsPayload != nil {
-			return &payload
-		}
 
 	case "DLMS Logs":
 		payload.DLMSLogPayload = parseDLMSLogPayload(line)
-		if payload.DLMSLogPayload != nil {
-			return &payload
-		}
 
 	case "index":
 		payload.IndexPayload = parseIndexPayload(line)
-		if payload.IndexPayload != nil {
-			return &payload
-		}
 	}
 
 	return &payload
@@ -123,7 +100,7 @@ func parseDCMessagePayload(line string, messageType string) *models.DcMessagePay
 
 func parseConnectOrDisconnectPayload(line string) *models.ConnectOrDisconnectPayload {
 	resultType := tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ConnectOrDisconnectTypeRegex))
-	clientID := parseFieldInBracketsAsString(line, formats.ClientIdRegex)
+	clientID := parseFieldInBracketsAsString(line, formats.ClientIDRegex)
 	URL := parseFieldInBracketsAsString(line, formats.URLRegex)
 	topic := parseFieldInBracketsAsString(line, formats.TopicRegex)
 	timeout := tryParseIntFromString(parseFieldInBracketsAsString(line, formats.TimeoutRegex))
@@ -197,7 +174,7 @@ func parseMessagePayload(line string) *models.MessagePayload {
 }
 
 func parseSettingsPayload(line string) *models.SettingsPayload {
-	dcUID := parseFieldInBracketsAsString(line, formats.DcUidRegex)
+	dcUID := parseFieldInBracketsAsString(line, formats.DcUIDRegex)
 
 	indexCollectionString := parseFieldInBracketsAsString(line, formats.IndexCollectionRegex)
 	dataPublishString := parseFieldInBracketsAsString(line, formats.DataPublishRegex)
@@ -288,10 +265,11 @@ func parseServiceLevelPayload(line string) *models.ServiceLevelPayload {
 
 func parseHourlyEnergyLimits(line string, energyLimitRegex string) [24]models.HourlyEnergyLimit {
 	var result [24]models.HourlyEnergyLimit
+	hoursInADay := 24
 	hourlyLimitsString := parseFieldInDoubleBracketsAsString(line, energyLimitRegex)
 	if hourlyLimitsString != "" {
 		limitParts := strings.Split(hourlyLimitsString, " ")
-		if len(limitParts) == 24 {
+		if len(limitParts) == hoursInADay {
 			for i, val := range limitParts {
 				result[i] = models.HourlyEnergyLimit{HourNumber: i, Limit: tryParseIntFromString(val)}
 			}
@@ -391,7 +369,7 @@ func parseTimeFieldFromSeconds(line string, timeStampRegex string) time.Time {
 func parseTimeFieldFromMilliSeconds(line string, timeStampRegex string) time.Time {
 	milliseconds := tryParseInt64FromString(parseFieldInBracketsAsString(line, timeStampRegex))
 	if milliseconds != 0 {
-		dateTimeFromsSecs := time.Unix(0, milliseconds*1000*1000)
+		dateTimeFromsSecs := time.Unix(0, convertMillisecondsToSeconds(milliseconds))
 		return dateTimeFromsSecs
 	}
 
@@ -401,12 +379,12 @@ func parseTimeFieldFromMilliSeconds(line string, timeStampRegex string) time.Tim
 func parseTimeRange(line string) *models.TimeRange {
 	from := parseDateTimeField(line, formats.TimeRangeFromRegex)
 
-	if from.Year() < 1500 {
+	if !isValidDate(from) {
 		from = parseTimeFieldFromSeconds(line, formats.TimeRangeStartTicksRegex)
 	}
 
 	to := parseDateTimeField(line, formats.TimeRangeToRegex)
-	if to.Year() < 1500 {
+	if !isValidDate(to) {
 		to = parseTimeFieldFromSeconds(line, formats.TimeRangeEndTicksRegex)
 	}
 
@@ -416,4 +394,13 @@ func parseTimeRange(line string) *models.TimeRange {
 	}
 
 	return nil
+}
+
+func isValidDate(date time.Time) bool {
+	validYearTreshold := 1500
+	return (date.Year() > validYearTreshold)
+}
+
+func convertMillisecondsToSeconds(milliseconds int64) int64 {
+	return milliseconds * 1000 * 1000
 }

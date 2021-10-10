@@ -2,38 +2,6 @@ package models
 
 import "time"
 
-// ParsedLogEntry contains a parsed line from the log file.
-type ParsedLogEntry struct {
-	Timestamp     time.Time
-	Level         string
-	ErrorParams   ErrorParams
-	WarningParams WarningParams
-	InfoParams    InfoParams
-}
-
-// ErrorParams contains the parsed error parameters.
-type ErrorParams struct {
-	ErrorCode   int
-	Message     string
-	Severity    int
-	Description string
-	Source      string // If not empty, this is the UID of an smc.
-}
-
-// WarningParams contains the parsed warning parameters.
-type WarningParams struct {
-	Name              string
-	SmcUID            string
-	UID               int
-	Priority          int
-	Retry             int
-	Creation          time.Time
-	MinLaunchTime     time.Time
-	Details           ErrorParams
-	FileName          string
-	JoinMessageParams SmcJoinMessageParams
-}
-
 // InfoParams contains the parsed info parameters.
 type InfoParams struct {
 	MessageType    string               // one of 'ROUTING', 'JOIN', 'STATUS', or 'DC'
@@ -61,6 +29,7 @@ type SmcJoinMessageParams struct {
 	SmcAddress SmcAddressParams
 }
 
+// SmcAddressParams contains the parsed SMC address parameters of an SMC join log entry.
 type SmcAddressParams struct {
 	SmcUID          string
 	PhysicalAddress string
@@ -83,7 +52,6 @@ type DCMessageParams struct {
 	Payload          *DcMessagePayload
 }
 
-/* Dc Message Payload types*/
 // DcMessagePayload contains the parsed payload of info level messages that have been sent or received by the dc.
 type DcMessagePayload struct {
 	SmcUID         string
@@ -105,6 +73,8 @@ type DcMessagePayload struct {
 	PodConfigPayload           *PodConfigPayload
 }
 
+// SettingsPayload contains the parsed settings payload
+// of info level messages that have been sent or received by the dc.
 type SettingsPayload struct {
 	DcUID                         string
 	Locality                      string
@@ -121,6 +91,8 @@ type SettingsPayload struct {
 	FrequencyBandRollBackDone     bool
 }
 
+// ServiceLevelPayload contains the parsed service level related data
+// in info level log entries that describe messages sent or received by the dc.
 type ServiceLevelPayload struct {
 	MeterMode                      int
 	StartHourDailyCycle            string // eg. 20h, todo: better type??
@@ -133,11 +105,13 @@ type ServiceLevelPayload struct {
 	LocalHourlyEnergyLimits        [24]HourlyEnergyLimit
 }
 
+// HourlyEnergyLimit contains the value and the hour number of an hourly energy limit.
 type HourlyEnergyLimit struct {
 	HourNumber int
 	Limit      int
 }
 
+// SmcConfigPayload contains data related to the configuration of an SMC.
 type SmcConfigPayload struct {
 	CustomerSerialNumber           string
 	PhysicalAddress                string
@@ -149,6 +123,7 @@ type SmcConfigPayload struct {
 	NextHop                        int
 }
 
+// MessagePayload contains the parameters of a log entry related to a DC message.
 type MessagePayload struct {
 	Current float64
 	Total   float64
@@ -156,6 +131,7 @@ type MessagePayload struct {
 	Topic   string
 }
 
+// PodConfigPayload contains the parameters of a log entry related to a pod configuration event.
 type PodConfigPayload struct {
 	SerialNumber            int
 	Phase                   int
@@ -163,23 +139,27 @@ type PodConfigPayload struct {
 	SoftwareFirmwareVersion string
 }
 
+// TimeRange represents a time range.
 type TimeRange struct {
 	From time.Time
 	To   time.Time
 }
 
+// DLMSLogPayload contains data of a log entry related to DLMS Log contents.
 type DLMSLogPayload struct {
 	DLMSRequestTime  time.Time
 	DLMSResponseTime time.Time
 	DLMSError        string
 }
 
+// IndexPayload contains data of an index log entry.
 type IndexPayload struct {
 	PreviousTime  time.Time // it might be ticks or something (eg. 1591776000)
 	PreviousValue int
 	SerialNumber  int
 }
 
+// ConnectOrDisconnectPayload contains information related to a connect or disconnect event.
 type ConnectOrDisconnectPayload struct {
 	Type      int
 	ClientID  string
@@ -189,10 +169,12 @@ type ConnectOrDisconnectPayload struct {
 	Connected bool
 }
 
+// Calendar contains data related to the calendar of a tariff settings log entry.
 type Calendar struct {
 	CalendarName CalendarName
 }
 
+// CalendarName contains data related to the calendar of a tariff settings log entry.
 type CalendarName struct {
 	IsActive      bool
 	SeasonProfile string // for now, the exact type is unknown
