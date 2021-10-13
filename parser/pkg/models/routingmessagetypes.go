@@ -6,4 +6,5 @@ const (
 	JoinMessageType     = "JOIN"
 	StatusMessageType   = "STATUS"
 	DCMessageType       = "DC"
+	ConnectionAttempt   = "CONNECTION_ATTEMPT"
 )

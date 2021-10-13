@@ -39,6 +39,13 @@ func parseInfo(line models.LineWithDate) *models.InfoParams {
 		return &infoParams
 	}
 
+	connectionAttempt := parseConnectionAttempt(line.Rest)
+	if connectionAttempt != nil {
+		infoParams.ConnectionAttempt = *connectionAttempt
+		infoParams.MessageType = models.ConnectionAttempt
+		return &infoParams
+	}
+
 	return &infoParams
 }
 
