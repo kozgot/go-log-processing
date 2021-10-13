@@ -14,6 +14,12 @@ func parseDCMessage(lin string) *models.DCMessageParams {
 
 	source := parseDCMessageSource(lin)
 	dest := parseDCMessageDest(lin)
+
+	if source == "" && dest == "" {
+		// it is not a message entry
+		return nil
+	}
+
 	if source != "" {
 		dcMessageParams.IsInComing = true
 		dcMessageParams.SourceOrDestName = source
@@ -22,8 +28,6 @@ func parseDCMessage(lin string) *models.DCMessageParams {
 		dcMessageParams.IsInComing = false
 		dcMessageParams.SourceOrDestName = dest
 		dcMessageParams.MessageType = parseFieldInBracketsAsString(lin, formats.OutGoingMessageTypeRegex)
-	} else {
-		return nil
 	}
 
 	dcMessageParams.Payload = parseDCMessagePayload(lin, dcMessageParams.MessageType)
@@ -59,7 +63,12 @@ func parsePayloadTime(line string) time.Time {
 
 func parseDCMessagePayload(line string, messageType string) *models.DcMessagePayload {
 	payload := models.DcMessagePayload{}
-	payload.SmcUID = parseFieldInBracketsAsString(line, formats.SmcUIDRegex)
+
+	if messageType == "new smc" {
+		payload.SmcUID = parseNewSmcUID(line)
+	} else {
+		payload.SmcUID = parseFieldInBracketsAsString(line, formats.SmcUIDRegex)
+	}
 	payload.PodUID = parseFieldInBracketsAsString(line, formats.PodUIDRegex)
 	payload.ServiceLevelID = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ServiceLevelIDRegex))
 	payload.Value = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ValueRegex))
@@ -96,6 +105,29 @@ func parseDCMessagePayload(line string, messageType string) *models.DcMessagePay
 	}
 
 	return &payload
+}
+
+func parseNewSmcUID(line string) string {
+	// parse the smc uid from this:
+	//  <--[new smc]--(SVI) dc18-smc32 (distribution_controller_initializer.cc::280)
+
+	minLengthIfContainsSeparator := 2
+
+	// get the part after (SVI)
+	firstPart := strings.Split(line, ")")
+	if len(firstPart) < minLengthIfContainsSeparator {
+		return ""
+	}
+
+	// get the part before (distribution_controller_initializer.cc::280)
+	firstPart = strings.Split(firstPart[1], "(")
+	if len(firstPart) < minLengthIfContainsSeparator {
+		return ""
+	}
+
+	// trim the spces from ' dc18-smc32 '
+	result := strings.Trim(firstPart[0], " ")
+	return result
 }
 
 func parseConnectOrDisconnectPayload(line string) *models.ConnectOrDisconnectPayload {
