@@ -139,7 +139,7 @@ func parseDLMSLogPayload(line string) *models.DLMSLogPayload {
 
 func parseIndexPayload(line string) *models.IndexPayload {
 	previousValueString := parseFieldInBracketsAsString(line, formats.PreviousValueRegex)
-	serialNumberString := parseFieldInBracketsAsString(line, formats.SerailNumberRegex)
+	serialNumberString := parseFieldInBracketsAsString(line, formats.SerialNumberRegex)
 	previousTimeFromSeconds := parseTimeFieldFromSeconds(line, formats.PreviousTimeRegex)
 	if previousTimeFromSeconds.Year() < 1000 && serialNumberString == "" && previousValueString == "" {
 		return nil
@@ -319,7 +319,7 @@ func parseSmcConfigPayload(line string) *models.SmcConfigPayload {
 	currentApp2Fw := parseFieldInBracketsAsString(line, formats.CurrentApp2FwRegex)
 	currentPlcFw := parseFieldInBracketsAsString(line, formats.CurrentPlcFwRegex)
 
-	lastSuccessfulDlmsResponseDate := parseDateTimeField(line, formats.LastSuccessfulDlmsResponseDateRegex)
+	lastSuccessfulDlmsResponseDate := parseDateTimeField(line, formats.LastSuccessfulRespDateRegex)
 	nextHop := tryParseIntFromString(nextHopString)
 
 	result := models.SmcConfigPayload{}

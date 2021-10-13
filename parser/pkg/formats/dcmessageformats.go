@@ -8,7 +8,7 @@ package formats
 const IncomingMessageTypeRegex = InComingArrow + AnythingBetweenBracketsRegex
 
 // OutGoingMessageTypeRegex is used to identify the type of the outgoing dc message, which is between the [].
-// eg.: --[last index]-->(DB).
+// eg.: --[settings]-->(DB).
 const OutGoingMessageTypeRegex = "--" + AnythingBetweenBracketsRegex
 
 // IncomingMessageSourceRegex is used to identify the source of the incoming dc message, which is between the ().
@@ -16,7 +16,7 @@ const OutGoingMessageTypeRegex = "--" + AnythingBetweenBracketsRegex
 const IncomingMessageSourceRegex = "--" + AnythingBetweenParenthesesRegex
 
 // OutGoingMessageDestRegex is used to identify the destination of the outgoing dc message, which is between the ().
-// eg.: --[last index]-->(DB).
+// eg.: --[settings]-->(DB).
 const OutGoingMessageDestRegex = OutGoingArrow + AnythingBetweenParenthesesRegex
 
 // PodUIDRegex matches the pod id in a dc message.
@@ -85,87 +85,42 @@ const PreviousTimeRegex = "previous_time" + LongNumberBetweenBracketsRegex
 // PreviousValueRegex matches the previous value field of a dc message, formatted like: previous_value[15986].
 const PreviousValueRegex = "previous_value" + LongNumberBetweenBracketsRegex
 
-// SerailNumberRegex matches the serial number field of a dc message, formatted like: serial_number[98020066928].
-const SerailNumberRegex = "serial_number" + LongNumberBetweenBracketsRegex
-
 // CurrentRegex matches the current field of a dc message, formatted like: current[0.1152].
 const CurrentRegex = "current" + AnythingBetweenBracketsRegex
 
 // TotalRegex matches the total field of a dc message, formatted like: total[0.1152].
 const TotalRegex = "total" + AnythingBetweenBracketsRegex
 
-// DcUIDRegex matches the dc uid of a dc message, formatted like: dc_uid[dc18].
-const DcUIDRegex = "dc_uid" + AnythingBetweenBracketsRegex
-
-// LocalityRegex matches the locality field of a dc message, formatted like: locality[Tanambao Daoud].
-const LocalityRegex = "locality" + AnythingBetweenBracketsRegex
-
-// RegionRegex matches the region field of a dc message, formatted like: region[Madagascar].
-const RegionRegex = "region" + AnythingBetweenBracketsRegex
-
-// TimezoneRegex matches the timezone field of a dc message, formatted like: timezone[Indian/Antananarivo].
-const TimezoneRegex = "timezone" + AnythingBetweenBracketsRegex
-
-// GlobalFtpAddressRegex matches the global ftp address field of a dc message log entry.
-// eg.: global_ftp_address[sftp://sagemcom@172.30.31.20:firmwares].
-const GlobalFtpAddressRegex = "global_ftp_address" + AnythingBetweenBracketsRegex
-
-// TargetFirmwareVersionRegex matches the target firmware version field of a dc message log entry.
-// eg.: target_firmware_version[].
-const TargetFirmwareVersionRegex = "target_firmware_version" + AnythingBetweenBracketsRegex
-
-// IndexCollectionRegex matches the index collection field of a dc message, formatted like: index_collection[600].
-const IndexCollectionRegex = "index_collection" + LongNumberBetweenBracketsRegex
-
-// DataPublishRegex matches the data publish field of a dc message, formatted like: data_publish[2400].
-const DataPublishRegex = "data_publish" + LongNumberBetweenBracketsRegex
-
-// LastServerCommunicationTimeRegex matches the last server communication time field of a dc message.
-// eg.: last_server_communication_time[1591775824].
-const LastServerCommunicationTimeRegex = "last_server_communication_time" + LongNumberBetweenBracketsRegex
-
-// LastDcStartTimeRegex matches the last dc start time field of a dc message, eg.: last_dc_start_time[1591737413].
-const LastDcStartTimeRegex = "last_dc_start_time" + LongNumberBetweenBracketsRegex
-
-// DcDistroTargetFirmwareVersionRegex matches the dc distro target firmware version field of a dc message.
-// eg.: dc_distro_target_firmware_version[].
-const DcDistroTargetFirmwareVersionRegex = "dc_distro_target_firmware_version" + AnythingBetweenBracketsRegex
-
-// FrequencyBandChangedRegex matches the frequency band changed field of a dc message, eg.: frequency_band_changed[0].
-const FrequencyBandChangedRegex = "frequency_band_changed" + NumberBetweenBrackets
-
-// FrequencyBandRollbackDoneRegex matches the frequency band rollback done field of a dc message.
-// eg.: frequency_band_rollback_done[0].
-const FrequencyBandRollbackDoneRegex = "frequency_band_rollback_done" + NumberBetweenBrackets
-
-// MeterModeRegex matches the meter mode field of a dc message, formatted like: meter_mode[2].
+// MeterModeRegex matches the meter mode field of a service_level message, formatted like: meter_mode[2].
 const MeterModeRegex = "meter_mode" + NumberBetweenBrackets
 
-// StartHourDailyCycleRegex matches the start hour daily cycle field of a dc message, eg.: start_hour_daily_cycle[20h].
+// StartHourDailyCycleRegex matches the start hour daily cycle field of a service_level message,
+// eg.: start_hour_daily_cycle[20h].
 const StartHourDailyCycleRegex = "start_hour_daily_cycle" + AnythingBetweenBracketsRegex
 
-// LoadSheddingDailyEnergyBudgetRegex matches the load shedding daily energy budget field of a dc message.
+// LoadSheddingDailyEnergyBudgetRegex matches the load shedding daily energy budget field of a service_level message.
 // eg.: load_shedding_daily_energy_budget[0].
 const LoadSheddingDailyEnergyBudgetRegex = "load_shedding_daily_energy_budget" + LongNumberBetweenBracketsRegex
 
-// LocalSheddingDailyEnergyBudgetRegex matches the local shedding daily energy budget field of a dc message.
+// LocalSheddingDailyEnergyBudgetRegex matches the local shedding daily energy budget field of a service_level message.
 // eg.: local_shedding_daily_energy_budget[0].
 const LocalSheddingDailyEnergyBudgetRegex = "local_shedding_daily_energy_budget" + LongNumberBetweenBracketsRegex
 
-// MaxActivePowerRegex matches the max active power field of a dc message, formatted like: max_active_power[0].
+// MaxActivePowerRegex matches the max active power field of a service_level message,
+// formatted like: max_active_power[0].
 const MaxActivePowerRegex = "max_active_power" + LongNumberBetweenBracketsRegex
 
-// InServiceRegex matches the in service field of a dc message, formatted like: in_service[1].
+// InServiceRegex matches the in service field of a service_level message, formatted like: in_service[1].
 const InServiceRegex = "in_service" + NumberBetweenBrackets
 
-// NameRegex matches the name field of a dc message, formatted like: name[1. Suspension].
+// NameRegex matches the name field of a service_level message, formatted like: name[1. Suspension].
 const NameRegex = "name" + AnythingBetweenBracketsRegex
 
-// HourlyEnergyLimitsRegex matches the hourly energy limits field of a dc message.
+// HourlyEnergyLimitsRegex matches the hourly energy limits field of a service_level message.
 // eg.: hourly_energy_limits[[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]].
 const HourlyEnergyLimitsRegex = "hourly_energy_limits" + AnythingBetweenDoubleBracketsRegex
 
-// LocalHourlyEnergyLimitsRegex matches the local hourly energy limits field of a dc message.
+// LocalHourlyEnergyLimitsRegex matches the local hourly energy limits field of a service_level message.
 // eg.: local_hourly_energy_limits[[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]].
 const LocalHourlyEnergyLimitsRegex = "local_hourly_energy_limits" + AnythingBetweenDoubleBracketsRegex
 
@@ -189,9 +144,10 @@ const CurrentApp2FwRegex = "current_app2_fw" + AnythingBetweenBracketsRegex
 // CurrentPlcFwRegex matches the current_plc_fw field of a dc message, formatted like: current_plc_fw[14.3.13.0].
 const CurrentPlcFwRegex = "current_plc_fw" + AnythingBetweenBracketsRegex
 
-// LastSuccessfulDlmsResponseDateRegex matches the last successful dlms response date field of a dc message,
+// <--[smc configuration]--(DB)
+// LastSuccessfulRespDateRegex matches the last successful dlms response date field of a dc message,
 // formatted like: last_successful_dlms_response_date [Wed Jun 10 07:58:11 2020].
-const LastSuccessfulDlmsResponseDateRegex = "last_successful_dlms_response_date \\[" + anyCharsExceptOpeningParentheses + "\\]"
+const LastSuccessfulRespDateRegex = "last_successful_dlms_response_date \\[" + anyCharsExceptOpeningParentheses + "\\]"
 
 // NextHopRegex matches the next hop field of a dc message, formatted like: next_hop[0].
 const NextHopRegex = "next_hop" + LongNumberBetweenBracketsRegex
