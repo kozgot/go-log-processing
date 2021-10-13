@@ -10,6 +10,7 @@ type InfoParams struct {
 	StatusMessage     StatusMessageParams     // no smc UID for this kind of entries
 	DCMessage         DCMessageParams         // has an SMC UID
 	ConnectionAttempt ConnectionAttemptParams // has an SMC UID and url
+	SmcConfigUpdate   SmcConfigUpdateParams
 }
 
 // ConnectionAttemptParams contains a parsed connection attempt log entry.
@@ -17,6 +18,16 @@ type ConnectionAttemptParams struct {
 	URL    string
 	SmcUID string
 	At     string // eg. (@ 000A)
+}
+
+// SmcConfigUpdateParams contains a parsed SMC config update log entry.
+// Update SMC configuration in DB smc_uid[dc18-smc32] physical_address[EEBEDDFFFE6210AD]
+// logical_address[FE80::4021:FF:FE00:000a:61616] short_address[10] last_joining_date[Wed Jun 10 09:20:14 2020]! (distribution_controller_plc_interface.cc::68)
+type SmcConfigUpdateParams struct {
+	PhysicalAddress string
+	LogicalAddress  string
+	ShortAddress    int
+	LastJoiningDate time.Time
 }
 
 // RoutingTableParams contains the parsed routing table message parameters.

@@ -7,4 +7,5 @@ const (
 	StatusMessageType   = "STATUS"
 	DCMessageType       = "DC"
 	ConnectionAttempt   = "CONNECTION_ATTEMPT"
+	SmcConfigUpdate     = "SMC_CONFIG_UPDATE"
 )
