@@ -191,3 +191,15 @@ const IndexProfileCapturePeriodRegex = "capture_period" + LongNumberBetweenBrack
 // or [index low profile generic] log entry.
 // eg.: capture_objects[0].
 const IndexProfileCaptureObjectsRegex = "capture_objects" + LongNumberBetweenBracketsRegex
+
+// StatisticsValueRegex matches the value field of a --[statistics]-->(SVI) log entry,
+// eg.: value[344.000000].
+const StatisticsValueRegex = "value" + AnyLettersBetweenBrackets
+
+// StatisticsSourceIDRegex matches the source id field of a --[statistics]-->(SVI) log entry,
+// eg.: source_id[dc18-smc32].
+const StatisticsSourceIDRegex = "source_id" + AnyLettersBetweenBrackets
+
+// StatisticsTypeRegex matches the type field of a --[statistics]-->(SVI) log entry,
+// eg.: type[PLC bytes sent for SMC].
+const StatisticsTypeRegex = "type" + AnyLettersBetweenBrackets

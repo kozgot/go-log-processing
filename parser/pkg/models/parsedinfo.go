@@ -41,7 +41,8 @@ type ConnectionReleasedParams struct {
 
 // SmcConfigUpdateParams contains a parsed SMC config update log entry.
 // Update SMC configuration in DB smc_uid[dc18-smc32] physical_address[EEBEDDFFFE6210AD]
-// logical_address[FE80::4021:FF:FE00:000a:61616] short_address[10] last_joining_date[Wed Jun 10 09:20:14 2020]! (distribution_controller_plc_interface.cc::68)
+//    logical_address[FE80::4021:FF:FE00:000a:61616] short_address[10]
+//    last_joining_date[Wed Jun 10 09:20:14 2020]! (distribution_controller_plc_interface.cc::68).
 type SmcConfigUpdateParams struct {
 	PhysicalAddress string
 	LogicalAddress  string
@@ -100,17 +101,41 @@ type DcMessagePayload struct {
 
 	TimeRange *TimeRange
 
-	ConnectOrDisconnectPayload *ConnectOrDisconnectPayload
-	DLMSLogPayload             *DLMSLogPayload
-	IndexPayload               *IndexPayload
-	GenericIndexProfilePayload *GenericIndexProfilePayload
-	MessagePayload             *MessagePayload
-	SettingsPayload            *SettingsPayload
-	ServiceLevelPayload        *ServiceLevelPayload
-	SmcAddressPayload          *SmcAddressParams
-	SmcConfigPayload           *SmcConfigPayload
-	PodConfigPayload           *PodConfigPayload
-	ConnectToPLCPayload        *ConnectToPLCPayload
+	ConnectOrDisconnectPayload       *ConnectOrDisconnectPayload
+	DLMSLogPayload                   *DLMSLogPayload
+	IndexPayload                     *IndexPayload
+	GenericIndexProfilePayload       *GenericIndexProfilePayload
+	MessagePayload                   *MessagePayload
+	SettingsPayload                  *SettingsPayload
+	ServiceLevelPayload              *ServiceLevelPayload
+	SmcAddressPayload                *SmcAddressParams
+	SmcConfigPayload                 *SmcConfigPayload
+	PodConfigPayload                 *PodConfigPayload
+	ConnectToPLCPayload              *ConnectToPLCPayload
+	StatisticsEntryPayload           *StatisticsEntryPayload
+	ReadIndexLowProfilesEntryPayload *ReadIndexLowProfilesEntryPayload
+	ReadIndexProfilesEntryPayload    *ReadIndexProfilesEntryPayload
+}
+
+// ReadIndexLowProfilesEntryPayload contains the parsed --[read index low profiles]-->(SMC) entries.
+type ReadIndexLowProfilesEntryPayload struct {
+	SmcUID string
+	From   time.Time
+	To     time.Time
+}
+
+// ReadIndexProfilesEntryPayload contains the parsed <--[read index profiles]--(SMC) entries.
+type ReadIndexProfilesEntryPayload struct {
+	SmcUID string
+	Count  int
+}
+
+// StatisticsEntryPayload contains the parsed statistics log entry sent to the SVI.
+type StatisticsEntryPayload struct {
+	Type     string
+	Value    float64
+	Time     time.Time
+	SourceID string
 }
 
 // GenericIndexProfilePayload contains the parsed index high/low profile generic payload.

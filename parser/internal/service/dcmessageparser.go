@@ -111,9 +111,70 @@ func parseDCMessagePayload(line string, messageType string, destination string) 
 
 	case "index high profile generic":
 		payload.GenericIndexProfilePayload = parseGenericIndexProfile(line)
+
+	case "read index low profiles":
+		payload.ReadIndexLowProfilesEntryPayload = parseReadIndexLowProfilesEntry(line)
+
+	case "read index profiles":
+		payload.ReadIndexProfilesEntryPayload = parseReadIndexProfilesEntry(line)
+
+	case "statistics":
+		if destination == "SVI" {
+			// The destination could be 'DB' as well, but in that case, we have no more params to parse.
+			payload.StatisticsEntryPayload = parseStatisticsEntry(line)
+		}
 	}
 
 	return &payload
+}
+
+func parseReadIndexLowProfilesEntry(line string) *models.ReadIndexLowProfilesEntryPayload {
+	timeRange := parseTimeRange(line)
+	result := models.ReadIndexLowProfilesEntryPayload{}
+	result.To = timeRange.To
+	result.From = timeRange.From
+	result.SmcUID = parseFieldInBracketsAsString(line, formats.SMCUIDRegex)
+
+	return &result
+}
+
+func parseReadIndexProfilesEntry(line string) *models.ReadIndexProfilesEntryPayload {
+	result := models.ReadIndexProfilesEntryPayload{}
+	result.SmcUID = parseFieldInBracketsAsString(line, formats.SMCUIDRegex)
+
+	// Get the count part between the parentheses.
+	// <--[read index profiles]--(SMC) smc_uid[dc18-smc9] (6) (smart_meter_cabinet.cc::190)
+	correctCount := 4
+	parts := strings.Split(line, "(")
+	if len(parts) < correctCount {
+		// Default if we could not parse...
+		result.Count = 0
+	}
+
+	// eg.: '6) '
+	countString := parts[2]
+
+	// trim off the ) and space from the end
+	countString = strings.Replace(countString, ") ", "", 1)
+
+	// convert to int
+	count := tryParseIntFromString(countString)
+	result.Count = count
+
+	return &result
+}
+
+func parseStatisticsEntry(line string) *models.StatisticsEntryPayload {
+	result := models.StatisticsEntryPayload{}
+	result.Type = parseFieldInBracketsAsString(line, formats.StatisticsTypeRegex)
+	result.SourceID = parseFieldInBracketsAsString(line, formats.StatisticsSourceIDRegex)
+	result.Time = parseTimeFieldFromSeconds(line, formats.TimeTicksRegex)
+	valueString := parseFieldInBracketsAsString(line, formats.StatisticsValueRegex)
+
+	value := tryParseFloat64FromString(valueString)
+	result.Value = value
+
+	return &result
 }
 
 func parseGenericIndexProfile(line string) *models.GenericIndexProfilePayload {
