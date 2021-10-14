@@ -11,7 +11,7 @@ func parseConnectionReleasedEntry(line string) *models.ConnectionReleasedParams 
 	if strings.Contains(line, formats.ConnectionReleasedPrefix) {
 		// the entry looks like this:
 		// Successfully Released DLMS connection fe80::4021:ff:fe00:23:61616 (smart_meter_cabinet_initializer.cc::115)
-		url := parseURLFromConnectionRelease(strings.Replace(line, formats.ConnectionReleasedPrefix, "", 1))
+		url := parseURLFromConnectionEntries(strings.Replace(line, formats.ConnectionReleasedPrefix, "", 1))
 		connectionReleasedParams := models.ConnectionReleasedParams{URL: url}
 
 		return &connectionReleasedParams
@@ -21,7 +21,7 @@ func parseConnectionReleasedEntry(line string) *models.ConnectionReleasedParams 
 }
 
 // Todo: maybe unify these kinds of parsing methods + extract to separate files
-func parseURLFromConnectionRelease(entryWithoutPrefix string) string {
+func parseURLFromConnectionEntries(entryWithoutPrefix string) string {
 	// We need to trim off the source file name in parentheses from the end.
 	minLengthIfContainsSeparator := 2
 	lineParts := strings.Split(entryWithoutPrefix, " (")

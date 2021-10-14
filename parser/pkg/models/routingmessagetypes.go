@@ -9,4 +9,6 @@ const (
 	ConnectionAttempt   = "CONNECTION_ATTEMPT"
 	SmcConfigUpdate     = "SMC_CONFIG_UPDATE"
 	ConnectionReleased  = "CONNECTION_RELEASED"
+	InitDlmsConnection  = "INITIALIZE_DLMS_CONNECTION"
+	InternalDiagnostics = "SMC_INTERNAL_DIAGNOSTICS"
 )

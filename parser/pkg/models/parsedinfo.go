@@ -4,14 +4,27 @@ import "time"
 
 // InfoParams contains the parsed info parameters.
 type InfoParams struct {
-	MessageType        string                  // one of 'ROUTING', 'JOIN', 'STATUS', or 'DC'
-	RoutingMessage     RoutingTableParams      // no smc UID for this kind of entries
-	JoinMessage        SmcJoinMessageParams    // has an SMC UID
-	StatusMessage      StatusMessageParams     // no smc UID for this kind of entries
-	DCMessage          DCMessageParams         // has an SMC UID
-	ConnectionAttempt  ConnectionAttemptParams // has an SMC UID and url
-	SmcConfigUpdate    SmcConfigUpdateParams
-	ConnectionReleased ConnectionReleasedParams
+	MessageType             string                  // one of 'ROUTING', 'JOIN', 'STATUS', or 'DC'
+	RoutingMessage          RoutingTableParams      // no smc UID for this kind of entries
+	JoinMessage             SmcJoinMessageParams    // has an SMC UID
+	StatusMessage           StatusMessageParams     // no smc UID for this kind of entries
+	DCMessage               DCMessageParams         // has an SMC UID
+	ConnectionAttempt       ConnectionAttemptParams // has an SMC UID and url
+	SmcConfigUpdate         SmcConfigUpdateParams
+	ConnectionReleased      ConnectionReleasedParams
+	InitConnection          InitConnectionParams
+	InternalDiagnosticsData InternalDiagnosticsData
+}
+
+// InternalDiagnosticsData contains a parsed internal diagnostics log entry.
+type InternalDiagnosticsData struct {
+	SmcUID                         string
+	LastSuccessfulDlmsResponseDate time.Time
+}
+
+// InitConnectionParams contains a parsed initialize dlms connection log entry.
+type InitConnectionParams struct {
+	URL string
 }
 
 // ConnectionAttemptParams contains a parsed connection attempt log entry.

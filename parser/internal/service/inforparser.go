@@ -60,6 +60,20 @@ func parseInfo(line models.LineWithDate) *models.InfoParams {
 		return &infoParams
 	}
 
+	initConnectionParams := parseInitConnectionLogEntry(line.Rest)
+	if initConnectionParams != nil {
+		infoParams.InitConnection = *initConnectionParams
+		infoParams.MessageType = models.InitDlmsConnection
+		return &infoParams
+	}
+
+	internalDiagnosticsEntry := parseSmcInternalDiagnosticsEntry(line.Rest)
+	if internalDiagnosticsEntry != nil {
+		infoParams.InternalDiagnosticsData = *internalDiagnosticsEntry
+		infoParams.MessageType = models.InternalDiagnostics
+		return &infoParams
+	}
+
 	return &infoParams
 }
 
