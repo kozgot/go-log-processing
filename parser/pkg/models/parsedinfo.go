@@ -103,12 +103,26 @@ type DcMessagePayload struct {
 	ConnectOrDisconnectPayload *ConnectOrDisconnectPayload
 	DLMSLogPayload             *DLMSLogPayload
 	IndexPayload               *IndexPayload
+	GenericIndexProfilePayload *GenericIndexProfilePayload
 	MessagePayload             *MessagePayload
 	SettingsPayload            *SettingsPayload
 	ServiceLevelPayload        *ServiceLevelPayload
 	SmcAddressPayload          *SmcAddressParams
 	SmcConfigPayload           *SmcConfigPayload
 	PodConfigPayload           *PodConfigPayload
+	ConnectToPLCPayload        *ConnectToPLCPayload
+}
+
+// GenericIndexProfilePayload contains the parsed index high/low profile generic payload.
+type GenericIndexProfilePayload struct {
+	CapturePeriod  int
+	CaptureObjects int
+}
+
+// ConnectToPLCPayload contains the parsed connect to PLC payload.
+type ConnectToPLCPayload struct {
+	Interface          string
+	DestinationAddress string
 }
 
 // SettingsPayload contains the parsed settings payload

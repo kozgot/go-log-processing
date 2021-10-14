@@ -30,7 +30,7 @@ func parseDCMessage(lin string) *models.DCMessageParams {
 		dcMessageParams.MessageType = parseFieldInBracketsAsString(lin, formats.OutGoingMessageTypeRegex)
 	}
 
-	dcMessageParams.Payload = parseDCMessagePayload(lin, dcMessageParams.MessageType)
+	dcMessageParams.Payload = parseDCMessagePayload(lin, dcMessageParams.MessageType, dest)
 
 	return &dcMessageParams
 }
@@ -61,7 +61,7 @@ func parsePayloadTime(line string) time.Time {
 	return time.Time{}
 }
 
-func parseDCMessagePayload(line string, messageType string) *models.DcMessagePayload {
+func parseDCMessagePayload(line string, messageType string, destination string) *models.DcMessagePayload {
 	payload := models.DcMessagePayload{}
 
 	if messageType == "new smc" {
@@ -80,8 +80,11 @@ func parseDCMessagePayload(line string, messageType string) *models.DcMessagePay
 		payload.MessagePayload = parseMessagePayload(line)
 
 	case "connect":
-		payload.ConnectOrDisconnectPayload = parseConnectOrDisconnectPayload(line)
-
+		if destination == "PLC" {
+			payload.ConnectToPLCPayload = parseConnectToPLC(line)
+		} else {
+			payload.ConnectOrDisconnectPayload = parseConnectOrDisconnectPayload(line)
+		}
 	case "pod configuration":
 		payload.PodConfigPayload = parsePodConfigPayload(line)
 
@@ -102,9 +105,37 @@ func parseDCMessagePayload(line string, messageType string) *models.DcMessagePay
 
 	case "index":
 		payload.IndexPayload = parseIndexPayload(line)
+
+	case "index low profile generic":
+		payload.GenericIndexProfilePayload = parseGenericIndexProfile(line)
+
+	case "index high profile generic":
+		payload.GenericIndexProfilePayload = parseGenericIndexProfile(line)
 	}
 
 	return &payload
+}
+
+func parseGenericIndexProfile(line string) *models.GenericIndexProfilePayload {
+	result := models.GenericIndexProfilePayload{}
+	capturePeriodString := parseFieldInBracketsAsString(line, formats.IndexProfileCapturePeriodRegex)
+	capturePeriod := tryParseIntFromString(capturePeriodString)
+
+	captureObjectsString := parseFieldInBracketsAsString(line, formats.IndexProfileCaptureObjectsRegex)
+	captureObjects := tryParseIntFromString(captureObjectsString)
+
+	result.CaptureObjects = captureObjects
+	result.CapturePeriod = capturePeriod
+
+	return &result
+}
+
+func parseConnectToPLC(line string) *models.ConnectToPLCPayload {
+	result := models.ConnectToPLCPayload{}
+	result.Interface = parseFieldInBracketsAsString(line, formats.ConnectToPLCIfaceRegex)
+	result.DestinationAddress = parseFieldInBracketsAsString(line, formats.ConnectToPLCDestAddressRegex)
+
+	return &result
 }
 
 func parseNewSmcUID(line string) string {

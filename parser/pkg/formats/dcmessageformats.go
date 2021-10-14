@@ -173,3 +173,21 @@ const AnythingBetweenBracketsRegex = "\\[([^\\]])*\\]"
 
 // AnythingBetweenDoubleBracketsRegex matches anything between two brackets.
 const AnythingBetweenDoubleBracketsRegex = "\\[\\[([^\\]])*\\]\\]"
+
+// ConnectToPLCIfaceRegex matches the interface field of a connect to plc log entry.
+// eg.: --[connect]-->(PLC) Iface[plc0] - DestAddr[fe80::4021:ff:fe00:a:61616].
+const ConnectToPLCIfaceRegex = "Iface" + AnyLettersBetweenBrackets
+
+// ConnectToPLCDestAddressRegex matches the destination address field of a connect to plc log entry.
+// eg.: --[connect]-->(PLC) Iface[plc0] - DestAddr[fe80::4021:ff:fe00:a:61616].
+const ConnectToPLCDestAddressRegex = "DestAddr" + AnyLettersBetweenBrackets
+
+// IndexProfileCapturePeriodRegex matches the capture period field of an [index high profile generic],
+// or [index low profile generic] log entry.
+// eg.: capture_period[86400].
+const IndexProfileCapturePeriodRegex = "capture_period" + LongNumberBetweenBracketsRegex
+
+// IndexProfileCapturePeriodRegex matches the capture objects field of an [index high profile generic],
+// or [index low profile generic] log entry.
+// eg.: capture_objects[0].
+const IndexProfileCaptureObjectsRegex = "capture_objects" + LongNumberBetweenBracketsRegex
