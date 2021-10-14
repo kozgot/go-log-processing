@@ -114,7 +114,7 @@ func parseSmcJoinLine(line string) *models.SmcJoinMessageParams {
 	}
 
 	responseString := messageParts[0]
-	response := parseStringBetweenBrackets(responseString)
+	response := parseFieldInBracketsAsString(responseString, formats.AnyLettersBetweenBrackets)
 	smcJoinLine.Response = response
 
 	status := parseJoinStatus(responseString)
@@ -154,10 +154,6 @@ func parseSmcJoinLine(line string) *models.SmcJoinMessageParams {
 
 	smcJoinLine.SmcAddress = smcAddress
 	return &smcJoinLine
-}
-
-func parseStringBetweenBrackets(line string) string {
-	return parseFieldInBracketsAsString(line, formats.AnyLettersBetweenBrackets)
 }
 
 func parseJoinStatus(line string) string {
