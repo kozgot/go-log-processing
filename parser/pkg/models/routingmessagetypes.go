@@ -8,4 +8,5 @@ const (
 	DCMessageType       = "DC"
 	ConnectionAttempt   = "CONNECTION_ATTEMPT"
 	SmcConfigUpdate     = "SMC_CONFIG_UPDATE"
+	ConnectionReleased  = "CONNECTION_RELEASED"
 )

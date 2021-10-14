@@ -46,18 +46,18 @@ func parseInfo(line models.LineWithDate) *models.InfoParams {
 		return &infoParams
 	}
 
-	if strings.Contains(line.Rest, "Update SMC configuration in DB ") {
-		smcAddress := parseSmcAddressPayload(line.Rest)
-		if smcAddress != nil {
-			smcConfigUpdate := models.SmcConfigUpdateParams{
-				PhysicalAddress: smcAddress.PhysicalAddress,
-				LogicalAddress:  smcAddress.LogicalAddress,
-				ShortAddress:    smcAddress.ShortAddress,
-				LastJoiningDate: smcAddress.LastJoiningDate}
-			infoParams.SmcConfigUpdate = smcConfigUpdate
-			infoParams.MessageType = models.SmcConfigUpdate
-			return &infoParams
-		}
+	configUpdate := parseSmcConfigUpdate(line.Rest)
+	if configUpdate != nil {
+		infoParams.SmcConfigUpdate = *configUpdate
+		infoParams.MessageType = models.SmcConfigUpdate
+		return &infoParams
+	}
+
+	connectionReleased := parseConnectionReleasedEntry(line.Rest)
+	if connectionReleased != nil {
+		infoParams.ConnectionReleased = *connectionReleased
+		infoParams.MessageType = models.ConnectionReleased
+		return &infoParams
 	}
 
 	return &infoParams

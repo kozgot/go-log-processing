@@ -4,13 +4,14 @@ import "time"
 
 // InfoParams contains the parsed info parameters.
 type InfoParams struct {
-	MessageType       string                  // one of 'ROUTING', 'JOIN', 'STATUS', or 'DC'
-	RoutingMessage    RoutingTableParams      // no smc UID for this kind of entries
-	JoinMessage       SmcJoinMessageParams    // has an SMC UID
-	StatusMessage     StatusMessageParams     // no smc UID for this kind of entries
-	DCMessage         DCMessageParams         // has an SMC UID
-	ConnectionAttempt ConnectionAttemptParams // has an SMC UID and url
-	SmcConfigUpdate   SmcConfigUpdateParams
+	MessageType        string                  // one of 'ROUTING', 'JOIN', 'STATUS', or 'DC'
+	RoutingMessage     RoutingTableParams      // no smc UID for this kind of entries
+	JoinMessage        SmcJoinMessageParams    // has an SMC UID
+	StatusMessage      StatusMessageParams     // no smc UID for this kind of entries
+	DCMessage          DCMessageParams         // has an SMC UID
+	ConnectionAttempt  ConnectionAttemptParams // has an SMC UID and url
+	SmcConfigUpdate    SmcConfigUpdateParams
+	ConnectionReleased ConnectionReleasedParams
 }
 
 // ConnectionAttemptParams contains a parsed connection attempt log entry.
@@ -18,6 +19,11 @@ type ConnectionAttemptParams struct {
 	URL    string
 	SmcUID string
 	At     string // eg. (@ 000A)
+}
+
+// ConnectionAttemptParams contains a parsed connection attempt log entry.
+type ConnectionReleasedParams struct {
+	URL string
 }
 
 // SmcConfigUpdateParams contains a parsed SMC config update log entry.
