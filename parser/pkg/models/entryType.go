@@ -1,8 +1,10 @@
 package models
 
+// EntryType represents the type of the log entry.
 type EntryType int64
 
 const (
+	// UnknownEntryType is the default value of EntryType.
 	UnknownEntryType EntryType = iota // this is the default value
 	Routing                           // Routing Table: Addr[0x0008]...
 	NetworkStatus                     // <--[Network status]--(PLC)

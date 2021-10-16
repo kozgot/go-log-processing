@@ -4,6 +4,7 @@ package models
 type DCMessageType int64
 
 const (
+	// UnknownDCMessage is the default value of DCMessageType.
 	UnknownDCMessage        DCMessageType = iota
 	IndexReceived                         // <--[index]--(SMC)
 	MessageSentToSVI                      // --[message]-->(SVI)

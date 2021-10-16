@@ -34,7 +34,7 @@ type ConnectionAttemptParams struct {
 	At     string // eg. (@ 000A)
 }
 
-// ConnectionAttemptParams contains a parsed connection attempt log entry.
+// ConnectionReleasedParams contains a parsed connection attempt log entry.
 type ConnectionReleasedParams struct {
 	URL string
 }
