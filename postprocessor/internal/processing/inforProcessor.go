@@ -6,19 +6,19 @@ import (
 )
 
 // ProcessInfo processes a log entry with INFO log level.
-func ProcessInfo(logEntry parsermodels.ParsedLine) (*models.SmcEntry, *models.RoutingEntry, *models.StatusEntry) {
+func ProcessInfo(logEntry parsermodels.ParsedLogEntry) (*models.SmcEntry, *models.RoutingEntry, *models.StatusEntry) {
 	// one of 'ROUTING', 'JOIN', 'STATUS', or 'DC'
-	switch logEntry.InfoParams.MessageType {
-	case "ROUTING":
+	switch logEntry.InfoParams.EntryType {
+	case parsermodels.Routing:
 		routingEntry := processRoutingMessage(logEntry)
 		return nil, routingEntry, nil
-	case "JOIN":
+	case parsermodels.SMCJoin:
 		joinEntry := processJoinMessage(logEntry)
 		return joinEntry, nil, nil
-	case "STATUS":
+	case parsermodels.NetworkStatus:
 		statusEntry := processStatusMessage(logEntry)
 		return nil, nil, statusEntry
-	case "DC":
+	case parsermodels.DCMessage:
 		dcMessage := processDCMessage(logEntry)
 		return dcMessage, nil, nil
 	default:
@@ -28,7 +28,7 @@ func ProcessInfo(logEntry parsermodels.ParsedLine) (*models.SmcEntry, *models.Ro
 	return nil, nil, nil
 }
 
-func processDCMessage(logEntry parsermodels.ParsedLine) *models.SmcEntry {
+func processDCMessage(logEntry parsermodels.ParsedLogEntry) *models.SmcEntry {
 	result := models.SmcEntry{}
 	result.TimeStamp = logEntry.Timestamp
 	result.EventType = logEntry.Level
@@ -38,7 +38,7 @@ func processDCMessage(logEntry parsermodels.ParsedLine) *models.SmcEntry {
 	return &result
 }
 
-func processJoinMessage(logEntry parsermodels.ParsedLine) *models.SmcEntry {
+func processJoinMessage(logEntry parsermodels.ParsedLogEntry) *models.SmcEntry {
 	result := models.SmcEntry{}
 	result.TimeStamp = logEntry.Timestamp
 	result.EventType = logEntry.Level
@@ -48,7 +48,7 @@ func processJoinMessage(logEntry parsermodels.ParsedLine) *models.SmcEntry {
 	return &result
 }
 
-func processStatusMessage(logEntry parsermodels.ParsedLine) *models.StatusEntry {
+func processStatusMessage(logEntry parsermodels.ParsedLogEntry) *models.StatusEntry {
 	result := models.StatusEntry{}
 	result.TimeStamp = logEntry.Timestamp
 	result.Message = logEntry.InfoParams.StatusMessage.Message
@@ -57,7 +57,7 @@ func processStatusMessage(logEntry parsermodels.ParsedLine) *models.StatusEntry 
 	return &result
 }
 
-func processRoutingMessage(logEntry parsermodels.ParsedLine) *models.RoutingEntry {
+func processRoutingMessage(logEntry parsermodels.ParsedLogEntry) *models.RoutingEntry {
 	result := models.RoutingEntry{}
 	result.TimeStamp = logEntry.Timestamp
 	result.Address = logEntry.InfoParams.RoutingMessage.Address

@@ -6,7 +6,7 @@ import (
 )
 
 // ProcessWarn processes a log entry with WARN log level.
-func ProcessWarn(logEntry parsermodels.ParsedLine) *models.SmcEntry {
+func ProcessWarn(logEntry parsermodels.ParsedLogEntry) *models.SmcEntry {
 	result := models.SmcEntry{}
 	result.TimeStamp = logEntry.Timestamp
 	result.EventType = logEntry.Level
@@ -17,7 +17,7 @@ func ProcessWarn(logEntry parsermodels.ParsedLine) *models.SmcEntry {
 }
 
 // ProcessWarning processes a log entry with WARNING log level.
-func ProcessWarning(logEntry parsermodels.ParsedLine) *models.SmcEntry {
+func ProcessWarning(logEntry parsermodels.ParsedLogEntry) *models.SmcEntry {
 	result := models.SmcEntry{}
 	result.TimeStamp = logEntry.Timestamp
 	result.EventType = logEntry.Level
