@@ -4,7 +4,7 @@ import "time"
 
 // InfoParams contains the parsed info parameters.
 type InfoParams struct {
-	MessageType             string                  // one of 'ROUTING', 'JOIN', 'STATUS', or 'DC'
+	EntryType               EntryType
 	RoutingMessage          RoutingTableParams      // no smc UID for this kind of entries
 	JoinMessage             SmcJoinMessageParams    // has an SMC UID
 	StatusMessage           StatusMessageParams     // no smc UID for this kind of entries
@@ -87,7 +87,7 @@ type StatusMessageParams struct {
 type DCMessageParams struct {
 	IsInComing       bool
 	SourceOrDestName string
-	MessageType      string // todo: prepare enums for message types
+	MessageType      DCMessageType
 	Payload          *DcMessagePayload
 }
 

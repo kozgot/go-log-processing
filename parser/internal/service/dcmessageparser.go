@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -23,11 +24,13 @@ func parseDCMessage(lin string) *models.DCMessageParams {
 	if source != "" {
 		dcMessageParams.IsInComing = true
 		dcMessageParams.SourceOrDestName = source
-		dcMessageParams.MessageType = parseFieldInBracketsAsString(lin, formats.IncomingMessageTypeRegex)
+		messageTypeString := parseFieldInBracketsAsString(lin, formats.IncomingMessageTypeRegex)
+		dcMessageParams.MessageType = models.ParseDCmessageTypeFromString(messageTypeString)
 	} else if dest != "" {
 		dcMessageParams.IsInComing = false
 		dcMessageParams.SourceOrDestName = dest
-		dcMessageParams.MessageType = parseFieldInBracketsAsString(lin, formats.OutGoingMessageTypeRegex)
+		dcMessageTypeString := parseFieldInBracketsAsString(lin, formats.OutGoingMessageTypeRegex)
+		dcMessageParams.MessageType = models.ParseDCmessageTypeFromString(dcMessageTypeString)
 	}
 
 	dcMessageParams.Payload = parseDCMessagePayload(lin, dcMessageParams.MessageType, dest)
@@ -61,14 +64,10 @@ func parsePayloadTime(line string) time.Time {
 	return time.Time{}
 }
 
-func parseDCMessagePayload(line string, messageType string, destination string) *models.DcMessagePayload {
+func parseDCMessagePayload(line string, messageType models.DCMessageType, destination string) *models.DcMessagePayload {
 	payload := models.DcMessagePayload{}
 
-	if messageType == "new smc" {
-		payload.SmcUID = parseNewSmcUID(line)
-	} else {
-		payload.SmcUID = parseFieldInBracketsAsString(line, formats.SmcUIDRegex)
-	}
+	payload.SmcUID = parseFieldInBracketsAsString(line, formats.SmcUIDRegex)
 	payload.PodUID = parseFieldInBracketsAsString(line, formats.PodUIDRegex)
 	payload.ServiceLevelID = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ServiceLevelIDRegex))
 	payload.Value = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ValueRegex))
@@ -76,53 +75,60 @@ func parseDCMessagePayload(line string, messageType string, destination string) 
 	payload.TimeRange = parseTimeRange(line)
 
 	switch messageType {
-	case "message":
+	case models.NewSmc:
+		payload.SmcUID = parseNewSmcUID(line)
+	case models.MessageSentToSVI:
 		payload.MessagePayload = parseMessagePayload(line)
 
-	case "connect":
+	case models.Connect:
 		if destination == "PLC" {
 			payload.ConnectToPLCPayload = parseConnectToPLC(line)
 		} else {
+			// dest is SVI or UDS
 			payload.ConnectOrDisconnectPayload = parseConnectOrDisconnectPayload(line)
 		}
-	case "pod configuration":
+
+	case models.PodConfig:
 		payload.PodConfigPayload = parsePodConfigPayload(line)
 
-	case "smc configuration":
+	case models.SmcConfig:
 		payload.SmcConfigPayload = parseSmcConfigPayload(line)
 
-	case "smc address":
+	case models.SmcAddress:
 		payload.SmcAddressPayload = parseSmcAddressPayload(line)
 
-	case "service_level":
+	case models.ServiceLevel:
 		payload.ServiceLevelPayload = parseServiceLevelPayload(line)
 
-	case "settings":
+	case models.Settings:
 		payload.SettingsPayload = parseSettingsPayload(line)
 
-	case "DLMS Logs":
+	case models.DLMSLogs:
 		payload.DLMSLogPayload = parseDLMSLogPayload(line)
 
-	case "index":
+	case models.IndexReceived:
 		payload.IndexPayload = parseIndexPayload(line)
 
-	case "index low profile generic":
+	case models.IndexLowProfileGeneric:
 		payload.GenericIndexProfilePayload = parseGenericIndexProfile(line)
 
-	case "index high profile generic":
+	case models.IndexHighProfileGeneric:
 		payload.GenericIndexProfilePayload = parseGenericIndexProfile(line)
 
-	case "read index low profiles":
+	case models.ReadIndexLowProfiles:
 		payload.ReadIndexLowProfilesEntryPayload = parseReadIndexLowProfilesEntry(line)
 
-	case "read index profiles":
+	case models.ReadIndexProfiles:
 		payload.ReadIndexProfilesEntryPayload = parseReadIndexProfilesEntry(line)
 
-	case "statistics":
+	case models.Statistics:
 		if destination == "SVI" {
 			// The destination could be 'DB' as well, but in that case, we have no more params to parse.
 			payload.StatisticsEntryPayload = parseStatisticsEntry(line)
 		}
+
+	case models.UnknownDCMessage:
+		fmt.Println("Unknown dc message")
 	}
 
 	return &payload
@@ -241,7 +247,7 @@ func parseConnectOrDisconnectPayload(line string) *models.ConnectOrDisconnectPay
 		return &result
 	}
 
-	// todo: ellenőrzés
+	// todo: disconnect payload ?? a warn résznél
 	return nil
 }
 

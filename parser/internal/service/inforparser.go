@@ -11,66 +11,66 @@ import (
 func parseInfo(line models.LineWithDate) *models.InfoParams {
 	infoParams := models.InfoParams{}
 
-	routingMessage := parseRoutingTableLine(line.Rest) // done
+	routingMessage := parseRoutingTableLine(line.Rest)
 	if routingMessage != nil {
 		infoParams.RoutingMessage = *routingMessage
-		infoParams.MessageType = models.RountingMessageType
+		infoParams.EntryType = models.Routing
 		return &infoParams
 	}
 
-	joinMessage := parseSmcJoinLine(line.Rest) // todo: finish payload parsing
+	joinMessage := parseSmcJoinLine(line.Rest)
 	if joinMessage != nil {
 		infoParams.JoinMessage = *joinMessage
-		infoParams.MessageType = models.JoinMessageType
+		infoParams.EntryType = models.SMCJoin
 		return &infoParams
 	}
 
 	statusMessage := parseStatusLine(line.Rest)
 	if statusMessage != nil {
 		infoParams.StatusMessage = *statusMessage
-		infoParams.MessageType = models.StatusMessageType
+		infoParams.EntryType = models.NetworkStatus
 		return &infoParams
 	}
 
 	dcMessage := parseDCMessage(line.Rest)
 	if dcMessage != nil {
 		infoParams.DCMessage = *dcMessage
-		infoParams.MessageType = models.DCMessageType
+		infoParams.EntryType = models.DCMessage
 		return &infoParams
 	}
 
 	connectionAttempt := parseConnectionAttempt(line.Rest)
 	if connectionAttempt != nil {
 		infoParams.ConnectionAttempt = *connectionAttempt
-		infoParams.MessageType = models.ConnectionAttempt
+		infoParams.EntryType = models.ConnectionAttempt
 		return &infoParams
 	}
 
 	configUpdate := parseSmcConfigUpdate(line.Rest)
 	if configUpdate != nil {
 		infoParams.SmcConfigUpdate = *configUpdate
-		infoParams.MessageType = models.SmcConfigUpdate
+		infoParams.EntryType = models.SmcConfigUpdate
 		return &infoParams
 	}
 
 	connectionReleased := parseConnectionReleasedEntry(line.Rest)
 	if connectionReleased != nil {
 		infoParams.ConnectionReleased = *connectionReleased
-		infoParams.MessageType = models.ConnectionReleased
+		infoParams.EntryType = models.ConnectionReleased
 		return &infoParams
 	}
 
 	initConnectionParams := parseInitConnectionLogEntry(line.Rest)
 	if initConnectionParams != nil {
 		infoParams.InitConnection = *initConnectionParams
-		infoParams.MessageType = models.InitDlmsConnection
+		infoParams.EntryType = models.InitDLMSConnection
 		return &infoParams
 	}
 
 	internalDiagnosticsEntry := parseSmcInternalDiagnosticsEntry(line.Rest)
 	if internalDiagnosticsEntry != nil {
 		infoParams.InternalDiagnosticsData = *internalDiagnosticsEntry
-		infoParams.MessageType = models.InternalDiagnostics
+		infoParams.EntryType = models.InternalDiagnostics
 		return &infoParams
 	}
 
@@ -132,10 +132,10 @@ func parseSmcJoinLine(line string) *models.SmcJoinMessageParams {
 	smcJoinLine.Response = response
 
 	status := parseJoinStatus(responseString)
-	smcJoinLine.Ok = status == "OK" // todo: is there a better way?
+	smcJoinLine.Ok = status == "OK"
 
-	payloadString := strings.TrimLeft(messageParts[1], " [") // todo: is there a better way?
-	payloadString = strings.TrimRight(payloadString, "] ")   // todo: is there a better way?
+	payloadString := strings.TrimLeft(messageParts[1], " [")
+	payloadString = strings.TrimRight(payloadString, "] ")
 
 	joinType := parseFieldInBracketsAsString(payloadString, formats.JoinTypeRegex)
 	if joinType != "" {
@@ -164,8 +164,7 @@ func parseSmcJoinLine(line string) *models.SmcJoinMessageParams {
 		smcAddress.ShortAddress = tryParseIntFromString(shortAddress)
 	}
 
-	// todo last joining date
-
+	smcAddress.LastJoiningDate = parseDateTimeField(line, formats.LastJoiningDateRegex)
 	smcJoinLine.SmcAddress = smcAddress
 	return &smcJoinLine
 }
