@@ -6,7 +6,7 @@ import (
 )
 
 // ProcessError processes a log entry with ERROR log level.
-func ProcessError(logEntry parsermodels.ParsedLine) *models.SmcEntry {
+func ProcessError(logEntry parsermodels.ParsedLogEntry) *models.SmcEntry {
 	result := models.SmcEntry{}
 	errorParams := logEntry.ErrorParams
 	result.TimeStamp = logEntry.Timestamp

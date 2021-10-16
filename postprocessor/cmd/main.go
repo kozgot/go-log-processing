@@ -103,8 +103,8 @@ func main() {
 	<-forever
 }
 
-func deserializeMessage(message []byte) parsermodels.ParsedLine {
-	var data parsermodels.ParsedLine
+func deserializeMessage(message []byte) parsermodels.ParsedLogEntry {
+	var data parsermodels.ParsedLogEntry
 	if err := json.Unmarshal(message, &data); err != nil {
 		fmt.Println("failed to unmarshal:", err)
 	}

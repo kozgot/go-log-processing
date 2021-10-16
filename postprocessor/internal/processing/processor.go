@@ -10,7 +10,7 @@ import (
 )
 
 // Process processes the log entry received as a parameter.
-func Process(logEntry parsermodels.ParsedLine, channel *amqp.Channel) models.ProcessedEntries {
+func Process(logEntry parsermodels.ParsedLogEntry, channel *amqp.Channel) models.ProcessedEntries {
 	entriesBySmcUID := make(map[string][]models.SmcEntry)
 	routingEntries := []models.RoutingEntry{}
 	statusEntries := []models.StatusEntry{}
