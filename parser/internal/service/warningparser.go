@@ -22,7 +22,17 @@ func parseWarning(line models.LineWithDate) *models.WarningParams {
 func parseWarn(line models.LineWithDate) *models.WarningParams {
 	warningParams := models.WarningParams{}
 
-	warnRegex, _ := regexp.Compile(formats.WarnRegex)
+	if strings.Contains(line.Rest, formats.TimeoutWarnPrefix) {
+		// This is a Timeout warn entry.
+		timeoutParams := parseTimeoutEntry(line.Rest)
+		if timeoutParams != nil {
+			warningParams.TimeoutParams = *timeoutParams
+		}
+
+		return &warningParams
+	}
+
+	warnRegex, _ := regexp.Compile(formats.WarnRegex) // we only care for for Task failed warnings from here
 	warn := warnRegex.FindString(line.Rest)
 	if warn == "" {
 		return nil
@@ -65,6 +75,19 @@ func parseWarn(line models.LineWithDate) *models.WarningParams {
 	warningParams.Details = *errorParams
 
 	return &warningParams
+}
+
+func parseTimeoutEntry(line string) *models.TimelineOutParams {
+	if !strings.Contains(line, formats.TimeoutWarnPrefix) {
+		// This is not a timeout warn log entry.
+		return nil
+	}
+
+	result := models.TimelineOutParams{}
+	result.Protocol = parseFieldInBracketsAsString(line, formats.TimeoutProtocolRegex)
+	result.URL = parseFieldInBracketsAsString(line, formats.TimeoutURLRegex)
+
+	return &result
 }
 
 func parseWarningPriority(line string) int {

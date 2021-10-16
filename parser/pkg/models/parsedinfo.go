@@ -4,11 +4,50 @@ import "time"
 
 // InfoParams contains the parsed info parameters.
 type InfoParams struct {
-	MessageType    string               // one of 'ROUTING', 'JOIN', 'STATUS', or 'DC'
-	RoutingMessage RoutingTableParams   // no smc UID for this kind of entries
-	JoinMessage    SmcJoinMessageParams // has an SMC UID
-	StatusMessage  StatusMessageParams  // no smc UID for this kind of entries
-	DCMessage      DCMessageParams      // has an SMC UID
+	MessageType             string                  // one of 'ROUTING', 'JOIN', 'STATUS', or 'DC'
+	RoutingMessage          RoutingTableParams      // no smc UID for this kind of entries
+	JoinMessage             SmcJoinMessageParams    // has an SMC UID
+	StatusMessage           StatusMessageParams     // no smc UID for this kind of entries
+	DCMessage               DCMessageParams         // has an SMC UID
+	ConnectionAttempt       ConnectionAttemptParams // has an SMC UID and url
+	SmcConfigUpdate         SmcConfigUpdateParams
+	ConnectionReleased      ConnectionReleasedParams
+	InitConnection          InitConnectionParams
+	InternalDiagnosticsData InternalDiagnosticsData
+}
+
+// InternalDiagnosticsData contains a parsed internal diagnostics log entry.
+type InternalDiagnosticsData struct {
+	SmcUID                         string
+	LastSuccessfulDlmsResponseDate time.Time
+}
+
+// InitConnectionParams contains a parsed initialize dlms connection log entry.
+type InitConnectionParams struct {
+	URL string
+}
+
+// ConnectionAttemptParams contains a parsed connection attempt log entry.
+type ConnectionAttemptParams struct {
+	URL    string
+	SmcUID string
+	At     string // eg. (@ 000A)
+}
+
+// ConnectionAttemptParams contains a parsed connection attempt log entry.
+type ConnectionReleasedParams struct {
+	URL string
+}
+
+// SmcConfigUpdateParams contains a parsed SMC config update log entry.
+// Update SMC configuration in DB smc_uid[dc18-smc32] physical_address[EEBEDDFFFE6210AD]
+//    logical_address[FE80::4021:FF:FE00:000a:61616] short_address[10]
+//    last_joining_date[Wed Jun 10 09:20:14 2020]! (distribution_controller_plc_interface.cc::68).
+type SmcConfigUpdateParams struct {
+	PhysicalAddress string
+	LogicalAddress  string
+	ShortAddress    int
+	LastJoiningDate time.Time
 }
 
 // RoutingTableParams contains the parsed routing table message parameters.
@@ -62,15 +101,53 @@ type DcMessagePayload struct {
 
 	TimeRange *TimeRange
 
-	ConnectOrDisconnectPayload *ConnectOrDisconnectPayload
-	DLMSLogPayload             *DLMSLogPayload
-	IndexPayload               *IndexPayload
-	MessagePayload             *MessagePayload
-	SettingsPayload            *SettingsPayload
-	ServiceLevelPayload        *ServiceLevelPayload
-	SmcAddressPayload          *SmcAddressParams
-	SmcConfigPayload           *SmcConfigPayload
-	PodConfigPayload           *PodConfigPayload
+	ConnectOrDisconnectPayload       *ConnectOrDisconnectPayload
+	DLMSLogPayload                   *DLMSLogPayload
+	IndexPayload                     *IndexPayload
+	GenericIndexProfilePayload       *GenericIndexProfilePayload
+	MessagePayload                   *MessagePayload
+	SettingsPayload                  *SettingsPayload
+	ServiceLevelPayload              *ServiceLevelPayload
+	SmcAddressPayload                *SmcAddressParams
+	SmcConfigPayload                 *SmcConfigPayload
+	PodConfigPayload                 *PodConfigPayload
+	ConnectToPLCPayload              *ConnectToPLCPayload
+	StatisticsEntryPayload           *StatisticsEntryPayload
+	ReadIndexLowProfilesEntryPayload *ReadIndexLowProfilesEntryPayload
+	ReadIndexProfilesEntryPayload    *ReadIndexProfilesEntryPayload
+}
+
+// ReadIndexLowProfilesEntryPayload contains the parsed --[read index low profiles]-->(SMC) entries.
+type ReadIndexLowProfilesEntryPayload struct {
+	SmcUID string
+	From   time.Time
+	To     time.Time
+}
+
+// ReadIndexProfilesEntryPayload contains the parsed <--[read index profiles]--(SMC) entries.
+type ReadIndexProfilesEntryPayload struct {
+	SmcUID string
+	Count  int
+}
+
+// StatisticsEntryPayload contains the parsed statistics log entry sent to the SVI.
+type StatisticsEntryPayload struct {
+	Type     string
+	Value    float64
+	Time     time.Time
+	SourceID string
+}
+
+// GenericIndexProfilePayload contains the parsed index high/low profile generic payload.
+type GenericIndexProfilePayload struct {
+	CapturePeriod  int
+	CaptureObjects int
+}
+
+// ConnectToPLCPayload contains the parsed connect to PLC payload.
+type ConnectToPLCPayload struct {
+	Interface          string
+	DestinationAddress string
 }
 
 // SettingsPayload contains the parsed settings payload

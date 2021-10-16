@@ -14,6 +14,12 @@ func parseDCMessage(lin string) *models.DCMessageParams {
 
 	source := parseDCMessageSource(lin)
 	dest := parseDCMessageDest(lin)
+
+	if source == "" && dest == "" {
+		// it is not a message entry
+		return nil
+	}
+
 	if source != "" {
 		dcMessageParams.IsInComing = true
 		dcMessageParams.SourceOrDestName = source
@@ -22,11 +28,9 @@ func parseDCMessage(lin string) *models.DCMessageParams {
 		dcMessageParams.IsInComing = false
 		dcMessageParams.SourceOrDestName = dest
 		dcMessageParams.MessageType = parseFieldInBracketsAsString(lin, formats.OutGoingMessageTypeRegex)
-	} else {
-		return nil
 	}
 
-	dcMessageParams.Payload = parseDCMessagePayload(lin, dcMessageParams.MessageType)
+	dcMessageParams.Payload = parseDCMessagePayload(lin, dcMessageParams.MessageType, dest)
 
 	return &dcMessageParams
 }
@@ -57,9 +61,14 @@ func parsePayloadTime(line string) time.Time {
 	return time.Time{}
 }
 
-func parseDCMessagePayload(line string, messageType string) *models.DcMessagePayload {
+func parseDCMessagePayload(line string, messageType string, destination string) *models.DcMessagePayload {
 	payload := models.DcMessagePayload{}
-	payload.SmcUID = parseFieldInBracketsAsString(line, formats.SmcUIDRegex)
+
+	if messageType == "new smc" {
+		payload.SmcUID = parseNewSmcUID(line)
+	} else {
+		payload.SmcUID = parseFieldInBracketsAsString(line, formats.SmcUIDRegex)
+	}
 	payload.PodUID = parseFieldInBracketsAsString(line, formats.PodUIDRegex)
 	payload.ServiceLevelID = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ServiceLevelIDRegex))
 	payload.Value = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ValueRegex))
@@ -71,8 +80,11 @@ func parseDCMessagePayload(line string, messageType string) *models.DcMessagePay
 		payload.MessagePayload = parseMessagePayload(line)
 
 	case "connect":
-		payload.ConnectOrDisconnectPayload = parseConnectOrDisconnectPayload(line)
-
+		if destination == "PLC" {
+			payload.ConnectToPLCPayload = parseConnectToPLC(line)
+		} else {
+			payload.ConnectOrDisconnectPayload = parseConnectOrDisconnectPayload(line)
+		}
 	case "pod configuration":
 		payload.PodConfigPayload = parsePodConfigPayload(line)
 
@@ -93,9 +105,121 @@ func parseDCMessagePayload(line string, messageType string) *models.DcMessagePay
 
 	case "index":
 		payload.IndexPayload = parseIndexPayload(line)
+
+	case "index low profile generic":
+		payload.GenericIndexProfilePayload = parseGenericIndexProfile(line)
+
+	case "index high profile generic":
+		payload.GenericIndexProfilePayload = parseGenericIndexProfile(line)
+
+	case "read index low profiles":
+		payload.ReadIndexLowProfilesEntryPayload = parseReadIndexLowProfilesEntry(line)
+
+	case "read index profiles":
+		payload.ReadIndexProfilesEntryPayload = parseReadIndexProfilesEntry(line)
+
+	case "statistics":
+		if destination == "SVI" {
+			// The destination could be 'DB' as well, but in that case, we have no more params to parse.
+			payload.StatisticsEntryPayload = parseStatisticsEntry(line)
+		}
 	}
 
 	return &payload
+}
+
+func parseReadIndexLowProfilesEntry(line string) *models.ReadIndexLowProfilesEntryPayload {
+	timeRange := parseTimeRange(line)
+	result := models.ReadIndexLowProfilesEntryPayload{}
+	result.To = timeRange.To
+	result.From = timeRange.From
+	result.SmcUID = parseFieldInBracketsAsString(line, formats.SMCUIDRegex)
+
+	return &result
+}
+
+func parseReadIndexProfilesEntry(line string) *models.ReadIndexProfilesEntryPayload {
+	result := models.ReadIndexProfilesEntryPayload{}
+	result.SmcUID = parseFieldInBracketsAsString(line, formats.SMCUIDRegex)
+
+	// Get the count part between the parentheses.
+	// <--[read index profiles]--(SMC) smc_uid[dc18-smc9] (6) (smart_meter_cabinet.cc::190)
+	correctCount := 4
+	parts := strings.Split(line, "(")
+	if len(parts) < correctCount {
+		// Default if we could not parse...
+		result.Count = 0
+	}
+
+	// eg.: '6) '
+	countString := parts[2]
+
+	// trim off the ) and space from the end
+	countString = strings.Replace(countString, ") ", "", 1)
+
+	// convert to int
+	count := tryParseIntFromString(countString)
+	result.Count = count
+
+	return &result
+}
+
+func parseStatisticsEntry(line string) *models.StatisticsEntryPayload {
+	result := models.StatisticsEntryPayload{}
+	result.Type = parseFieldInBracketsAsString(line, formats.StatisticsTypeRegex)
+	result.SourceID = parseFieldInBracketsAsString(line, formats.StatisticsSourceIDRegex)
+	result.Time = parseTimeFieldFromSeconds(line, formats.TimeTicksRegex)
+	valueString := parseFieldInBracketsAsString(line, formats.StatisticsValueRegex)
+
+	value := tryParseFloat64FromString(valueString)
+	result.Value = value
+
+	return &result
+}
+
+func parseGenericIndexProfile(line string) *models.GenericIndexProfilePayload {
+	result := models.GenericIndexProfilePayload{}
+	capturePeriodString := parseFieldInBracketsAsString(line, formats.IndexProfileCapturePeriodRegex)
+	capturePeriod := tryParseIntFromString(capturePeriodString)
+
+	captureObjectsString := parseFieldInBracketsAsString(line, formats.IndexProfileCaptureObjectsRegex)
+	captureObjects := tryParseIntFromString(captureObjectsString)
+
+	result.CaptureObjects = captureObjects
+	result.CapturePeriod = capturePeriod
+
+	return &result
+}
+
+func parseConnectToPLC(line string) *models.ConnectToPLCPayload {
+	result := models.ConnectToPLCPayload{}
+	result.Interface = parseFieldInBracketsAsString(line, formats.ConnectToPLCIfaceRegex)
+	result.DestinationAddress = parseFieldInBracketsAsString(line, formats.ConnectToPLCDestAddressRegex)
+
+	return &result
+}
+
+func parseNewSmcUID(line string) string {
+	// parse the smc uid from this:
+	//  <--[new smc]--(SVI) dc18-smc32 (distribution_controller_initializer.cc::280)
+
+	minLengthIfContainsSeparator := 2
+
+	// get the part after (SVI)
+	firstPart := strings.Split(line, ")")
+	if len(firstPart) < minLengthIfContainsSeparator {
+		return ""
+	}
+
+	// get the part before (distribution_controller_initializer.cc::280)
+	firstPart = strings.Split(firstPart[1], "(")
+	if len(firstPart) < minLengthIfContainsSeparator {
+		return ""
+	}
+
+	// trim the spces from ' dc18-smc32 '
+	result := strings.Trim(firstPart[0], " ")
+	return result
 }
 
 func parseConnectOrDisconnectPayload(line string) *models.ConnectOrDisconnectPayload {
@@ -139,7 +263,7 @@ func parseDLMSLogPayload(line string) *models.DLMSLogPayload {
 
 func parseIndexPayload(line string) *models.IndexPayload {
 	previousValueString := parseFieldInBracketsAsString(line, formats.PreviousValueRegex)
-	serialNumberString := parseFieldInBracketsAsString(line, formats.SerailNumberRegex)
+	serialNumberString := parseFieldInBracketsAsString(line, formats.SerialNumberRegex)
 	previousTimeFromSeconds := parseTimeFieldFromSeconds(line, formats.PreviousTimeRegex)
 	if previousTimeFromSeconds.Year() < 1000 && serialNumberString == "" && previousValueString == "" {
 		return nil
@@ -319,7 +443,7 @@ func parseSmcConfigPayload(line string) *models.SmcConfigPayload {
 	currentApp2Fw := parseFieldInBracketsAsString(line, formats.CurrentApp2FwRegex)
 	currentPlcFw := parseFieldInBracketsAsString(line, formats.CurrentPlcFwRegex)
 
-	lastSuccessfulDlmsResponseDate := parseDateTimeField(line, formats.LastSuccessfulDlmsResponseDateRegex)
+	lastSuccessfulDlmsResponseDate := parseDateTimeField(line, formats.LastSuccessfulRespDateRegex)
 	nextHop := tryParseIntFromString(nextHopString)
 
 	result := models.SmcConfigPayload{}

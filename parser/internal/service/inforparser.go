@@ -39,6 +39,41 @@ func parseInfo(line models.LineWithDate) *models.InfoParams {
 		return &infoParams
 	}
 
+	connectionAttempt := parseConnectionAttempt(line.Rest)
+	if connectionAttempt != nil {
+		infoParams.ConnectionAttempt = *connectionAttempt
+		infoParams.MessageType = models.ConnectionAttempt
+		return &infoParams
+	}
+
+	configUpdate := parseSmcConfigUpdate(line.Rest)
+	if configUpdate != nil {
+		infoParams.SmcConfigUpdate = *configUpdate
+		infoParams.MessageType = models.SmcConfigUpdate
+		return &infoParams
+	}
+
+	connectionReleased := parseConnectionReleasedEntry(line.Rest)
+	if connectionReleased != nil {
+		infoParams.ConnectionReleased = *connectionReleased
+		infoParams.MessageType = models.ConnectionReleased
+		return &infoParams
+	}
+
+	initConnectionParams := parseInitConnectionLogEntry(line.Rest)
+	if initConnectionParams != nil {
+		infoParams.InitConnection = *initConnectionParams
+		infoParams.MessageType = models.InitDlmsConnection
+		return &infoParams
+	}
+
+	internalDiagnosticsEntry := parseSmcInternalDiagnosticsEntry(line.Rest)
+	if internalDiagnosticsEntry != nil {
+		infoParams.InternalDiagnosticsData = *internalDiagnosticsEntry
+		infoParams.MessageType = models.InternalDiagnostics
+		return &infoParams
+	}
+
 	return &infoParams
 }
 
@@ -93,7 +128,7 @@ func parseSmcJoinLine(line string) *models.SmcJoinMessageParams {
 	}
 
 	responseString := messageParts[0]
-	response := parseStringBetweenBrackets(responseString)
+	response := parseFieldInBracketsAsString(responseString, formats.AnyLettersBetweenBrackets)
 	smcJoinLine.Response = response
 
 	status := parseJoinStatus(responseString)
@@ -133,10 +168,6 @@ func parseSmcJoinLine(line string) *models.SmcJoinMessageParams {
 
 	smcJoinLine.SmcAddress = smcAddress
 	return &smcJoinLine
-}
-
-func parseStringBetweenBrackets(line string) string {
-	return parseFieldInBracketsAsString(line, formats.AnyLettersBetweenBrackets)
 }
 
 func parseJoinStatus(line string) string {

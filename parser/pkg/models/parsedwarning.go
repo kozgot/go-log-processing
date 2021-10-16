@@ -14,4 +14,11 @@ type WarningParams struct {
 	Details           ErrorParams
 	FileName          string
 	JoinMessageParams SmcJoinMessageParams
+	TimeoutParams     TimelineOutParams
+}
+
+// TimelineOutParams contains the parsed timeout WARN level log entries.
+type TimelineOutParams struct {
+	Protocol string
+	URL      string
 }
