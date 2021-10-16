@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -84,8 +83,7 @@ func parseDCMessagePayload(line string, messageType models.DCMessageType, destin
 		if destination == "PLC" {
 			payload.ConnectToPLCPayload = parseConnectToPLC(line)
 		} else {
-			// dest is SVI or UDS
-			payload.ConnectOrDisconnectPayload = parseConnectOrDisconnectPayload(line)
+			payload.ConnectOrDisconnectPayload = parseConnectOrDisconnectPayload(line) // destination is SVI or UDS
 		}
 
 	case models.PodConfig:
@@ -128,7 +126,7 @@ func parseDCMessagePayload(line string, messageType models.DCMessageType, destin
 		}
 
 	case models.UnknownDCMessage:
-		fmt.Println("Unknown dc message")
+		// NOOP
 	}
 
 	return &payload
@@ -247,7 +245,6 @@ func parseConnectOrDisconnectPayload(line string) *models.ConnectOrDisconnectPay
 		return &result
 	}
 
-	// todo: disconnect payload ?? a warn résznél
 	return nil
 }
 
@@ -484,53 +481,4 @@ func parsePodConfigPayload(line string) *models.PodConfigPayload {
 		PositionInSmc:           positionInSmc,
 		SoftwareFirmwareVersion: softwareFirmwareVersion}
 	return &result
-}
-
-func parseTimeFieldFromSeconds(line string, timeStampRegex string) time.Time {
-	seconds := tryParseInt64FromString(parseFieldInBracketsAsString(line, timeStampRegex))
-	if seconds != 0 {
-		dateTimeFromsSecs := time.Unix(seconds, 0)
-		return dateTimeFromsSecs
-	}
-
-	return time.Time{}
-}
-
-func parseTimeFieldFromMilliSeconds(line string, timeStampRegex string) time.Time {
-	milliseconds := tryParseInt64FromString(parseFieldInBracketsAsString(line, timeStampRegex))
-	if milliseconds != 0 {
-		dateTimeFromsSecs := time.Unix(0, convertMillisecondsToSeconds(milliseconds))
-		return dateTimeFromsSecs
-	}
-
-	return time.Time{}
-}
-
-func parseTimeRange(line string) *models.TimeRange {
-	from := parseDateTimeField(line, formats.TimeRangeFromRegex)
-
-	if !isValidDate(from) {
-		from = parseTimeFieldFromSeconds(line, formats.TimeRangeStartTicksRegex)
-	}
-
-	to := parseDateTimeField(line, formats.TimeRangeToRegex)
-	if !isValidDate(to) {
-		to = parseTimeFieldFromSeconds(line, formats.TimeRangeEndTicksRegex)
-	}
-
-	if from.Year() > 1500 && to.Year() > 1500 {
-		result := models.TimeRange{From: from, To: to}
-		return &result
-	}
-
-	return nil
-}
-
-func isValidDate(date time.Time) bool {
-	validYearTreshold := 1500
-	return (date.Year() > validYearTreshold)
-}
-
-func convertMillisecondsToSeconds(milliseconds int64) int64 {
-	return milliseconds * 1000 * 1000
 }

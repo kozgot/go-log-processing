@@ -172,7 +172,7 @@ type SettingsPayload struct {
 // in info level log entries that describe messages sent or received by the dc.
 type ServiceLevelPayload struct {
 	MeterMode                      int
-	StartHourDailyCycle            string // eg. 20h, todo: better type??
+	StartHourDailyCycle            string // eg. 20h
 	LoadSheddingDailyEnergyBudget  int
 	LocalSheddingDailyEnergyBudget int
 	MaxActivePower                 int

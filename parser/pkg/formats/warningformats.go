@@ -21,3 +21,6 @@ const TimeoutProtocolRegex = "protocol" + AnyLettersBetweenBrackets
 
 // TimeoutURLRegex matches the url field in a timeout warn level log entry.
 const TimeoutURLRegex = "url" + AnyLettersBetweenBrackets
+
+// LostConnectionPrefix matches the start of connection lost log entries.
+const LostConnectionPrefix = "Connection of type"

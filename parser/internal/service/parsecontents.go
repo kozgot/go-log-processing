@@ -12,8 +12,6 @@ func ParseContents(line models.LineWithDate) *models.ParsedLogEntry {
 
 	switch line.Level {
 	case "ERROR":
-		// todo: add these methods to the appropriate types,
-		// eg.: ErrorParams should have a method parse() that parses error params
 		errorParams := parseError(line)
 		parsedLine.ErrorParams = *errorParams
 

@@ -22,6 +22,11 @@ func parseWarning(line models.LineWithDate) *models.WarningParams {
 func parseWarn(line models.LineWithDate) *models.WarningParams {
 	warningParams := models.WarningParams{}
 
+	if strings.Contains(line.Rest, formats.LostConnectionPrefix) {
+		warningParams.LostConnectionParams = parseLostConnectionParams(line.Rest)
+		return &warningParams
+	}
+
 	if strings.Contains(line.Rest, formats.TimeoutWarnPrefix) {
 		// This is a Timeout warn entry.
 		timeoutParams := parseTimeoutEntry(line.Rest)
@@ -71,10 +76,35 @@ func parseWarn(line models.LineWithDate) *models.WarningParams {
 	warningParams.MinLaunchTime = minLaunchTime
 
 	// parse inner error params
-	errorParams := parseError(line)
-	warningParams.Details = *errorParams
+	innerErrorParams := parseError(line)
+	warningParams.Details = *innerErrorParams
 
 	return &warningParams
+}
+
+func parseLostConnectionParams(line string) models.LostConnectionParams {
+	result := models.LostConnectionParams{}
+	params := parseConnectOrDisconnectPayload(line)
+	if params != nil {
+		result.ClientID = params.ClientID
+		result.Connected = params.Connected
+		result.Timeout = params.Timeout
+		result.Topic = params.Topic
+		result.URL = params.URL
+		result.Type = params.Type
+	}
+
+	// Get the reason from this: '...lost due to <unknown reason> (mqtt_connector.cc::54)'
+	if strings.Contains(line, "lost due to ") {
+		reasonPart := strings.Split(line, "lost due to ")[1]
+
+		// Trim off the file name in the parentheses.
+		if strings.Contains(reasonPart, " (") {
+			result.Reason = strings.Split(reasonPart, " (")[0]
+		}
+	}
+
+	return result
 }
 
 func parseTimeoutEntry(line string) *models.TimelineOutParams {
@@ -116,38 +146,6 @@ func parseWarningCreationTime(line string) time.Time {
 
 func parseWarningMinLaunchTime(line string) time.Time {
 	return parseDateTimeField(line, formats.MinLaunchTimeRegex)
-}
-
-func parseDateTimeField(line string, regex string) time.Time {
-	timeFieldRegex, _ := regexp.Compile(regex)
-	timeField := timeFieldRegex.FindString(line)
-
-	if timeField != "" {
-		timeString := strings.Split(timeField, "[")[1]
-		timeString = strings.Replace(timeString, "]", "", 1)
-
-		dateTime := parseDateTime(timeString)
-		return dateTime
-	}
-
-	return time.Time{}
-}
-
-func parseDateTime(timeString string) time.Time {
-	dateRegex, _ := regexp.Compile(formats.DateFormatRegex)
-
-	dateString := dateRegex.FindString(timeString)
-	if dateString != "" {
-		date, err := time.Parse(formats.DateLayoutString, dateString)
-		if err != nil {
-			// Do not die here, log instead
-			panic(err)
-		}
-
-		return date
-	}
-
-	return time.Time{}
 }
 
 func parseFileName(line string) string {
