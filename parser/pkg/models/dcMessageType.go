@@ -1,5 +1,6 @@
 package models
 
+// DCMessageType represents the type of a dc message log entry.
 type DCMessageType int64
 
 const (
@@ -21,6 +22,7 @@ const (
 	ReadIndexProfiles                     // <--[read index profiles]--(SMC)
 )
 
+// ParseDCmessageTypeFromString parses the dc message type from a string representation.
 func ParseDCmessageTypeFromString(messageTypeString string) DCMessageType {
 	switch messageTypeString {
 	case "index":

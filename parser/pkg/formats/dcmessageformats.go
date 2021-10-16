@@ -144,7 +144,6 @@ const CurrentApp2FwRegex = "current_app2_fw" + AnythingBetweenBracketsRegex
 // CurrentPlcFwRegex matches the current_plc_fw field of a dc message, formatted like: current_plc_fw[14.3.13.0].
 const CurrentPlcFwRegex = "current_plc_fw" + AnythingBetweenBracketsRegex
 
-// <--[smc configuration]--(DB)
 // LastSuccessfulRespDateRegex matches the last successful dlms response date field of a dc message,
 // formatted like: last_successful_dlms_response_date [Wed Jun 10 07:58:11 2020].
 const LastSuccessfulRespDateRegex = "last_successful_dlms_response_date \\[" + anyCharsExceptOpeningParentheses + "\\]"
@@ -187,7 +186,7 @@ const ConnectToPLCDestAddressRegex = "DestAddr" + AnyLettersBetweenBrackets
 // eg.: capture_period[86400].
 const IndexProfileCapturePeriodRegex = "capture_period" + LongNumberBetweenBracketsRegex
 
-// IndexProfileCapturePeriodRegex matches the capture objects field of an [index high profile generic],
+// IndexProfileCaptureObjectsRegex matches the capture objects field of an [index high profile generic],
 // or [index low profile generic] log entry.
 // eg.: capture_objects[0].
 const IndexProfileCaptureObjectsRegex = "capture_objects" + LongNumberBetweenBracketsRegex
