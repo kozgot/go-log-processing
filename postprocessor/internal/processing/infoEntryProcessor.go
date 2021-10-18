@@ -205,8 +205,8 @@ func processSmcConfigUpdate(logEntry parsermodels.ParsedLogEntry) (*models.SmcDa
 	}
 
 	data := models.SmcData{
-		Address: address,
-		// todo SmcUID:  logEntry.InfoParams.SmcConfigUpdate.SmcUID,
+		Address:         address,
+		SmcUID:          logEntry.InfoParams.SmcConfigUpdate.SmcUID,
 		LastJoiningDate: logEntry.InfoParams.SmcConfigUpdate.LastJoiningDate,
 	}
 
