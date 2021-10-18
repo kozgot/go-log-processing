@@ -2,6 +2,7 @@ package models
 
 import "time"
 
+// SmcTimeline represents the state changes of an smc over time.
 type SmcTimeline struct {
 	From     time.Time
 	To       time.Time
@@ -10,6 +11,7 @@ type SmcTimeline struct {
 	Sections []TimelineSection
 }
 
+// TimelineSection represents the state of in a period of time.
 type TimelineSection struct {
 	From  time.Time
 	To    time.Time
@@ -27,7 +29,7 @@ const (
 	Joined
 	Connected
 	Failing
-	IndexCollected
+	CollectingIndex
 )
 
 type AddressDetails struct {
