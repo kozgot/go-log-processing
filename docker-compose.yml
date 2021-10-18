@@ -1,7 +1,7 @@
 version: "3.3"
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
     container_name: elasticsearch
     restart: always
     environment:
@@ -30,7 +30,9 @@ services:
       - parser-network
   kibana:
     container_name: kibana
-    image: docker.elastic.co/kibana/kibana:7.9.3
+    build:
+      context: .
+      dockerfile: ./kibana.Dockerfile
     restart: always
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200    # address of elasticsearch docker container which kibana will connect
