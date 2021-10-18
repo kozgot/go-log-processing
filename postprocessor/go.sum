@@ -1,5 +1,3 @@
-github.com/kozgot/go-log-processing/parser v0.0.0-20211016141149-43668be01519 h1:k5aI7M6+3iHXkEeUwMK2Xf/FrNTm+UR6jPKWATWsMFA=
-github.com/kozgot/go-log-processing/parser v0.0.0-20211016141149-43668be01519/go.mod h1:RpxSKDPQlJfOTfB3uNo0kzwATi8bmPZgQ1vioYE4/4A=
 github.com/kozgot/go-log-processing/parser v0.0.0-20211016150031-557c2c8e3bbc h1:PGcU0fUhE2tSbxYRKW6XngJ5TBsQ5KLIYkEWRo+ZSIk=
 github.com/kozgot/go-log-processing/parser v0.0.0-20211016150031-557c2c8e3bbc/go.mod h1:RpxSKDPQlJfOTfB3uNo0kzwATi8bmPZgQ1vioYE4/4A=
 github.com/streadway/amqp v1.0.0 h1:kuuDrUJFZL1QYL9hUNuCxNObNzB0bV/ZG5jV3RWAQgo=
