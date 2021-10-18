@@ -4,8 +4,7 @@ import "time"
 
 // SmcEventLine shows the events happening to an smc over time.
 type SmcEventLine struct {
-	SmcUID  string
-	Address AddressDetails
+	SmcData SmcData
 	Events  []SmcEvent
 }
 
