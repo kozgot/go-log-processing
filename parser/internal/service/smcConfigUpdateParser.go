@@ -10,11 +10,14 @@ import (
 func parseSmcConfigUpdate(line string) *models.SmcConfigUpdateParams {
 	if strings.Contains(line, formats.SmcConfigUpdatePrefix) {
 		smcAddress := parseSmcAddressPayload(line)
+		smcUID := parseFieldInBracketsAsString(line, formats.SmcUIDRegex)
+
 		if smcAddress != nil {
 			smcConfigUpdate := models.SmcConfigUpdateParams{
 				PhysicalAddress: smcAddress.PhysicalAddress,
 				LogicalAddress:  smcAddress.LogicalAddress,
 				ShortAddress:    smcAddress.ShortAddress,
+				SmcUID:          smcUID,
 				LastJoiningDate: smcAddress.LastJoiningDate}
 			return &smcConfigUpdate
 		}

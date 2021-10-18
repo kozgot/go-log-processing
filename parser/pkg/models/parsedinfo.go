@@ -48,6 +48,7 @@ type SmcConfigUpdateParams struct {
 	LogicalAddress  string
 	ShortAddress    int
 	LastJoiningDate time.Time
+	SmcUID          string
 }
 
 // RoutingTableParams contains the parsed routing table message parameters.
