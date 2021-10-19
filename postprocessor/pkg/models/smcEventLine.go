@@ -24,6 +24,12 @@ const (
 	NewSmc
 	SmcJoined
 	SmcConnected
+	ConnectionAttempt
+	InitConnection
+	ConnectionReleased
 	ConnectionFailed
 	IndexCollected
+	ConfigurationChanged
+	InternalDiagnostics
+	StatisticsSent
 )
