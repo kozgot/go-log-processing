@@ -76,6 +76,7 @@ func parseDCMessagePayload(line string, messageType models.DCMessageType, destin
 	switch messageType {
 	case models.NewSmc:
 		payload.SmcUID = parseNewSmcUID(line)
+
 	case models.MessageSentToSVI:
 		payload.MessagePayload = parseMessagePayload(line)
 
@@ -107,6 +108,10 @@ func parseDCMessagePayload(line string, messageType models.DCMessageType, destin
 	case models.IndexReceived:
 		payload.IndexPayload = parseIndexPayload(line)
 
+	case models.Consumption:
+		// NOOP: all the aparams are parsed in the root payload property
+		break
+
 	case models.IndexLowProfileGeneric:
 		payload.GenericIndexProfilePayload = parseGenericIndexProfile(line)
 
@@ -127,6 +132,7 @@ func parseDCMessagePayload(line string, messageType models.DCMessageType, destin
 
 	case models.UnknownDCMessage:
 		// NOOP
+		break
 	}
 
 	return &payload

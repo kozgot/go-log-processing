@@ -7,6 +7,7 @@ const (
 	// UnknownDCMessage is the default value of DCMessageType.
 	UnknownDCMessage        DCMessageType = iota
 	IndexReceived                         // <--[index]--(SMC)
+	Consumption                           // <--[consumption]--(SMC)
 	MessageSentToSVI                      // --[message]-->(SVI)
 	PodConfig                             // <--[pod configuration]--(DB)
 	SmcAddress                            // <--[smc address]--(DB)
@@ -70,6 +71,9 @@ func ParseDCmessageTypeFromString(messageTypeString string) DCMessageType {
 
 	case "read index profiles":
 		return ReadIndexProfiles
+
+	case "consumption":
+		return Consumption
 
 	default:
 		return UnknownDCMessage
