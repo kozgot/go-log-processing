@@ -85,6 +85,7 @@ func processJoinEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *m
 		Time:      logEntry.Timestamp,
 		EventType: models.SmcJoined,
 		Label:     "Smc " + smcUID + " has joined",
+		SmcUID:    smcUID,
 	}
 
 	return &result, &event
@@ -104,6 +105,7 @@ func processConnectionAttempt(logEntry parsermodels.ParsedLogEntry) (*models.Smc
 		Time:      logEntry.Timestamp,
 		EventType: models.ConnectionAttempt,
 		Label:     "Connection attempt to " + smcUID,
+		SmcUID:    smcUID,
 	}
 
 	return &data, &event
@@ -158,6 +160,7 @@ func processInternalDiagnostics(logEntry parsermodels.ParsedLogEntry) (*models.S
 		Time:      logEntry.Timestamp,
 		EventType: models.InternalDiagnostics,
 		Label:     "Internal diagnostics...",
+		SmcUID:    smcUID,
 	}
 
 	return &data, &event
@@ -181,6 +184,7 @@ func processSmcConfigUpdate(logEntry parsermodels.ParsedLogEntry) (*models.SmcDa
 		Time:      logEntry.Timestamp,
 		EventType: models.ConfigurationChanged,
 		Label:     "Configuration update for " + smcUID,
+		SmcUID:    smcUID,
 	}
 
 	return &data, &event

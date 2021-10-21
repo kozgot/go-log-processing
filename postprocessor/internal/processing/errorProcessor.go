@@ -20,6 +20,7 @@ func ProcessError(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *model
 		Time:      logEntry.Timestamp,
 		EventType: models.DLMSError,
 		Label:     label,
+		SmcUID:    smcUID,
 	}
 
 	data := models.SmcData{SmcUID: smcUID}

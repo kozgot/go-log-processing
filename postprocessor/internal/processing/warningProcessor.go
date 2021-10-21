@@ -46,6 +46,7 @@ func ProcessWarning(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *mod
 		Time:      logEntry.Timestamp,
 		EventType: models.JoinRejectedWarning,
 		Label:     "SMC join rejected for " + smcUID,
+		SmcUID:    smcUID,
 	}
 
 	return &data, &event

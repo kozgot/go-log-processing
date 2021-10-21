@@ -196,6 +196,7 @@ func processIndexLowProfileGeneric(logEntry parsermodels.ParsedLogEntry) (*model
 		Time:      logEntry.Timestamp,
 		EventType: models.IndexLowProfileGenericReceived,
 		Label:     "Index low profile generic from SMC",
+		SmcUID:    smcUID,
 	}
 
 	data := models.SmcData{
@@ -212,6 +213,7 @@ func processIndexHighProfileGeneric(logEntry parsermodels.ParsedLogEntry) (*mode
 		Time:      logEntry.Timestamp,
 		EventType: models.IndexHighProfileGenericReceived,
 		Label:     "Index high profile generic from SMC",
+		SmcUID:    smcUID,
 	}
 
 	data := models.SmcData{
@@ -231,6 +233,7 @@ func processReadIndexProfiles(logEntry parsermodels.ParsedLogEntry) (*models.Smc
 		Time:      logEntry.Timestamp,
 		EventType: models.IndexRead,
 		Label:     "Index read from SMC: " + smcUID,
+		SmcUID:    smcUID,
 	}
 
 	return &data, &event
@@ -252,6 +255,7 @@ func processReadIndexLowProfiles(logEntry parsermodels.ParsedLogEntry) (*models.
 		Time:      logEntry.Timestamp,
 		EventType: models.IndexCollectionStarted,
 		Label:     "Index collection started from " + fromDateString + " to " + toDateString,
+		SmcUID:    smcUID,
 	}
 
 	return &data, &event
@@ -299,6 +303,7 @@ func processNewSmc(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *mode
 		Time:      logEntry.Timestamp,
 		EventType: models.NewSmc,
 		Label:     "New SMC, UID: " + data.SmcUID,
+		SmcUID:    data.SmcUID,
 	}
 
 	return &data, &event
@@ -327,6 +332,7 @@ func processPodConfig(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *m
 		Time:      logEntry.Timestamp,
 		EventType: models.PodConfiguration,
 		Label:     "Pod configuration read for pod " + poidUID + " in smc " + smcUID,
+		SmcUID:    smcUID,
 	}
 	return &data, &event
 }
@@ -369,6 +375,7 @@ func processSmcAddress(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *
 		Time:      logEntry.Timestamp,
 		EventType: models.SmcAddressUpdated,
 		Label:     label,
+		SmcUID:    data.SmcUID,
 	}
 
 	return &data, &event
@@ -390,6 +397,7 @@ func processSmcConfig(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *m
 		Time:      logEntry.Timestamp,
 		EventType: models.ConfigurationChanged,
 		Label:     "SMC Config updated",
+		SmcUID:    data.SmcUID,
 	}
 
 	return &data, &event
@@ -411,6 +419,7 @@ func processStatistics(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *
 		Time:      logEntry.Timestamp,
 		EventType: models.StatisticsSent,
 		Label:     "Statistics sent to SVI (" + statisticsPayload.Type + ")",
+		SmcUID:    smcUID,
 	}
 
 	return &data, &event

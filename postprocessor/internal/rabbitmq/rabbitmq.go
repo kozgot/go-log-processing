@@ -12,8 +12,8 @@ import (
 // todo: maybe set this as an environment variable
 const processedDataExchangeName = "processeddata"
 
-// SendEntryToElasticUploader sends the parsed log lines to the message queue.
-func SendEntryToElasticUploader(entry models.SmcEntry, channel *amqp.Channel, indexName string) {
+// SendEventToElasticUploader sends the parsed log lines to the message queue.
+func SendEventToElasticUploader(entry models.SmcEvent, channel *amqp.Channel, indexName string) {
 	dataToSend := models.DataUnit{IndexName: indexName, Data: serializeLine(entry)}
 	sendData(serializeDataUnit((dataToSend)), channel)
 }
@@ -57,7 +57,7 @@ func SendStringMessageToElastic(message string, channel *amqp.Channel) {
 	sendData(bytes, channel)
 }
 
-func serializeLine(entry models.SmcEntry) []byte {
+func serializeLine(entry models.SmcEvent) []byte {
 	bytes, err := json.Marshal(entry)
 	if err != nil {
 		fmt.Println("Can't serialize", entry)

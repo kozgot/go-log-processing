@@ -13,6 +13,7 @@ type SmcEvent struct {
 	Time      time.Time
 	EventType EventType
 	Label     string
+	SmcUID    string
 }
 
 // EventType represents the type of the event happening in this moment.
