@@ -88,6 +88,8 @@ func main() {
 	eventsBySmcUID := make(map[string][]models.SmcEvent)
 	smcDataBySmcUID := make(map[string]models.SmcData)
 	smcUIDsByURL := make(map[string]string)
+	consumptionValues := []models.ConsumtionValue{}
+	indexValues := []models.IndexValue{}
 
 	go func() {
 		for d := range msgs {
@@ -101,7 +103,13 @@ func main() {
 			}
 
 			entry := deserializeMessage(d.Body)
-			processing.Process(entry, channelToSendTo, eventsBySmcUID, smcDataBySmcUID, smcUIDsByURL)
+			consumption, index := processing.Process(entry, channelToSendTo, eventsBySmcUID, smcDataBySmcUID, smcUIDsByURL)
+			if index != nil {
+				indexValues = append(indexValues, *index)
+			}
+			if consumption != nil {
+				consumptionValues = append(consumptionValues, *consumption)
+			}
 		}
 	}()
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")

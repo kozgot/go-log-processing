@@ -13,10 +13,11 @@ func Process(logEntry parsermodels.ParsedLogEntry,
 	channel *amqp.Channel,
 	eventsBySmcUID map[string][]models.SmcEvent,
 	smcDataBySmcUID map[string]models.SmcData,
-	smcUIDsByURL map[string]string) {
+	smcUIDsByURL map[string]string) (*models.ConsumtionValue, *models.IndexValue) {
 	switch logEntry.Level {
 	case "INFO":
-		data, event := ProcessInfoEntry(logEntry)
+		data, event, consumption, index := ProcessInfoEntry(logEntry)
+
 		// todo
 		if event != nil && event.EventType == models.ConnectionAttempt {
 			// This is the only entry where the URL and SMC UID parameters are given at the same time.
@@ -32,6 +33,8 @@ func Process(logEntry parsermodels.ParsedLogEntry,
 
 		registerEvent(eventsBySmcUID, smcUIDsByURL, event, data)
 		updateSmcData(smcDataBySmcUID, smcUIDsByURL, data)
+
+		return consumption, index
 
 	case "WARN":
 		data, event := ProcessWarn(logEntry)
@@ -54,6 +57,8 @@ func Process(logEntry parsermodels.ParsedLogEntry,
 	default:
 		fmt.Printf("Unknown log level %s", logEntry.Level)
 	}
+
+	return nil, nil
 }
 
 /*
@@ -87,6 +92,10 @@ func registerEvent(eventsBySmcUID map[string][]models.SmcEvent,
 	// If only a URL is provided, use that to get the SMC UID.
 	if smcUID == "" && data.Address.URL != "" {
 		smcUID = smcUIDsByURL[data.Address.URL]
+	}
+
+	if event.SmcUID == "" {
+		event.SmcUID = smcUID
 	}
 
 	// Append the event to the corresponding array.

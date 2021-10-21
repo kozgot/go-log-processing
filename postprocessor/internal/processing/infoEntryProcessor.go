@@ -1,64 +1,56 @@
 package processing
 
 import (
-	"fmt"
-
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 )
 
 // ProcessInfoEntry processes a log entry with INFO log level.
-func ProcessInfoEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+func ProcessInfoEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent, *models.ConsumtionValue, *models.IndexValue) {
 	switch logEntry.InfoParams.EntryType {
 	case parsermodels.Routing:
 		// this case is not really interesting for our logic
-		return nil, nil
+		return nil, nil, nil, nil
 	case parsermodels.NetworkStatus:
 		// this case is not really interesting for our logic
-		return nil, nil
+		return nil, nil, nil, nil
 
 	case parsermodels.SMCJoin:
 		smcData, event := processJoinEntry(logEntry)
-		return smcData, event
+		return smcData, event, nil, nil
 
 	case parsermodels.DCMessage:
 		result := processDCMessageEntry(logEntry)
-		if result.ConsumtionValue != nil {
-			fmt.Println(result.ConsumtionValue.Value)
-		}
-		if result.IndexValue != nil {
-			fmt.Println(result.IndexValue.Value)
-		}
-		return result.SmcData, result.SmcEvent
+		return result.SmcData, result.SmcEvent, result.ConsumtionValue, result.IndexValue
 
 	case parsermodels.ConnectionAttempt:
 		data, event := processConnectionAttempt(logEntry)
-		return data, event
+		return data, event, nil, nil
 
 	case parsermodels.ConnectionReleased:
 		data, event := processConnectionReleased(logEntry)
-		return data, event
+		return data, event, nil, nil
 
 	case parsermodels.InitDLMSConnection:
 		data, event := processInitDLMSConnection(logEntry)
-		return data, event
+		return data, event, nil, nil
 
 	case parsermodels.InternalDiagnostics:
 		data, event := processInternalDiagnostics(logEntry)
-		return data, event
+		return data, event, nil, nil
 
 	case parsermodels.SmcConfigUpdate:
 		data, event := processSmcConfigUpdate(logEntry)
-		return data, event
+		return data, event, nil, nil
 
 	// Unrecognized entry type
 	case parsermodels.UnknownEntryType:
-		return nil, nil
+		return nil, nil, nil, nil
 	default:
 		break
 	}
 
-	return nil, nil
+	return nil, nil, nil, nil
 }
 
 func processJoinEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
