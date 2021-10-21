@@ -12,7 +12,6 @@ func ProcessWarn(logEntry parsermodels.ParsedLogEntry) *models.SmcEntry {
 	result.EventType = logEntry.Level
 	result.UID = logEntry.WarningParams.SmcUID
 
-	// todo more params?
 	return &result
 }
 
@@ -23,6 +22,5 @@ func ProcessWarning(logEntry parsermodels.ParsedLogEntry) *models.SmcEntry {
 	result.EventType = logEntry.Level
 	result.UID = logEntry.WarningParams.JoinMessageParams.SmcAddress.SmcUID
 
-	// todo
 	return &result
 }

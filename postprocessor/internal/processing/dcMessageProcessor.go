@@ -1,8 +1,6 @@
 package processing
 
 import (
-	"fmt"
-
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 )
@@ -223,39 +221,6 @@ func processIndexHighProfileGeneric(logEntry parsermodels.ParsedLogEntry) (*mode
 	return &data, &event
 }
 
-func processDLMSLogsEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo implementation
-	smcUID := logEntry.InfoParams.DCMessage.Payload.SmcUID
-	dlmsResponseTime := logEntry.InfoParams.DCMessage.Payload.DLMSLogPayload.DLMSResponseTime
-	dlmsRequestTime := logEntry.InfoParams.DCMessage.Payload.DLMSLogPayload.DLMSRequestTime
-
-	if dlmsRequestTime.Year() < 1500 || dlmsResponseTime.Year() < 1500 {
-		fmt.Println("holo")
-	}
-
-	dlmsError := logEntry.InfoParams.DCMessage.Payload.DLMSLogPayload.DLMSError
-	if dlmsError != "OK" {
-		fmt.Println("dlms err")
-	}
-
-	// if there is an error, the time field contains the time
-	// when the error happened (ERROR or WARN level log lines)
-	time := logEntry.InfoParams.DCMessage.Payload.Time
-	fmt.Println(time)
-
-	data := models.SmcData{
-		SmcUID: smcUID,
-	}
-
-	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.DLMSLogsSent,
-		Label:     "DLMS logs sent to SVI, state: " + dlmsError,
-	}
-
-	return &data, &event
-}
-
 func processReadIndexProfiles(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
 	smcUID := logEntry.InfoParams.DCMessage.Payload.ReadIndexProfilesEntryPayload.SmcUID
 	data := models.SmcData{
@@ -339,13 +304,6 @@ func processNewSmc(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *mode
 	return &data, &event
 }
 
-func processSVIMessage(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo is this interesting??
-	// --[message]-->(SVI) current[9.8955] total[9.8955] url[tcp://172.30.31.20:9062] topic[dc.measurementQueue]
-
-	return nil, nil
-}
-
 func processPodConfig(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
 	smcUID := logEntry.InfoParams.DCMessage.Payload.SmcUID
 	poidUID := logEntry.InfoParams.DCMessage.Payload.PodUID
@@ -387,24 +345,6 @@ func processConnect(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *mod
 		Label:     "Trying to connect to " + URL + " ...",
 	}
 	return &data, &event
-}
-
-func processSettings(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo: is this interesting?
-	// --[settings]-->(DB) dc_uid[dc18] locality[Tanambao Daoud] region[Madagascar] timezone[Indian/Antananarivo]
-	// global_ftp_address[sftp://sagemcom@172.30.31.20:firmwares] target_firmware_version[] index_collection[600]
-	// data_publish[2400] last_server_communication_time[1591775824] dc_distro_target_firmware_version[]
-	// last_dc_start_time[1591780709] frequency_band_changed[0] frequency_band_rollback_done[0]
-	return nil, nil
-}
-
-func processServicelevelEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo is this interesting??
-	// <--[service_level]--(DB) service_level_id[1] meter_mode[2] start_hour_daily_cycle[20h]
-	// load_shedding_daily_energy_budget[0] local_shedding_daily_energy_budget[0] max_active_power[0]
-	// in_service[1] name[1. Suspension] hourly_energy_limits[[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]]
-	// local_hourly_energy_limits[[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]]
-	return nil, nil
 }
 
 func processSmcAddress(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
@@ -474,4 +414,34 @@ func processStatistics(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *
 	}
 
 	return &data, &event
+}
+
+func processSettings(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+	// todo: is this interesting?
+	// --[settings]-->(DB) dc_uid[dc18] locality[Tanambao Daoud] region[Madagascar] timezone[Indian/Antananarivo]
+	// global_ftp_address[sftp://sagemcom@172.30.31.20:firmwares] target_firmware_version[] index_collection[600]
+	// data_publish[2400] last_server_communication_time[1591775824] dc_distro_target_firmware_version[]
+	// last_dc_start_time[1591780709] frequency_band_changed[0] frequency_band_rollback_done[0]
+	return nil, nil
+}
+
+func processDLMSLogsEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+	// todo is this interesting??
+	return nil, nil
+}
+
+func processServicelevelEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+	// todo is this interesting??
+	// <--[service_level]--(DB) service_level_id[1] meter_mode[2] start_hour_daily_cycle[20h]
+	// load_shedding_daily_energy_budget[0] local_shedding_daily_energy_budget[0] max_active_power[0]
+	// in_service[1] name[1. Suspension] hourly_energy_limits[[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]]
+	// local_hourly_energy_limits[[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]]
+	return nil, nil
+}
+
+func processSVIMessage(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+	// todo is this interesting??
+	// --[message]-->(SVI) current[9.8955] total[9.8955] url[tcp://172.30.31.20:9062] topic[dc.measurementQueue]
+
+	return nil, nil
 }

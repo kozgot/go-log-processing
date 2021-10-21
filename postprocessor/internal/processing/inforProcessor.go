@@ -34,7 +34,6 @@ func processDCMessage(logEntry parsermodels.ParsedLogEntry) *models.SmcEntry {
 	result.EventType = logEntry.Level
 	result.UID = logEntry.InfoParams.DCMessage.Payload.SmcUID
 
-	// todo more params?
 	return &result
 }
 
@@ -44,7 +43,6 @@ func processJoinMessage(logEntry parsermodels.ParsedLogEntry) *models.SmcEntry {
 	result.EventType = logEntry.Level
 	result.UID = logEntry.InfoParams.JoinMessage.SmcAddress.SmcUID
 
-	// todo more params?
 	return &result
 }
 
