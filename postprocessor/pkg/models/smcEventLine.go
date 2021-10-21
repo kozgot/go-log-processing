@@ -28,6 +28,9 @@ const (
 	ConnectionAttempt
 	StartToConnect
 	SmcAddressUpdated
+	TimeoutWarning
+	JoinRejectedWarning
+	DLMSError
 	InitConnection
 	ConnectionReleased
 	ConnectionFailed

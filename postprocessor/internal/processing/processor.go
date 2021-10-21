@@ -4,75 +4,67 @@ import (
 	"fmt"
 
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
-	"github.com/kozgot/go-log-processing/postprocessor/internal/rabbitmq"
-	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 	"github.com/streadway/amqp"
 )
 
 // Process processes the log entry received as a parameter.
-func Process(logEntry parsermodels.ParsedLogEntry, channel *amqp.Channel) models.ProcessedEntries {
-	entriesBySmcUID := make(map[string][]models.SmcEntry)
-	routingEntries := []models.RoutingEntry{}
-	statusEntries := []models.StatusEntry{}
-
-	result := models.ProcessedEntries{}
+func Process(logEntry parsermodels.ParsedLogEntry, channel *amqp.Channel) {
+	/*
+		entriesBySmcUID := make(map[string][]models.SmcEntry)
+		routingEntries := []models.RoutingEntry{}
+		statusEntries := []models.StatusEntry{}
+	*/
 
 	switch logEntry.Level {
 	case "INFO":
-		smcEntry, routingEntry, statusEntry := ProcessInfo(logEntry)
-		if smcEntry != nil && smcEntry.UID != "" {
-			uid := smcEntry.UID
-			initArrayIfNeeded(entriesBySmcUID, uid)
-
-			entriesBySmcUID[uid] = append(entriesBySmcUID[uid], *smcEntry)
-			saveToDb(*smcEntry, channel)
+		data, event := ProcessInfoEntry(logEntry)
+		// todo
+		if data != nil {
+			fmt.Println(data)
 		}
 
-		if routingEntry != nil {
-			routingEntries = append(routingEntries, *routingEntry)
-		}
-		if statusEntry != nil {
-			statusEntries = append(statusEntries, *statusEntry)
+		if event != nil {
+			fmt.Println(event)
 		}
 	case "WARN":
-		smcEntry := ProcessWarn(logEntry)
-		if smcEntry != nil {
-			uid := smcEntry.UID
-			initArrayIfNeeded(entriesBySmcUID, uid)
-
-			entriesBySmcUID[uid] = append(entriesBySmcUID[uid], *smcEntry)
-			saveToDb(*smcEntry, channel)
+		data, event := ProcessWarn(logEntry)
+		// todo
+		if data != nil {
+			fmt.Println(data)
 		}
+
+		if event != nil {
+			fmt.Println(event)
+		}
+
 	case "WARNING":
-		smcEntry := ProcessWarning(logEntry)
-		if smcEntry != nil {
-			uid := smcEntry.UID
-			initArrayIfNeeded(entriesBySmcUID, uid)
-
-			entriesBySmcUID[uid] = append(entriesBySmcUID[uid], *smcEntry)
-			saveToDb(*smcEntry, channel)
+		data, event := ProcessWarning(logEntry)
+		// todo
+		if data != nil {
+			fmt.Println(data)
 		}
+
+		if event != nil {
+			fmt.Println(event)
+		}
+
 	case "ERROR":
-		smcEntry := ProcessError(logEntry)
-
-		if smcEntry != nil {
-			uid := smcEntry.UID
-			initArrayIfNeeded(entriesBySmcUID, uid)
-
-			entriesBySmcUID[uid] = append(entriesBySmcUID[uid], *smcEntry)
-			saveToDb(*smcEntry, channel)
+		data, event := ProcessError(logEntry)
+		// todo
+		if data != nil {
+			fmt.Println(data)
 		}
+
+		if event != nil {
+			fmt.Println(event)
+		}
+
 	default:
 		fmt.Printf("Unknown log level %s", logEntry.Level)
 	}
-
-	result.RoutingEntries = routingEntries
-	result.StatusEntries = statusEntries
-	result.SmcEntries = entriesBySmcUID
-
-	return result
 }
 
+/*
 func saveToDb(entry models.SmcEntry, channel *amqp.Channel) {
 	rabbitmq.SendEntryToElasticUploader(entry, channel, "smc")
 }
@@ -83,3 +75,4 @@ func initArrayIfNeeded(entriesBySmcUID map[string][]models.SmcEntry, uid string)
 		entriesBySmcUID[uid] = []models.SmcEntry{}
 	}
 }
+*/
