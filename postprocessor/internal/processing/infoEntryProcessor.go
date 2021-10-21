@@ -19,14 +19,20 @@ func ProcessInfoEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *m
 
 	case parsermodels.SMCJoin:
 		smcData, event := processJoinEntry(logEntry)
-		if smcData != nil {
+		if smcData != nil { // todo remove
 			fmt.Println(smcData.SmcUID)
 		}
 		return smcData, event
 
 	case parsermodels.DCMessage:
-		data, event := processDCMessageEntry(logEntry)
-		return data, event
+		result := processDCMessageEntry(logEntry)
+		if result.ConsumtionValue != nil {
+			fmt.Println(result.ConsumtionValue)
+		}
+		if result.IndexValue != nil {
+			fmt.Println(result.IndexValue)
+		}
+		return result.SmcData, result.SmcEvent
 
 	case parsermodels.ConnectionAttempt:
 		data, event := processConnectionAttempt(logEntry)
@@ -82,167 +88,6 @@ func processJoinEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *m
 	}
 
 	return &result, &event
-}
-
-func processDCMessageEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	messageType := logEntry.InfoParams.DCMessage.MessageType
-	switch messageType {
-	case parsermodels.Connect:
-		data, event := processConnect(logEntry)
-		return data, event
-
-	case parsermodels.DLMSLogs:
-		data, event := processDLMSLogsEntry(logEntry)
-		return data, event
-
-	case parsermodels.IndexHighProfileGeneric:
-		data, event := processIndexHighProfileGeneric(logEntry)
-		return data, event
-
-	case parsermodels.IndexLowProfileGeneric:
-		data, event := processIndexLowProfileGeneric(logEntry)
-		return data, event
-
-	case parsermodels.ReadIndexLowProfiles:
-		data, event := processReadIndexLowProfiles(logEntry)
-		return data, event
-
-	case parsermodels.ReadIndexProfiles:
-		data, event := processReadIndexProfiles(logEntry)
-		return data, event
-
-	case parsermodels.IndexReceived:
-		data, event := processIndexReceived(logEntry)
-		return data, event
-
-	case parsermodels.NewSmc:
-		data, event := processNewSmc(logEntry)
-		return data, event
-
-	case parsermodels.MessageSentToSVI:
-		data, event := processSVIMessage(logEntry)
-		return data, event
-
-	case parsermodels.PodConfig:
-		data, event := processPodConfig(logEntry)
-		return data, event
-
-	case parsermodels.SmcConfig:
-		data, event := processSmcConfig(logEntry)
-		return data, event
-
-	case parsermodels.SmcAddress:
-		data, event := processSmcAddress(logEntry)
-		return data, event
-
-	case parsermodels.ServiceLevel:
-		data, event := processServicelevelEntry(logEntry)
-		return data, event
-
-	case parsermodels.Settings:
-		data, event := processSettings(logEntry)
-		return data, event
-
-	case parsermodels.Statistics:
-		data, event := processStatistics(logEntry)
-		return data, event
-
-	case parsermodels.UnknownDCMessage:
-		return nil, nil
-	default:
-		return nil, nil
-	}
-}
-
-func processIndexLowProfileGeneric(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo implementation
-	return nil, nil
-}
-
-func processIndexHighProfileGeneric(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo implementation
-	return nil, nil
-}
-
-func processDLMSLogsEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo implementation
-	return nil, nil
-}
-
-func processReadIndexProfiles(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo implementation
-	return nil, nil
-}
-
-func processReadIndexLowProfiles(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo implementation
-	return nil, nil
-}
-
-func processIndexReceived(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo implementation
-	return nil, nil
-}
-
-func processNewSmc(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo implementation
-	return nil, nil
-}
-
-func processSVIMessage(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo implementation
-	return nil, nil
-}
-
-func processPodConfig(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo implementation
-	return nil, nil
-}
-
-func processConnect(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo implementation
-	return nil, nil
-}
-
-func processSettings(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo implementation
-	return nil, nil
-}
-
-func processServicelevelEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo implementation
-	return nil, nil
-}
-
-func processSmcAddress(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo implementation
-	return nil, nil
-}
-
-func processSmcConfig(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo implementation
-	return nil, nil
-}
-
-func processStatistics(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	statisticsPayload := logEntry.InfoParams.DCMessage.Payload.StatisticsEntryPayload
-
-	if statisticsPayload == nil {
-		return nil, nil
-	}
-
-	smcUID := statisticsPayload.SourceID
-	data := models.SmcData{
-		SmcUID: smcUID,
-	}
-
-	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.StatisticsSent,
-		Label:     "Statistics sent to SVI (" + statisticsPayload.Type + ")",
-	}
-
-	return &data, &event
 }
 
 func processConnectionAttempt(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {

@@ -22,13 +22,20 @@ const (
 	// UnknownEventType is the default value of EventType.
 	UnknownEventType EventType = iota
 	NewSmc
+	PodConfiguration
 	SmcJoined
 	SmcConnected
 	ConnectionAttempt
+	StartToConnect
+	SmcAddressUpdated
 	InitConnection
 	ConnectionReleased
 	ConnectionFailed
-	IndexCollected
+	IndexCollectionStarted
+	IndexRead
+	IndexLowProfileGenericReceived
+	IndexHighProfileGenericReceived
+	DLMSLogsSent
 	ConfigurationChanged
 	InternalDiagnostics
 	StatisticsSent

@@ -13,6 +13,5 @@ func ProcessError(logEntry parsermodels.ParsedLogEntry) *models.SmcEntry {
 	result.EventType = logEntry.Level
 	result.UID = errorParams.Source
 
-	// todo more params?
 	return &result
 }

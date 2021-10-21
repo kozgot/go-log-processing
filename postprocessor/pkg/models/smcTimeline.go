@@ -16,7 +16,7 @@ type SmcData struct {
 type Pod struct {
 	UID            string
 	SmcUID         string
-	SerialNumber   string
+	SerialNumber   int
 	Phase          int
 	ServiceLevelID int
 	PositionInSmc  int
