@@ -10,6 +10,7 @@ import (
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
 	"github.com/kozgot/go-log-processing/postprocessor/internal/processing"
 	"github.com/kozgot/go-log-processing/postprocessor/internal/rabbitmq"
+	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 	"github.com/streadway/amqp"
 )
 
@@ -84,6 +85,10 @@ func main() {
 	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"routing", channelToSendTo)
 	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"status", channelToSendTo)
 
+	eventsBySmcUID := make(map[string][]models.SmcEvent)
+	smcDataBySmcUID := make(map[string]models.SmcData)
+	smcUIDsByURL := make(map[string]string)
+
 	go func() {
 		for d := range msgs {
 			if strings.Contains(string(d.Body), "START") {
@@ -96,7 +101,7 @@ func main() {
 			}
 
 			entry := deserializeMessage(d.Body)
-			processing.Process(entry, channelToSendTo)
+			processing.Process(entry, channelToSendTo, eventsBySmcUID, smcDataBySmcUID, smcUIDsByURL)
 		}
 	}()
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")

@@ -19,18 +19,15 @@ func ProcessInfoEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *m
 
 	case parsermodels.SMCJoin:
 		smcData, event := processJoinEntry(logEntry)
-		if smcData != nil { // todo remove
-			fmt.Println(smcData.SmcUID)
-		}
 		return smcData, event
 
 	case parsermodels.DCMessage:
 		result := processDCMessageEntry(logEntry)
 		if result.ConsumtionValue != nil {
-			fmt.Println(result.ConsumtionValue)
+			fmt.Println(result.ConsumtionValue.Value)
 		}
 		if result.IndexValue != nil {
-			fmt.Println(result.IndexValue)
+			fmt.Println(result.IndexValue.Value)
 		}
 		return result.SmcData, result.SmcEvent
 

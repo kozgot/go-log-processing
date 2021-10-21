@@ -338,6 +338,11 @@ func processPodConfig(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *m
 }
 
 func processConnect(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+	if logEntry.InfoParams.DCMessage.SourceOrDestName != "PLC" {
+		// We only care about PLC connects
+		return nil, nil
+	}
+
 	URL := logEntry.InfoParams.DCMessage.Payload.ConnectToPLCPayload.DestinationAddress
 	address := models.AddressDetails{
 		URL: URL,
