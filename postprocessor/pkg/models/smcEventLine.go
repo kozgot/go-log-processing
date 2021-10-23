@@ -10,10 +10,12 @@ type SmcEventLine struct {
 
 // SmcEvent is an event happening to a specific smc at a specific time.
 type SmcEvent struct {
-	Time      time.Time
-	EventType EventType
-	Label     string
-	SmcUID    string
+	Time            time.Time
+	EventType       EventType
+	EventTypeString string
+	Label           string
+	SmcUID          string
+	DataPayload     SmcData
 }
 
 // EventType represents the type of the event happening in this moment.
@@ -34,7 +36,6 @@ const (
 	DLMSError
 	InitConnection
 	ConnectionReleased
-	ConnectionFailed
 	IndexCollectionStarted
 	IndexRead
 	IndexLowProfileGenericReceived
@@ -44,3 +45,73 @@ const (
 	InternalDiagnostics
 	StatisticsSent
 )
+
+func EventTypeToString(eventType EventType) string {
+	switch eventType {
+	case UnknownEventType:
+		return "UnknownEventType"
+
+	case NewSmc:
+		return "NewSmc"
+
+	case PodConfiguration:
+		return "PodConfiguration"
+
+	case SmcJoined:
+		return "SmcJoined"
+
+	case SmcConnected:
+		return "SmcConnected"
+
+	case ConnectionAttempt:
+		return "ConnectionAttempt"
+
+	case StartToConnect:
+		return "StartToConnect"
+
+	case SmcAddressUpdated:
+		return "SmcAddressUpdated"
+
+	case TimeoutWarning:
+		return "TimeoutWarning"
+
+	case JoinRejectedWarning:
+		return "JoinRejectedWarning"
+
+	case DLMSError:
+		return "DLMSError"
+
+	case InitConnection:
+		return "InitConnection"
+
+	case ConnectionReleased:
+		return "ConnectionReleased"
+
+	case IndexCollectionStarted:
+		return "IndexCollectionStarted"
+
+	case IndexRead:
+		return "IndexRead"
+
+	case IndexLowProfileGenericReceived:
+		return "IndexLowProfileGenericReceived"
+
+	case IndexHighProfileGenericReceived:
+		return "IndexHighProfileGenericReceived"
+
+	case DLMSLogsSent:
+		return "DLMSLogsSent"
+
+	case ConfigurationChanged:
+		return "ConfigurationChanged"
+
+	case InternalDiagnostics:
+		return "InternalDiagnostics"
+
+	case StatisticsSent:
+		return "StatisticsSent"
+
+	default:
+		return "None"
+	}
+}

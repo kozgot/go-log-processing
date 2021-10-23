@@ -71,10 +71,12 @@ func processJoinEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *m
 	}
 
 	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.SmcJoined,
-		Label:     "Smc " + smcUID + " has joined",
-		SmcUID:    smcUID,
+		Time:            logEntry.Timestamp,
+		EventType:       models.SmcJoined,
+		EventTypeString: models.EventTypeToString(models.SmcJoined),
+		Label:           "Smc " + smcUID + " has joined",
+		SmcUID:          smcUID,
+		DataPayload:     result,
 	}
 
 	return &result, &event
@@ -91,10 +93,12 @@ func processConnectionAttempt(logEntry parsermodels.ParsedLogEntry) (*models.Smc
 	}
 
 	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.ConnectionAttempt,
-		Label:     "Connection attempt to " + smcUID,
-		SmcUID:    smcUID,
+		Time:            logEntry.Timestamp,
+		EventType:       models.ConnectionAttempt,
+		EventTypeString: models.EventTypeToString(models.ConnectionAttempt),
+		Label:           "Connection attempt to " + smcUID,
+		SmcUID:          smcUID,
+		DataPayload:     data,
 	}
 
 	return &data, &event
@@ -111,9 +115,11 @@ func processConnectionReleased(logEntry parsermodels.ParsedLogEntry) (*models.Sm
 	// todo: there is no smc uid here, should save URL for SMC id to be able to look it up
 
 	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.ConnectionReleased,
-		Label:     "Released connection, URL: " + address.URL,
+		Time:            logEntry.Timestamp,
+		EventType:       models.ConnectionReleased,
+		EventTypeString: models.EventTypeToString(models.ConnectionReleased),
+		Label:           "Released connection, URL: " + address.URL,
+		DataPayload:     data,
 	}
 
 	return &data, &event
@@ -130,9 +136,11 @@ func processInitDLMSConnection(logEntry parsermodels.ParsedLogEntry) (*models.Sm
 	// todo: there is no smc uid here, should save URL for SMC id to be able to look it up
 
 	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.InitConnection,
-		Label:     "Initialize DLMS connection, URL: " + address.URL,
+		Time:            logEntry.Timestamp,
+		EventType:       models.InitConnection,
+		EventTypeString: models.EventTypeToString(models.InitConnection),
+		Label:           "Initialize DLMS connection, URL: " + address.URL,
+		DataPayload:     data,
 	}
 
 	return &data, &event
@@ -146,10 +154,12 @@ func processInternalDiagnostics(logEntry parsermodels.ParsedLogEntry) (*models.S
 	}
 
 	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.InternalDiagnostics,
-		Label:     "Internal diagnostics...",
-		SmcUID:    smcUID,
+		Time:            logEntry.Timestamp,
+		EventType:       models.InternalDiagnostics,
+		EventTypeString: models.EventTypeToString(models.InternalDiagnostics),
+		Label:           "Internal diagnostics...",
+		SmcUID:          smcUID,
+		DataPayload:     data,
 	}
 
 	return &data, &event
@@ -170,10 +180,12 @@ func processSmcConfigUpdate(logEntry parsermodels.ParsedLogEntry) (*models.SmcDa
 	}
 
 	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.ConfigurationChanged,
-		Label:     "Configuration update for " + smcUID,
-		SmcUID:    smcUID,
+		Time:            logEntry.Timestamp,
+		EventType:       models.ConfigurationChanged,
+		EventTypeString: models.EventTypeToString(models.ConfigurationChanged),
+		Label:           "Configuration update for " + smcUID,
+		SmcUID:          smcUID,
+		DataPayload:     data,
 	}
 
 	return &data, &event

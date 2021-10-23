@@ -15,14 +15,17 @@ func ProcessError(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *model
 	}
 
 	smcUID := logEntry.ErrorParams.Source
+	data := models.SmcData{SmcUID: smcUID}
+
 	label := "Error type " + logEntry.ErrorParams.Message + ", severity: " + strconv.Itoa(logEntry.ErrorParams.Severity)
 	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.DLMSError,
-		Label:     label,
-		SmcUID:    smcUID,
+		Time:            logEntry.Timestamp,
+		EventType:       models.DLMSError,
+		EventTypeString: models.EventTypeToString(models.DLMSError),
+		Label:           label,
+		SmcUID:          smcUID,
+		DataPayload:     data,
 	}
 
-	data := models.SmcData{SmcUID: smcUID}
 	return &data, &event
 }

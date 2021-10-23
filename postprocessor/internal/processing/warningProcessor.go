@@ -8,12 +8,6 @@ import (
 // ProcessWarn processes a log entry with WARN log level.
 func ProcessWarn(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
 	if logEntry.WarningParams.TimeoutParams.Protocol != "" && logEntry.WarningParams.TimeoutParams.URL != "" {
-		event := models.SmcEvent{
-			Time:      logEntry.Timestamp,
-			EventType: models.TimeoutWarning,
-			Label:     "Timeout for URL " + logEntry.WarningParams.TimeoutParams.URL,
-		}
-
 		address := models.AddressDetails{
 			URL: logEntry.WarningParams.TimeoutParams.URL,
 		}
@@ -21,6 +15,15 @@ func ProcessWarn(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models
 		data := models.SmcData{
 			Address: address,
 		}
+
+		event := models.SmcEvent{
+			Time:            logEntry.Timestamp,
+			EventType:       models.TimeoutWarning,
+			EventTypeString: models.EventTypeToString(models.TimeoutWarning),
+			Label:           "Timeout for URL " + logEntry.WarningParams.TimeoutParams.URL,
+			DataPayload:     data,
+		}
+
 		return &data, &event
 	}
 
@@ -43,10 +46,12 @@ func ProcessWarning(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *mod
 	}
 
 	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.JoinRejectedWarning,
-		Label:     "SMC join rejected for " + smcUID,
-		SmcUID:    smcUID,
+		Time:            logEntry.Timestamp,
+		EventTypeString: models.EventTypeToString(models.JoinRejectedWarning),
+		EventType:       models.JoinRejectedWarning,
+		Label:           "SMC join rejected for " + smcUID,
+		SmcUID:          smcUID,
+		DataPayload:     data,
 	}
 
 	return &data, &event

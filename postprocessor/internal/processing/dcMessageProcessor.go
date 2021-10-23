@@ -192,15 +192,18 @@ func processDCMessageEntry(logEntry parsermodels.ParsedLogEntry) models.Processe
 func processIndexLowProfileGeneric(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
 	// there are two more params (capture period and capture objects), but they are not really interesting for us here.
 	smcUID := logEntry.InfoParams.DCMessage.Payload.SmcUID
-	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.IndexLowProfileGenericReceived,
-		Label:     "Index low profile generic from SMC",
-		SmcUID:    smcUID,
-	}
 
 	data := models.SmcData{
 		SmcUID: smcUID,
+	}
+
+	event := models.SmcEvent{
+		Time:            logEntry.Timestamp,
+		EventType:       models.IndexLowProfileGenericReceived,
+		EventTypeString: models.EventTypeToString(models.IndexLowProfileGenericReceived),
+		Label:           "Index low profile generic from SMC",
+		SmcUID:          smcUID,
+		DataPayload:     data,
 	}
 
 	return &data, &event
@@ -209,15 +212,18 @@ func processIndexLowProfileGeneric(logEntry parsermodels.ParsedLogEntry) (*model
 func processIndexHighProfileGeneric(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
 	// there are two more params (capture period and capture objects), but they are not really interesting for us here.
 	smcUID := logEntry.InfoParams.DCMessage.Payload.SmcUID
-	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.IndexHighProfileGenericReceived,
-		Label:     "Index high profile generic from SMC",
-		SmcUID:    smcUID,
-	}
 
 	data := models.SmcData{
 		SmcUID: smcUID,
+	}
+
+	event := models.SmcEvent{
+		Time:            logEntry.Timestamp,
+		EventType:       models.IndexHighProfileGenericReceived,
+		EventTypeString: models.EventTypeToString(models.IndexHighProfileGenericReceived),
+		Label:           "Index high profile generic from SMC",
+		SmcUID:          smcUID,
+		DataPayload:     data,
 	}
 
 	return &data, &event
@@ -230,10 +236,12 @@ func processReadIndexProfiles(logEntry parsermodels.ParsedLogEntry) (*models.Smc
 	}
 
 	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.IndexRead,
-		Label:     "Index read",
-		SmcUID:    smcUID,
+		Time:            logEntry.Timestamp,
+		EventType:       models.IndexRead,
+		EventTypeString: models.EventTypeToString(models.IndexRead),
+		Label:           "Index read",
+		SmcUID:          smcUID,
+		DataPayload:     data,
 	}
 
 	return &data, &event
@@ -252,10 +260,12 @@ func processReadIndexLowProfiles(logEntry parsermodels.ParsedLogEntry) (*models.
 	fromDateString := from.Format("2 Jan 2006 15:04:05")
 
 	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.IndexCollectionStarted,
-		Label:     "Index collection started from " + fromDateString + " to " + toDateString,
-		SmcUID:    smcUID,
+		Time:            logEntry.Timestamp,
+		EventType:       models.IndexCollectionStarted,
+		EventTypeString: models.EventTypeToString(models.IndexCollectionStarted),
+		Label:           "Index collection started from " + fromDateString + " to " + toDateString,
+		SmcUID:          smcUID,
+		DataPayload:     data,
 	}
 
 	return &data, &event
@@ -300,10 +310,12 @@ func processNewSmc(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *mode
 	}
 
 	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.NewSmc,
-		Label:     "New SMC, UID: " + data.SmcUID,
-		SmcUID:    data.SmcUID,
+		Time:            logEntry.Timestamp,
+		EventType:       models.NewSmc,
+		EventTypeString: models.EventTypeToString(models.NewSmc),
+		Label:           "New SMC, UID: " + data.SmcUID,
+		SmcUID:          data.SmcUID,
+		DataPayload:     data,
 	}
 
 	return &data, &event
@@ -329,10 +341,12 @@ func processPodConfig(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *m
 	}
 
 	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.PodConfiguration,
-		Label:     "Pod configuration read for pod " + poidUID,
-		SmcUID:    smcUID,
+		Time:            logEntry.Timestamp,
+		EventType:       models.PodConfiguration,
+		EventTypeString: models.EventTypeToString(models.PodConfiguration),
+		Label:           "Pod configuration read for pod " + poidUID,
+		SmcUID:          smcUID,
+		DataPayload:     data,
 	}
 	return &data, &event
 }
@@ -351,9 +365,11 @@ func processConnect(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *mod
 		Address: address,
 	}
 	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.StartToConnect,
-		Label:     "Trying to connect to " + URL + " ...",
+		Time:            logEntry.Timestamp,
+		EventType:       models.StartToConnect,
+		EventTypeString: models.EventTypeToString(models.StartToConnect),
+		Label:           "Trying to connect to " + URL + " ...",
+		DataPayload:     data,
 	}
 	return &data, &event
 }
@@ -377,10 +393,12 @@ func processSmcAddress(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *
 	}
 
 	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.SmcAddressUpdated,
-		Label:     label,
-		SmcUID:    data.SmcUID,
+		Time:            logEntry.Timestamp,
+		EventType:       models.SmcAddressUpdated,
+		EventTypeString: models.EventTypeToString(models.SmcAddressUpdated),
+		Label:           label,
+		SmcUID:          data.SmcUID,
+		DataPayload:     data,
 	}
 
 	return &data, &event
@@ -399,10 +417,12 @@ func processSmcConfig(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *m
 	}
 
 	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.ConfigurationChanged,
-		Label:     "SMC Config updated",
-		SmcUID:    data.SmcUID,
+		Time:            logEntry.Timestamp,
+		EventType:       models.ConfigurationChanged,
+		EventTypeString: models.EventTypeToString(models.ConfigurationChanged),
+		Label:           "SMC Config updated",
+		SmcUID:          data.SmcUID,
+		DataPayload:     data,
 	}
 
 	return &data, &event
@@ -421,10 +441,12 @@ func processStatistics(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *
 	}
 
 	event := models.SmcEvent{
-		Time:      logEntry.Timestamp,
-		EventType: models.StatisticsSent,
-		Label:     "Statistics sent to SVI (" + statisticsPayload.Type + ")",
-		SmcUID:    smcUID,
+		Time:            logEntry.Timestamp,
+		EventType:       models.StatisticsSent,
+		EventTypeString: models.EventTypeToString(models.StatisticsSent),
+		Label:           "Statistics sent to SVI (" + statisticsPayload.Type + ")",
+		SmcUID:          smcUID,
+		DataPayload:     data,
 	}
 
 	return &data, &event
