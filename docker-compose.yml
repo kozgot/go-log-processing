@@ -77,8 +77,12 @@ services:
     networks:
       - parser-network
   rabbitmq:
-    image: rabbitmq
+    image: rabbitmq:3-management
     command: rabbitmq-server
+    ports:
+      - 15672:15672
+    volumes:
+      - rabbitmq_data:/data
     expose:
       - 5672
       - 15672
@@ -107,6 +111,7 @@ services:
  
 volumes:
   elasticsearch-data:
+  rabbitmq_data:
 
 networks:
   parser-network:

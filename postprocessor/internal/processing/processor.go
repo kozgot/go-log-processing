@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
+	"github.com/kozgot/go-log-processing/postprocessor/internal/rabbitmq"
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 	"github.com/streadway/amqp"
 )
@@ -31,7 +32,7 @@ func Process(logEntry parsermodels.ParsedLogEntry,
 			}
 		}
 
-		registerEvent(eventsBySmcUID, smcUIDsByURL, event, data)
+		registerEvent(eventsBySmcUID, smcUIDsByURL, event, data, channel)
 		updateSmcData(smcDataBySmcUID, smcUIDsByURL, data)
 
 		return consumption, index
@@ -39,19 +40,19 @@ func Process(logEntry parsermodels.ParsedLogEntry,
 	case "WARN":
 		data, event := ProcessWarn(logEntry)
 		// todo
-		registerEvent(eventsBySmcUID, smcUIDsByURL, event, data)
+		registerEvent(eventsBySmcUID, smcUIDsByURL, event, data, channel)
 		updateSmcData(smcDataBySmcUID, smcUIDsByURL, data)
 
 	case "WARNING":
 		data, event := ProcessWarning(logEntry)
 		// todo
-		registerEvent(eventsBySmcUID, smcUIDsByURL, event, data)
+		registerEvent(eventsBySmcUID, smcUIDsByURL, event, data, channel)
 		updateSmcData(smcDataBySmcUID, smcUIDsByURL, data)
 
 	case "ERROR":
 		data, event := ProcessError(logEntry)
 		// todo
-		registerEvent(eventsBySmcUID, smcUIDsByURL, event, data)
+		registerEvent(eventsBySmcUID, smcUIDsByURL, event, data, channel)
 		updateSmcData(smcDataBySmcUID, smcUIDsByURL, data)
 
 	default:
@@ -61,11 +62,9 @@ func Process(logEntry parsermodels.ParsedLogEntry,
 	return nil, nil
 }
 
-/*
-func saveToDb(entry models.SmcEntry, channel *amqp.Channel) {
-	rabbitmq.SendEntryToElasticUploader(entry, channel, "smc")
+func saveToDb(event models.SmcEvent, channel *amqp.Channel) {
+	rabbitmq.SendEventToElasticUploader(event, channel, "smc")
 }
-*/
 
 func initArrayIfNeeded(eventsBySmcUID map[string][]models.SmcEvent, uid string) {
 	_, ok := eventsBySmcUID[uid]
@@ -77,7 +76,8 @@ func initArrayIfNeeded(eventsBySmcUID map[string][]models.SmcEvent, uid string) 
 func registerEvent(eventsBySmcUID map[string][]models.SmcEvent,
 	smcUIDsByURL map[string]string,
 	event *models.SmcEvent,
-	data *models.SmcData) {
+	data *models.SmcData,
+	channel *amqp.Channel) {
 	// todo
 	if data == nil {
 		return
@@ -101,6 +101,9 @@ func registerEvent(eventsBySmcUID map[string][]models.SmcEvent,
 	// Append the event to the corresponding array.
 	initArrayIfNeeded(eventsBySmcUID, smcUID)
 	eventsBySmcUID[smcUID] = append(eventsBySmcUID[smcUID], *event)
+
+	// send to ES
+	saveToDb(*event, channel)
 }
 
 func updateSmcData(smcDataBySmcUID map[string]models.SmcData, smcUIDsByURL map[string]string, data *models.SmcData) {

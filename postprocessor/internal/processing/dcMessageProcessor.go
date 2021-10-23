@@ -232,7 +232,7 @@ func processReadIndexProfiles(logEntry parsermodels.ParsedLogEntry) (*models.Smc
 	event := models.SmcEvent{
 		Time:      logEntry.Timestamp,
 		EventType: models.IndexRead,
-		Label:     "Index read from SMC: " + smcUID,
+		Label:     "Index read",
 		SmcUID:    smcUID,
 	}
 
@@ -331,7 +331,7 @@ func processPodConfig(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *m
 	event := models.SmcEvent{
 		Time:      logEntry.Timestamp,
 		EventType: models.PodConfiguration,
-		Label:     "Pod configuration read for pod " + poidUID + " in smc " + smcUID,
+		Label:     "Pod configuration read for pod " + poidUID,
 		SmcUID:    smcUID,
 	}
 	return &data, &event
