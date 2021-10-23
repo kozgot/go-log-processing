@@ -78,7 +78,7 @@ func main() {
 	msgs, err := ch.Consume(
 		q.Name, // queue
 		"",     // consumer
-		true,   // auto-ack
+		false,  // auto-ack
 		false,  // exclusive
 		false,  // no-local
 		false,  // no-wait
@@ -124,6 +124,10 @@ func main() {
 					linesByIndexNames[data.IndexName] = []models.Message{} // clear the buffer after uploading the contents
 				}
 			}
+
+			// Acknowledge message
+			err := d.Ack(false)
+			failOnError(err, "Could not acknowledge message")
 		}
 	}()
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
