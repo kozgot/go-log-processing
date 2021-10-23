@@ -10,7 +10,7 @@ import (
 )
 
 // todo: maybe set this as an environment variable
-const processedDataExchangeName = "processeddata"
+const processedDataExchangeName = "processeddata_direct_durable"
 
 // SendEventToElasticUploader sends the parsed log lines to the message queue.
 func SendEventToElasticUploader(entry models.SmcEvent, channel *amqp.Channel, indexName string) {
@@ -31,7 +31,7 @@ func OpenChannelAndConnection(rabbitMqURL string) (*amqp.Channel, *amqp.Connecti
 
 	err = ch.ExchangeDeclare(
 		processedDataExchangeName, // name
-		"fanout",                  // type
+		"direct",                  // type
 		true,                      // durable
 		false,                     // auto-deleted
 		false,                     // internal
@@ -78,9 +78,10 @@ func serializeDataUnit(data models.DataUnit) []byte {
 func sendData(data []byte, channel *amqp.Channel) {
 	body := data
 
+	// TODO: extract routing key to a single place, eg.: env variables
 	err := channel.Publish(
 		processedDataExchangeName, // exchange
-		"",                        // routing key
+		"save-data",               // routing key
 		false,                     // mandatory
 		false,                     // immediate
 		amqp.Publishing{

@@ -9,11 +9,11 @@ import (
 	"github.com/streadway/amqp"
 )
 
-const logEntriesExchangeName = "logentries"
+const logEntriesExchangeName = "logentries_direct_durable"
 
 // SendLineToPostProcessor sends the parsed log lines to the message queue.
 func SendLineToPostProcessor(line models.ParsedLogEntry, channel *amqp.Channel) {
-	sendData(serializeLine(line), channel)
+	sendDataToPostprocessor(serializeLine(line), channel)
 }
 
 // OpenChannelAndConnection opens a channel and a connection.
@@ -29,7 +29,7 @@ func OpenChannelAndConnection(rabbitMqURL string) (*amqp.Channel, *amqp.Connecti
 
 	err = ch.ExchangeDeclare(
 		logEntriesExchangeName, // name
-		"fanout",               // type
+		"direct",               // type
 		true,                   // durable
 		false,                  // auto-deleted
 		false,                  // internal
@@ -52,7 +52,7 @@ func CloseChannelAndConnection(channel *amqp.Channel, connection *amqp.Connectio
 // SendStringMessageToPostProcessor sends a string message to the message queue.
 func SendStringMessageToPostProcessor(indexName string, channel *amqp.Channel) {
 	bytes := []byte(indexName)
-	sendData(bytes, channel)
+	sendDataToPostprocessor(bytes, channel)
 }
 
 func serializeLine(line models.ParsedLogEntry) []byte {
@@ -64,12 +64,13 @@ func serializeLine(line models.ParsedLogEntry) []byte {
 	return bytes
 }
 
-func sendData(data []byte, channel *amqp.Channel) {
+func sendDataToPostprocessor(data []byte, channel *amqp.Channel) {
 	body := data
 
+	// TODO: extract routing key to a single place, eg.: env variables
 	err := channel.Publish(
 		logEntriesExchangeName, // exchange
-		"",                     // routing key
+		"process-entry",        // routing key
 		false,                  // mandatory
 		false,                  // immediate
 		amqp.Publishing{

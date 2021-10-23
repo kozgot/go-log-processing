@@ -14,7 +14,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-const logEntriesExchangeName = "logentries"
+const logEntriesExchangeName = "logentries_direct_durable"
 
 func failOnError(err error, msg string) {
 	if err != nil {
@@ -37,7 +37,7 @@ func main() {
 
 	err = ch.ExchangeDeclare(
 		logEntriesExchangeName, // name
-		"fanout",               // type
+		"direct",               // type
 		true,                   // durable
 		false,                  // auto-deleted
 		false,                  // internal
@@ -47,18 +47,19 @@ func main() {
 	failOnError(err, "Failed to declare an exchange")
 
 	q, err := ch.QueueDeclare(
-		"",    // name
-		false, // durable
-		false, // delete when unused
-		true,  // exclusive
-		false, // no-wait
-		nil,   // arguments
+		"processing_queue_durable", // name
+		true,                       // durable
+		false,                      // delete when unused
+		true,                       // exclusive
+		false,                      // no-wait
+		nil,                        // arguments
 	)
 	failOnError(err, "Failed to declare a queue")
 
+	// TODO: extract routing key to a single place, eg.: env variables
 	err = ch.QueueBind(
 		q.Name,                 // queue name
-		"",                     // routing key
+		"process-entry",        // routing key
 		logEntriesExchangeName, // exchange
 		false,
 		nil,
@@ -68,7 +69,7 @@ func main() {
 	msgs, err := ch.Consume(
 		q.Name, // queue
 		"",     // consumer
-		true,   // auto-ack
+		false,  // auto-ack
 		false,  // exclusive
 		false,  // no-local
 		false,  // no-wait
@@ -95,10 +96,20 @@ func main() {
 		for d := range msgs {
 			if strings.Contains(string(d.Body), "START") {
 				fmt.Println("Start of entries...")
+
+				// Acknowledge the message after it has been processed.
+				err := d.Ack(false)
+				failOnError(err, "Could not acknowledge START message")
+
 				continue
 			} else if strings.Contains(string(d.Body), "END") {
 				fmt.Println("End of entries...")
 				rabbitmq.SendStringMessageToElastic("DONE", channelToSendTo)
+
+				// Acknowledge the message after it has been processed.
+				err := d.Ack(false)
+				failOnError(err, "Could not acknowledge END message")
+
 				continue
 			}
 
@@ -110,6 +121,10 @@ func main() {
 			if consumption != nil {
 				consumptionValues = append(consumptionValues, *consumption)
 			}
+
+			// Acknowledge the message after it has been processed.
+			err := d.Ack(false)
+			failOnError(err, "Could not acknowledge message with timestamp: "+entry.Timestamp.Format("2 Jan 2006 15:04:05"))
 		}
 	}()
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
