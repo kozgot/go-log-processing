@@ -10,11 +10,23 @@ import (
 )
 
 // todo: maybe set this as an environment variable
-const processedDataExchangeName = "processeddata"
+const processedDataExchangeName = "processeddata_direct_durable"
 
-// SendEntryToElasticUploader sends the parsed log lines to the message queue.
-func SendEntryToElasticUploader(entry models.SmcEntry, channel *amqp.Channel, indexName string) {
-	dataToSend := models.DataUnit{IndexName: indexName, Data: serializeLine(entry)}
+// SendEventToElasticUploader sends an SMC event to the uploader service.
+func SendEventToElasticUploader(event models.SmcEvent, channel *amqp.Channel, indexName string) {
+	dataToSend := models.DataUnit{IndexName: indexName, Data: serializeEvent(event)}
+	sendData(serializeDataUnit((dataToSend)), channel)
+}
+
+// SendConsumptionToElasticUploader sends a consumption data item to the uploader service.
+func SendConsumptionToElasticUploader(cons models.ConsumtionValue, channel *amqp.Channel, indexName string) {
+	dataToSend := models.DataUnit{IndexName: indexName, Data: serializeConsumption(cons)}
+	sendData(serializeDataUnit((dataToSend)), channel)
+}
+
+// SendTimelineToElasticUploader sends an SMC timeline to the uploader service.
+func SendTimelineToElasticUploader(timeline models.SmcTimeline, channel *amqp.Channel, indexName string) {
+	dataToSend := models.DataUnit{IndexName: indexName, Data: serializeTimeline(timeline)}
 	sendData(serializeDataUnit((dataToSend)), channel)
 }
 
@@ -31,7 +43,7 @@ func OpenChannelAndConnection(rabbitMqURL string) (*amqp.Channel, *amqp.Connecti
 
 	err = ch.ExchangeDeclare(
 		processedDataExchangeName, // name
-		"fanout",                  // type
+		"direct",                  // type
 		true,                      // durable
 		false,                     // auto-deleted
 		false,                     // internal
@@ -57,10 +69,28 @@ func SendStringMessageToElastic(message string, channel *amqp.Channel) {
 	sendData(bytes, channel)
 }
 
-func serializeLine(entry models.SmcEntry) []byte {
-	bytes, err := json.Marshal(entry)
+func serializeEvent(event models.SmcEvent) []byte {
+	bytes, err := json.Marshal(event)
 	if err != nil {
-		fmt.Println("Can't serialize", entry)
+		fmt.Println("Can't serialize event ", event)
+	}
+
+	return bytes
+}
+
+func serializeConsumption(cons models.ConsumtionValue) []byte {
+	bytes, err := json.Marshal(cons)
+	if err != nil {
+		fmt.Println("Can't serialize consumption ", cons)
+	}
+
+	return bytes
+}
+
+func serializeTimeline(timeline models.SmcTimeline) []byte {
+	bytes, err := json.Marshal(timeline)
+	if err != nil {
+		fmt.Println("Can't serialize timeline ", timeline)
 	}
 
 	return bytes
@@ -78,9 +108,10 @@ func serializeDataUnit(data models.DataUnit) []byte {
 func sendData(data []byte, channel *amqp.Channel) {
 	body := data
 
+	// TODO: extract routing key to a single place, eg.: env variables
 	err := channel.Publish(
 		processedDataExchangeName, // exchange
-		"",                        // routing key
+		"save-data",               // routing key
 		false,                     // mandatory
 		false,                     // immediate
 		amqp.Publishing{

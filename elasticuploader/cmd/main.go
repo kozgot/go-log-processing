@@ -29,7 +29,7 @@ func failOnError(err error, msg string) {
 
 const numWorkers = 4
 const flushBytes = 1000000
-const processedDataExchangeName = "processeddata"
+const processedDataExchangeName = "processeddata_direct_durable"
 
 func main() {
 	log.Println("Elastic Uploader starting...")
@@ -46,7 +46,7 @@ func main() {
 
 	err = ch.ExchangeDeclare(
 		processedDataExchangeName, // name
-		"fanout",                  // type
+		"direct",                  // type
 		true,                      // durable
 		false,                     // auto-deleted
 		false,                     // internal
@@ -56,18 +56,19 @@ func main() {
 	failOnError(err, "Failed to declare an exchange")
 
 	q, err := ch.QueueDeclare(
-		"",    // name
-		false, // durable
-		false, // delete when unused
-		true,  // exclusive
-		false, // no-wait
-		nil,   // arguments
+		"save_data_queue_durable", // name
+		true,                      // durable
+		false,                     // delete when unused
+		true,                      // exclusive
+		false,                     // no-wait
+		nil,                       // arguments
 	)
 	failOnError(err, "Failed to declare a queue")
 
+	// TODO: extract routing key to a single place, eg.: env variables
 	err = ch.QueueBind(
 		q.Name,                    // queue name
-		"",                        // routing key
+		"save-data",               // routing key
 		processedDataExchangeName, // exchange
 		false,
 		nil,
@@ -77,7 +78,7 @@ func main() {
 	msgs, err := ch.Consume(
 		q.Name, // queue
 		"",     // consumer
-		true,   // auto-ack
+		false,  // auto-ack
 		false,  // exclusive
 		false,  // no-local
 		false,  // no-wait
@@ -123,6 +124,10 @@ func main() {
 					linesByIndexNames[data.IndexName] = []models.Message{} // clear the buffer after uploading the contents
 				}
 			}
+
+			// Acknowledge message
+			err := d.Ack(false)
+			failOnError(err, "Could not acknowledge message")
 		}
 	}()
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")

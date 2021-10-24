@@ -10,10 +10,11 @@ import (
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
 	"github.com/kozgot/go-log-processing/postprocessor/internal/processing"
 	"github.com/kozgot/go-log-processing/postprocessor/internal/rabbitmq"
+	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 	"github.com/streadway/amqp"
 )
 
-const logEntriesExchangeName = "logentries"
+const logEntriesExchangeName = "logentries_direct_durable"
 
 func failOnError(err error, msg string) {
 	if err != nil {
@@ -36,7 +37,7 @@ func main() {
 
 	err = ch.ExchangeDeclare(
 		logEntriesExchangeName, // name
-		"fanout",               // type
+		"direct",               // type
 		true,                   // durable
 		false,                  // auto-deleted
 		false,                  // internal
@@ -46,18 +47,19 @@ func main() {
 	failOnError(err, "Failed to declare an exchange")
 
 	q, err := ch.QueueDeclare(
-		"",    // name
-		false, // durable
-		false, // delete when unused
-		true,  // exclusive
-		false, // no-wait
-		nil,   // arguments
+		"processing_queue_durable", // name
+		true,                       // durable
+		false,                      // delete when unused
+		true,                       // exclusive
+		false,                      // no-wait
+		nil,                        // arguments
 	)
 	failOnError(err, "Failed to declare a queue")
 
+	// TODO: extract routing key to a single place, eg.: env variables
 	err = ch.QueueBind(
 		q.Name,                 // queue name
-		"",                     // routing key
+		"process-entry",        // routing key
 		logEntriesExchangeName, // exchange
 		false,
 		nil,
@@ -67,7 +69,7 @@ func main() {
 	msgs, err := ch.Consume(
 		q.Name, // queue
 		"",     // consumer
-		true,   // auto-ack
+		false,  // auto-ack
 		false,  // exclusive
 		false,  // no-local
 		false,  // no-wait
@@ -81,22 +83,62 @@ func main() {
 	defer rabbitmq.CloseChannelAndConnection(channelToSendTo, connectionToSendTo)
 
 	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"smc", channelToSendTo)
-	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"routing", channelToSendTo)
-	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"status", channelToSendTo)
+	// rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"timelines", channelToSendTo)
+	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"consumption", channelToSendTo)
+
+	eventsBySmcUID := make(map[string][]models.SmcEvent)
+	smcDataBySmcUID := make(map[string]models.SmcData)
+	smcUIDsByURL := make(map[string]string)
+	podUIDToSmcUID := make(map[string]string)
+	consumptionValues := []models.ConsumtionValue{}
+	indexValues := []models.IndexValue{}
 
 	go func() {
 		for d := range msgs {
 			if strings.Contains(string(d.Body), "START") {
 				fmt.Println("Start of entries...")
+
+				// Acknowledge the message after it has been processed.
+				err := d.Ack(false)
+				failOnError(err, "Could not acknowledge START message")
+
 				continue
 			} else if strings.Contains(string(d.Body), "END") {
 				fmt.Println("End of entries...")
+
+				// Further processing to create timelines for SMCs. Uncomment if needed.
+				// processing.CreateSMCTimelines(eventsBySmcUID, smcDataBySmcUID, channelToSendTo)
+
+				// Further processing to get consumption and index info.
+				processing.ProcessConsumptionAndIndexValues(consumptionValues, indexValues, channelToSendTo)
+
 				rabbitmq.SendStringMessageToElastic("DONE", channelToSendTo)
+
+				// Acknowledge the message after it has been processed.
+				err := d.Ack(false)
+				failOnError(err, "Could not acknowledge END message")
 				continue
 			}
 
 			entry := deserializeMessage(d.Body)
-			processing.Process(entry, channelToSendTo)
+			consumption, index := processing.Process(
+				entry,
+				channelToSendTo,
+				eventsBySmcUID,
+				smcDataBySmcUID,
+				smcUIDsByURL,
+				podUIDToSmcUID)
+
+			if index != nil {
+				indexValues = append(indexValues, *index)
+			}
+			if consumption != nil {
+				consumptionValues = append(consumptionValues, *consumption)
+			}
+
+			// Acknowledge the message after it has been processed.
+			err := d.Ack(false)
+			failOnError(err, "Could not acknowledge message with timestamp: "+entry.Timestamp.Format("2 Jan 2006 15:04:05"))
 		}
 	}()
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
