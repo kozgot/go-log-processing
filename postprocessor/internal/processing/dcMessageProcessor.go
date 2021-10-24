@@ -21,10 +21,10 @@ func processDCMessageEntry(
 		return result
 
 	case parsermodels.DLMSLogs:
-		data, event := processDLMSLogsEntry(logEntry)
+		// Not relevant.
 		result := models.ProcessedEntryData{
-			SmcData:         data,
-			SmcEvent:        event,
+			SmcData:         nil,
+			SmcEvent:        nil,
 			ConsumtionValue: nil,
 			IndexValue:      nil,
 		}
@@ -101,10 +101,10 @@ func processDCMessageEntry(
 		return result
 
 	case parsermodels.MessageSentToSVI:
-		data, event := processSVIMessage(logEntry)
+		// Not relevant.
 		result := models.ProcessedEntryData{
-			SmcData:         data,
-			SmcEvent:        event,
+			SmcData:         nil,
+			SmcEvent:        nil,
 			ConsumtionValue: nil,
 			IndexValue:      nil,
 		}
@@ -141,20 +141,20 @@ func processDCMessageEntry(
 		return result
 
 	case parsermodels.ServiceLevel:
-		data, event := processServicelevelEntry(logEntry)
+		// Not relevant.
 		result := models.ProcessedEntryData{
-			SmcData:         data,
-			SmcEvent:        event,
+			SmcData:         nil,
+			SmcEvent:        nil,
 			ConsumtionValue: nil,
 			IndexValue:      nil,
 		}
 		return result
 
 	case parsermodels.Settings:
-		data, event := processSettings(logEntry)
+		// Not relevant.
 		result := models.ProcessedEntryData{
-			SmcData:         data,
-			SmcEvent:        event,
+			SmcData:         nil,
+			SmcEvent:        nil,
 			ConsumtionValue: nil,
 			IndexValue:      nil,
 		}
@@ -171,6 +171,7 @@ func processDCMessageEntry(
 		return result
 
 	case parsermodels.UnknownDCMessage:
+		// Not relevant.
 		result := models.ProcessedEntryData{
 			SmcData:         nil,
 			SmcEvent:        nil,
@@ -179,6 +180,7 @@ func processDCMessageEntry(
 		}
 		return result
 	default:
+		// Not relevant.
 		result := models.ProcessedEntryData{
 			SmcData:         nil,
 			SmcEvent:        nil,
@@ -455,33 +457,4 @@ func processStatistics(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *
 	}
 
 	return &data, &event
-}
-
-func processSettings(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// This kind of entry is not important for this logic.
-	// --[settings]-->(DB) dc_uid[dc18] locality[Tanambao Daoud] region[Madagascar] timezone[Indian/Antananarivo]
-	// global_ftp_address[sftp://sagemcom@172.30.31.20:firmwares] target_firmware_version[] index_collection[600]
-	// data_publish[2400] last_server_communication_time[1591775824] dc_distro_target_firmware_version[]
-	// last_dc_start_time[1591780709] frequency_band_changed[0] frequency_band_rollback_done[0]
-	return nil, nil
-}
-
-func processDLMSLogsEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// This kind of entry is not important for this logic.
-	return nil, nil
-}
-
-func processServicelevelEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// This kind of entry is not important for this logic.
-	// <--[service_level]--(DB) service_level_id[1] meter_mode[2] start_hour_daily_cycle[20h]
-	// load_shedding_daily_energy_budget[0] local_shedding_daily_energy_budget[0] max_active_power[0]
-	// in_service[1] name[1. Suspension] hourly_energy_limits[[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]]
-	// local_hourly_energy_limits[[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]]
-	return nil, nil
-}
-
-func processSVIMessage(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// This kind of entry is not important for this logic.
-	// --[message]-->(SVI) current[9.8955] total[9.8955] url[tcp://172.30.31.20:9062] topic[dc.measurementQueue]
-	return nil, nil
 }
