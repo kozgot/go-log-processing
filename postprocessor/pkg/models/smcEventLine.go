@@ -2,12 +2,6 @@ package models
 
 import "time"
 
-// SmcEventLine shows the events happening to an smc over time.
-type SmcEventLine struct {
-	SmcData SmcData
-	Events  []SmcEvent
-}
-
 // SmcEvent is an event happening to a specific smc at a specific time.
 type SmcEvent struct {
 	Time            time.Time
