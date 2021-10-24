@@ -1,11 +1,11 @@
 package rabbitmq
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
+	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
+
 	"github.com/streadway/amqp"
 )
 
@@ -14,31 +14,25 @@ const processedDataExchangeName = "processeddata_direct_durable"
 
 // SendEventToElasticUploader sends an SMC event to the uploader service.
 func SendEventToElasticUploader(event models.SmcEvent, channel *amqp.Channel, indexName string) {
-	dataToSend := models.DataUnit{IndexName: indexName, Data: serializeEvent(event)}
-	sendData(serializeDataUnit((dataToSend)), channel)
+	dataToSend := models.DataUnit{IndexName: indexName, Data: event.Serialize()}
+	sendData(dataToSend.Serialize(), channel)
 }
 
 // SendConsumptionToElasticUploader sends a consumption data item to the uploader service.
 func SendConsumptionToElasticUploader(cons models.ConsumtionValue, channel *amqp.Channel, indexName string) {
-	dataToSend := models.DataUnit{IndexName: indexName, Data: serializeConsumption(cons)}
-	sendData(serializeDataUnit((dataToSend)), channel)
-}
-
-// SendTimelineToElasticUploader sends an SMC timeline to the uploader service.
-func SendTimelineToElasticUploader(timeline models.SmcTimeline, channel *amqp.Channel, indexName string) {
-	dataToSend := models.DataUnit{IndexName: indexName, Data: serializeTimeline(timeline)}
-	sendData(serializeDataUnit((dataToSend)), channel)
+	dataToSend := models.DataUnit{IndexName: indexName, Data: cons.Serialize()}
+	sendData(dataToSend.Serialize(), channel)
 }
 
 // OpenChannelAndConnection opens a channel and a connection and returns pointers to them.
 func OpenChannelAndConnection(rabbitMqURL string) (*amqp.Channel, *amqp.Connection) {
 	conn, err := amqp.Dial(rabbitMqURL)
-	failOnError(err, "Failed to connect to RabbitMQ")
+	utils.FailOnError(err, "Failed to connect to RabbitMQ")
 	fmt.Println("Created connection")
 
 	// create the channel
 	ch, err := conn.Channel()
-	failOnError(err, "Failed to open a channel")
+	utils.FailOnError(err, "Failed to open a channel")
 	fmt.Println("Created channel")
 
 	err = ch.ExchangeDeclare(
@@ -50,7 +44,7 @@ func OpenChannelAndConnection(rabbitMqURL string) (*amqp.Channel, *amqp.Connecti
 		false,                     // no-wait
 		nil,                       // arguments
 	)
-	failOnError(err, "Failed to declare an exchange")
+	utils.FailOnError(err, "Failed to declare an exchange")
 
 	return ch, conn
 }
@@ -69,42 +63,6 @@ func SendStringMessageToElastic(message string, channel *amqp.Channel) {
 	sendData(bytes, channel)
 }
 
-func serializeEvent(event models.SmcEvent) []byte {
-	bytes, err := json.Marshal(event)
-	if err != nil {
-		fmt.Println("Can't serialize event ", event)
-	}
-
-	return bytes
-}
-
-func serializeConsumption(cons models.ConsumtionValue) []byte {
-	bytes, err := json.Marshal(cons)
-	if err != nil {
-		fmt.Println("Can't serialize consumption ", cons)
-	}
-
-	return bytes
-}
-
-func serializeTimeline(timeline models.SmcTimeline) []byte {
-	bytes, err := json.Marshal(timeline)
-	if err != nil {
-		fmt.Println("Can't serialize timeline ", timeline)
-	}
-
-	return bytes
-}
-
-func serializeDataUnit(data models.DataUnit) []byte {
-	bytes, err := json.Marshal(data)
-	if err != nil {
-		fmt.Println("Can't serialize", data)
-	}
-
-	return bytes
-}
-
 func sendData(data []byte, channel *amqp.Channel) {
 	body := data
 
@@ -119,11 +77,5 @@ func sendData(data []byte, channel *amqp.Channel) {
 			ContentType:  "application/json",
 			Body:         body,
 		})
-	failOnError(err, "Failed to publish a message")
-}
-
-func failOnError(err error, msg string) {
-	if err != nil {
-		log.Fatalf("%s: %s", msg, err)
-	}
+	utils.FailOnError(err, "Failed to publish a message")
 }
