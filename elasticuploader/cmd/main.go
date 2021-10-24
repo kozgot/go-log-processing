@@ -142,10 +142,6 @@ func BulkIndexerUpload(lines []models.Message, currentDocumentID int, indexName 
 		err error
 	)
 
-	fmt.Println(len((lines)))
-	fmt.Println(currentDocumentID)
-	fmt.Println(indexName)
-
 	// Use a third-party package for implementing the backoff function
 	retryBackoff := backoff.NewExponentialBackOff()
 
