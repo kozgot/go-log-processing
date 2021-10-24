@@ -18,6 +18,12 @@ func SendEventToElasticUploader(event models.SmcEvent, channel *amqp.Channel, in
 	sendData(serializeDataUnit((dataToSend)), channel)
 }
 
+// SendConsumptionToElasticUploader sends a consumption data item to the uploader service.
+func SendConsumptionToElasticUploader(cons models.ConsumtionValue, channel *amqp.Channel, indexName string) {
+	dataToSend := models.DataUnit{IndexName: indexName, Data: serializeConsumption(cons)}
+	sendData(serializeDataUnit((dataToSend)), channel)
+}
+
 // SendTimelineToElasticUploader sends an SMC timeline to the uploader service.
 func SendTimelineToElasticUploader(timeline models.SmcTimeline, channel *amqp.Channel, indexName string) {
 	dataToSend := models.DataUnit{IndexName: indexName, Data: serializeTimeline(timeline)}
@@ -72,10 +78,19 @@ func serializeEvent(event models.SmcEvent) []byte {
 	return bytes
 }
 
+func serializeConsumption(cons models.ConsumtionValue) []byte {
+	bytes, err := json.Marshal(cons)
+	if err != nil {
+		fmt.Println("Can't serialize consumption ", cons)
+	}
+
+	return bytes
+}
+
 func serializeTimeline(timeline models.SmcTimeline) []byte {
 	bytes, err := json.Marshal(timeline)
 	if err != nil {
-		fmt.Println("Can't serialize event ", timeline)
+		fmt.Println("Can't serialize timeline ", timeline)
 	}
 
 	return bytes

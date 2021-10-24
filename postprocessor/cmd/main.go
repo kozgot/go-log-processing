@@ -83,7 +83,8 @@ func main() {
 	defer rabbitmq.CloseChannelAndConnection(channelToSendTo, connectionToSendTo)
 
 	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"smc", channelToSendTo)
-	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"timelines", channelToSendTo)
+	// rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"timelines", channelToSendTo)
+	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"consumption", channelToSendTo)
 
 	eventsBySmcUID := make(map[string][]models.SmcEvent)
 	smcDataBySmcUID := make(map[string]models.SmcData)
@@ -105,8 +106,11 @@ func main() {
 			} else if strings.Contains(string(d.Body), "END") {
 				fmt.Println("End of entries...")
 
-				// Further processing to create timelines for SMCs.
-				processing.CreateSMCTimelines(eventsBySmcUID, smcDataBySmcUID, channelToSendTo)
+				// Further processing to create timelines for SMCs. Uncomment if needed.
+				// processing.CreateSMCTimelines(eventsBySmcUID, smcDataBySmcUID, channelToSendTo)
+
+				// Further processing to get consumption and index info.
+				processing.ProcessConsumptionAndIndexValues(consumptionValues, indexValues, channelToSendTo)
 
 				rabbitmq.SendStringMessageToElastic("DONE", channelToSendTo)
 

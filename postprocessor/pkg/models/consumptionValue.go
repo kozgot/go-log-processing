@@ -9,4 +9,5 @@ type ConsumtionValue struct {
 	EndTime      time.Time
 	Value        int
 	ServiceLevel int
+	SmcUID       string
 }
