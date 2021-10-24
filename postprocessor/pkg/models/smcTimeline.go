@@ -38,19 +38,7 @@ type TimelineSection struct {
 	Label string
 }
 
-// SmcState represents the state the smc is in.
-type SmcState int64
-
-const (
-	// UnknownSmcState is the default value of SmcState.
-	UnknownSmcState SmcState = iota
-	New
-	Joined
-	Connected
-	Failing
-	CollectingIndex
-)
-
+// AddressDetails contains data related to an SMC's address.
 type AddressDetails struct {
 	ShortAddress    int
 	PhysicalAddress string

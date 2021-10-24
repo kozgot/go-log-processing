@@ -83,12 +83,12 @@ func main() {
 	defer rabbitmq.CloseChannelAndConnection(channelToSendTo, connectionToSendTo)
 
 	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"smc", channelToSendTo)
-	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"routing", channelToSendTo)
-	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"status", channelToSendTo)
+	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"timelines", channelToSendTo)
 
 	eventsBySmcUID := make(map[string][]models.SmcEvent)
 	smcDataBySmcUID := make(map[string]models.SmcData)
 	smcUIDsByURL := make(map[string]string)
+	podUIDToSmcUID := make(map[string]string)
 	consumptionValues := []models.ConsumtionValue{}
 	indexValues := []models.IndexValue{}
 
@@ -104,17 +104,27 @@ func main() {
 				continue
 			} else if strings.Contains(string(d.Body), "END") {
 				fmt.Println("End of entries...")
+
+				// Further processing to create timelines for SMCs.
+				processing.CreateSMCTimelines(eventsBySmcUID, smcDataBySmcUID, channelToSendTo)
+
 				rabbitmq.SendStringMessageToElastic("DONE", channelToSendTo)
 
 				// Acknowledge the message after it has been processed.
 				err := d.Ack(false)
 				failOnError(err, "Could not acknowledge END message")
-
 				continue
 			}
 
 			entry := deserializeMessage(d.Body)
-			consumption, index := processing.Process(entry, channelToSendTo, eventsBySmcUID, smcDataBySmcUID, smcUIDsByURL)
+			consumption, index := processing.Process(
+				entry,
+				channelToSendTo,
+				eventsBySmcUID,
+				smcDataBySmcUID,
+				smcUIDsByURL,
+				podUIDToSmcUID)
+
 			if index != nil {
 				indexValues = append(indexValues, *index)
 			}

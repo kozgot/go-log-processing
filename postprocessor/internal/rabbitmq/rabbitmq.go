@@ -12,9 +12,15 @@ import (
 // todo: maybe set this as an environment variable
 const processedDataExchangeName = "processeddata_direct_durable"
 
-// SendEventToElasticUploader sends the parsed log lines to the message queue.
-func SendEventToElasticUploader(entry models.SmcEvent, channel *amqp.Channel, indexName string) {
-	dataToSend := models.DataUnit{IndexName: indexName, Data: serializeLine(entry)}
+// SendEventToElasticUploader sends an SMC event to the uploader service.
+func SendEventToElasticUploader(event models.SmcEvent, channel *amqp.Channel, indexName string) {
+	dataToSend := models.DataUnit{IndexName: indexName, Data: serializeEvent(event)}
+	sendData(serializeDataUnit((dataToSend)), channel)
+}
+
+// SendTimelineToElasticUploader sends an SMC timeline to the uploader service.
+func SendTimelineToElasticUploader(timeline models.SmcTimeline, channel *amqp.Channel, indexName string) {
+	dataToSend := models.DataUnit{IndexName: indexName, Data: serializeTimeline(timeline)}
 	sendData(serializeDataUnit((dataToSend)), channel)
 }
 
@@ -57,10 +63,19 @@ func SendStringMessageToElastic(message string, channel *amqp.Channel) {
 	sendData(bytes, channel)
 }
 
-func serializeLine(entry models.SmcEvent) []byte {
-	bytes, err := json.Marshal(entry)
+func serializeEvent(event models.SmcEvent) []byte {
+	bytes, err := json.Marshal(event)
 	if err != nil {
-		fmt.Println("Can't serialize", entry)
+		fmt.Println("Can't serialize event ", event)
+	}
+
+	return bytes
+}
+
+func serializeTimeline(timeline models.SmcTimeline) []byte {
+	bytes, err := json.Marshal(timeline)
+	if err != nil {
+		fmt.Println("Can't serialize event ", timeline)
 	}
 
 	return bytes

@@ -5,7 +5,9 @@ import (
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 )
 
-func processDCMessageEntry(logEntry parsermodels.ParsedLogEntry) models.ProcessedEntryData {
+func processDCMessageEntry(
+	logEntry parsermodels.ParsedLogEntry,
+	podUIDToSmcUID map[string]string) models.ProcessedEntryData {
 	messageType := logEntry.InfoParams.DCMessage.MessageType
 	switch messageType {
 	case parsermodels.Connect:
@@ -69,8 +71,7 @@ func processDCMessageEntry(logEntry parsermodels.ParsedLogEntry) models.Processe
 		return result
 
 	case parsermodels.IndexReceived:
-		indexValue := processIndexReceived(logEntry)
-		// todo
+		indexValue := processIndexReceived(logEntry, podUIDToSmcUID)
 		result := models.ProcessedEntryData{
 			SmcData:         nil,
 			SmcEvent:        nil,
@@ -81,7 +82,6 @@ func processDCMessageEntry(logEntry parsermodels.ParsedLogEntry) models.Processe
 
 	case parsermodels.Consumption:
 		consumptionValue := processConsumption(logEntry)
-		// todo
 		result := models.ProcessedEntryData{
 			SmcData:         nil,
 			SmcEvent:        nil,
@@ -121,7 +121,7 @@ func processDCMessageEntry(logEntry parsermodels.ParsedLogEntry) models.Processe
 		return result
 
 	case parsermodels.SmcConfig:
-		data, event := processSmcConfig(logEntry)
+		data, event := processSmcConfigReadFromDB(logEntry)
 		result := models.ProcessedEntryData{
 			SmcData:         data,
 			SmcEvent:        event,
@@ -131,7 +131,7 @@ func processDCMessageEntry(logEntry parsermodels.ParsedLogEntry) models.Processe
 		return result
 
 	case parsermodels.SmcAddress:
-		data, event := processSmcAddress(logEntry)
+		data, event := processSmcAddressReadFromDB(logEntry)
 		result := models.ProcessedEntryData{
 			SmcData:         data,
 			SmcEvent:        event,
@@ -274,7 +274,8 @@ func processReadIndexLowProfiles(logEntry parsermodels.ParsedLogEntry) (*models.
 // These entries have the same timestamp as the corresponding <--[read index profiles] (IndexRead) entries.
 // If the changes in dex or consumption values are interesting, we can get them from these messages.
 // The pod UID and serial number fields can be used to pair these entries to SMC-s.
-func processIndexReceived(logEntry parsermodels.ParsedLogEntry) *models.IndexValue {
+func processIndexReceived(logEntry parsermodels.ParsedLogEntry, podUIDToSmcUID map[string]string) *models.IndexValue {
+	smcUID := podUIDToSmcUID[logEntry.InfoParams.DCMessage.Payload.PodUID]
 	result := models.IndexValue{
 		ReceiveTime:   logEntry.Timestamp,
 		PreviousTime:  logEntry.InfoParams.DCMessage.Payload.IndexPayload.PreviousTime,
@@ -284,6 +285,7 @@ func processIndexReceived(logEntry parsermodels.ParsedLogEntry) *models.IndexVal
 		ServiceLevel:  logEntry.InfoParams.DCMessage.Payload.ServiceLevelID,
 		PodUID:        logEntry.InfoParams.DCMessage.Payload.PodUID,
 		SerialNumber:  logEntry.InfoParams.DCMessage.Payload.IndexPayload.SerialNumber,
+		SmcUID:        smcUID,
 	}
 
 	return &result
@@ -374,7 +376,7 @@ func processConnect(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *mod
 	return &data, &event
 }
 
-func processSmcAddress(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+func processSmcAddressReadFromDB(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
 	address := models.AddressDetails{
 		PhysicalAddress: logEntry.InfoParams.DCMessage.Payload.SmcAddressPayload.PhysicalAddress,
 		LogicalAddress:  logEntry.InfoParams.DCMessage.Payload.SmcAddressPayload.LogicalAddress,
@@ -388,14 +390,17 @@ func processSmcAddress(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *
 
 	label := "SMC address updated"
 
+	eventType := models.SmcAddressUpdated
+
 	if address.LogicalAddress == "" {
 		label = "SMC logical address invalidated"
+		eventType = models.SmcAddressInvalidated
 	}
 
 	event := models.SmcEvent{
 		Time:            logEntry.Timestamp,
-		EventType:       models.SmcAddressUpdated,
-		EventTypeString: models.EventTypeToString(models.SmcAddressUpdated),
+		EventType:       eventType,
+		EventTypeString: models.EventTypeToString(eventType),
 		Label:           label,
 		SmcUID:          data.SmcUID,
 		DataPayload:     data,
@@ -404,7 +409,7 @@ func processSmcAddress(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *
 	return &data, &event
 }
 
-func processSmcConfig(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+func processSmcConfigReadFromDB(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
 	address := models.AddressDetails{
 		PhysicalAddress: logEntry.InfoParams.DCMessage.Payload.SmcConfigPayload.PhysicalAddress,
 	}
@@ -418,9 +423,9 @@ func processSmcConfig(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *m
 
 	event := models.SmcEvent{
 		Time:            logEntry.Timestamp,
-		EventType:       models.ConfigurationChanged,
-		EventTypeString: models.EventTypeToString(models.ConfigurationChanged),
-		Label:           "SMC Config updated",
+		EventType:       models.ConfigurationReadFromDB,
+		EventTypeString: models.EventTypeToString(models.ConfigurationReadFromDB),
+		Label:           "SMC Config read from DB",
 		SmcUID:          data.SmcUID,
 		DataPayload:     data,
 	}
@@ -453,7 +458,7 @@ func processStatistics(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *
 }
 
 func processSettings(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo: is this interesting?
+	// This kind of entry is not important for this logic.
 	// --[settings]-->(DB) dc_uid[dc18] locality[Tanambao Daoud] region[Madagascar] timezone[Indian/Antananarivo]
 	// global_ftp_address[sftp://sagemcom@172.30.31.20:firmwares] target_firmware_version[] index_collection[600]
 	// data_publish[2400] last_server_communication_time[1591775824] dc_distro_target_firmware_version[]
@@ -462,12 +467,12 @@ func processSettings(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *mo
 }
 
 func processDLMSLogsEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo is this interesting??
+	// This kind of entry is not important for this logic.
 	return nil, nil
 }
 
 func processServicelevelEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo is this interesting??
+	// This kind of entry is not important for this logic.
 	// <--[service_level]--(DB) service_level_id[1] meter_mode[2] start_hour_daily_cycle[20h]
 	// load_shedding_daily_energy_budget[0] local_shedding_daily_energy_budget[0] max_active_power[0]
 	// in_service[1] name[1. Suspension] hourly_energy_limits[[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]]
@@ -476,8 +481,7 @@ func processServicelevelEntry(logEntry parsermodels.ParsedLogEntry) (*models.Smc
 }
 
 func processSVIMessage(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
-	// todo is this interesting??
+	// This kind of entry is not important for this logic.
 	// --[message]-->(SVI) current[9.8955] total[9.8955] url[tcp://172.30.31.20:9062] topic[dc.measurementQueue]
-
 	return nil, nil
 }

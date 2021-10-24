@@ -14,18 +14,18 @@ func Process(logEntry parsermodels.ParsedLogEntry,
 	channel *amqp.Channel,
 	eventsBySmcUID map[string][]models.SmcEvent,
 	smcDataBySmcUID map[string]models.SmcData,
-	smcUIDsByURL map[string]string) (*models.ConsumtionValue, *models.IndexValue) {
+	smcUIDsByURL map[string]string,
+	podUIDToSmcUID map[string]string) (*models.ConsumtionValue, *models.IndexValue) {
 	switch logEntry.Level {
 	case "INFO":
-		data, event, consumption, index := ProcessInfoEntry(logEntry)
+		data, event, consumption, index := ProcessInfoEntry(logEntry, podUIDToSmcUID)
 
-		// todo
 		if event != nil && event.EventType == models.ConnectionAttempt {
 			// This is the only entry where the URL and SMC UID parameters are given at the same time.
 			URL := data.Address.URL
 			UID := data.SmcUID
 
-			// Put it in the dictionary
+			// Save it in the dictionary so we can use it later in the processing logic.
 			_, ok := smcUIDsByURL[URL]
 			if !ok {
 				smcUIDsByURL[URL] = UID
@@ -39,19 +39,16 @@ func Process(logEntry parsermodels.ParsedLogEntry,
 
 	case "WARN":
 		data, event := ProcessWarn(logEntry)
-		// todo
 		registerEvent(eventsBySmcUID, smcUIDsByURL, event, data, channel)
 		updateSmcData(smcDataBySmcUID, smcUIDsByURL, data)
 
 	case "WARNING":
 		data, event := ProcessWarning(logEntry)
-		// todo
 		registerEvent(eventsBySmcUID, smcUIDsByURL, event, data, channel)
 		updateSmcData(smcDataBySmcUID, smcUIDsByURL, data)
 
 	case "ERROR":
 		data, event := ProcessError(logEntry)
-		// todo
 		registerEvent(eventsBySmcUID, smcUIDsByURL, event, data, channel)
 		updateSmcData(smcDataBySmcUID, smcUIDsByURL, data)
 
@@ -139,8 +136,6 @@ func updateSmcData(smcDataBySmcUID map[string]models.SmcData, smcUIDsByURL map[s
 			smcDataBySmcUID[data.SmcUID] = newSmcData
 		}
 	}
-
-	// todo: are there any other valid cases?
 }
 
 func updateChangedProperties(existingSmcData models.SmcData, newSmcData models.SmcData) models.SmcData {

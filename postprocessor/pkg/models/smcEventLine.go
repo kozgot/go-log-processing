@@ -27,10 +27,10 @@ const (
 	NewSmc
 	PodConfiguration
 	SmcJoined
-	SmcConnected
 	ConnectionAttempt
 	StartToConnect
 	SmcAddressUpdated
+	SmcAddressInvalidated
 	TimeoutWarning
 	JoinRejectedWarning
 	DLMSError
@@ -41,7 +41,8 @@ const (
 	IndexLowProfileGenericReceived
 	IndexHighProfileGenericReceived
 	DLMSLogsSent
-	ConfigurationChanged
+	ConfigurationReadFromDB
+	ConfigurationUpdated
 	InternalDiagnostics
 	StatisticsSent
 )
@@ -59,9 +60,6 @@ func EventTypeToString(eventType EventType) string {
 
 	case SmcJoined:
 		return "SmcJoined"
-
-	case SmcConnected:
-		return "SmcConnected"
 
 	case ConnectionAttempt:
 		return "ConnectionAttempt"
@@ -102,14 +100,20 @@ func EventTypeToString(eventType EventType) string {
 	case DLMSLogsSent:
 		return "DLMSLogsSent"
 
-	case ConfigurationChanged:
-		return "ConfigurationChanged"
+	case ConfigurationReadFromDB:
+		return "ConfigurationReadFromDB"
+
+	case ConfigurationUpdated:
+		return "ConfigurationUpdated"
 
 	case InternalDiagnostics:
 		return "InternalDiagnostics"
 
 	case StatisticsSent:
 		return "StatisticsSent"
+
+	case SmcAddressInvalidated:
+		return "SmcAddressInvalidated"
 
 	default:
 		return "None"

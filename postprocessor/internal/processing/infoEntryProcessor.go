@@ -6,7 +6,11 @@ import (
 )
 
 // ProcessInfoEntry processes a log entry with INFO log level.
-func ProcessInfoEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent, *models.ConsumtionValue, *models.IndexValue) {
+func ProcessInfoEntry(logEntry parsermodels.ParsedLogEntry,
+	podUIDToSmcUID map[string]string) (*models.SmcData,
+	*models.SmcEvent,
+	*models.ConsumtionValue,
+	*models.IndexValue) {
 	switch logEntry.InfoParams.EntryType {
 	case parsermodels.Routing:
 		// this case is not really interesting for our logic
@@ -20,7 +24,26 @@ func ProcessInfoEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *m
 		return smcData, event, nil, nil
 
 	case parsermodels.DCMessage:
-		result := processDCMessageEntry(logEntry)
+		result := processDCMessageEntry(logEntry, podUIDToSmcUID)
+
+		event := result.SmcEvent
+		data := result.SmcData
+
+		// If it is a pod configuration, register the SMC uUID for with pod UID,
+		//  so we can query it later when processing index and consumption values.
+		if event != nil && data != nil &&
+			event.EventType == models.PodConfiguration && len(data.Pods) > 0 {
+			// This is the only entry where the URL and SMC UID parameters are given at the same time.
+			podUID := data.Pods[0].UID
+			UID := data.SmcUID
+
+			// Put it in the dictionary
+			_, ok := podUIDToSmcUID[podUID]
+			if !ok {
+				podUIDToSmcUID[podUID] = UID
+			}
+		}
+
 		return result.SmcData, result.SmcEvent, result.ConsumtionValue, result.IndexValue
 
 	case parsermodels.ConnectionAttempt:
@@ -112,8 +135,6 @@ func processConnectionReleased(logEntry parsermodels.ParsedLogEntry) (*models.Sm
 		Address: address,
 	}
 
-	// todo: there is no smc uid here, should save URL for SMC id to be able to look it up
-
 	event := models.SmcEvent{
 		Time:            logEntry.Timestamp,
 		EventType:       models.ConnectionReleased,
@@ -132,8 +153,6 @@ func processInitDLMSConnection(logEntry parsermodels.ParsedLogEntry) (*models.Sm
 	data := models.SmcData{
 		Address: address,
 	}
-
-	// todo: there is no smc uid here, should save URL for SMC id to be able to look it up
 
 	event := models.SmcEvent{
 		Time:            logEntry.Timestamp,
@@ -181,8 +200,8 @@ func processSmcConfigUpdate(logEntry parsermodels.ParsedLogEntry) (*models.SmcDa
 
 	event := models.SmcEvent{
 		Time:            logEntry.Timestamp,
-		EventType:       models.ConfigurationChanged,
-		EventTypeString: models.EventTypeToString(models.ConfigurationChanged),
+		EventType:       models.ConfigurationUpdated,
+		EventTypeString: models.EventTypeToString(models.ConfigurationUpdated),
 		Label:           "Configuration update for " + smcUID,
 		SmcUID:          smcUID,
 		DataPayload:     data,

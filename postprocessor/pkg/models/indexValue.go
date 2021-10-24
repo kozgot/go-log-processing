@@ -12,4 +12,5 @@ type IndexValue struct {
 	ServiceLevel  int
 	PodUID        string
 	SerialNumber  int
+	SmcUID        string
 }
