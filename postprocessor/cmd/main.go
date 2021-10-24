@@ -17,6 +17,9 @@ import (
 
 const logEntriesExchangeName = "logentries_direct_durable"
 
+const consumptionIndexName = "consumption"
+const smcIndexName = "smc"
+
 func main() {
 	log.Println("PostProcessor service starting...")
 	rabbitMqURL := os.Getenv("RABBIT_URL")
@@ -80,8 +83,9 @@ func main() {
 	channelToSendTo, connectionToSendTo := rabbitmq.OpenChannelAndConnection(rabbitMqURL)
 	defer rabbitmq.CloseChannelAndConnection(channelToSendTo, connectionToSendTo)
 
-	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"smc", channelToSendTo)
-	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+"consumption", channelToSendTo)
+	// Create indices in ES.
+	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+smcIndexName, channelToSendTo)
+	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+consumptionIndexName, channelToSendTo)
 
 	eventsBySmcUID := make(map[string][]models.SmcEvent)
 	smcDataBySmcUID := make(map[string]models.SmcData)
@@ -92,19 +96,11 @@ func main() {
 
 	go func() {
 		for d := range msgs {
-			if strings.Contains(string(d.Body), "START") {
-				fmt.Println("Start of entries...")
-
-				// Acknowledge the message after it has been processed.
-				err := d.Ack(false)
-				utils.FailOnError(err, "Could not acknowledge START message")
-
-				continue
-			} else if strings.Contains(string(d.Body), "END") {
+			if strings.Contains(string(d.Body), "END") {
 				fmt.Println("End of entries...")
 
 				// Further processing to get consumption and index info.
-				processing.ProcessConsumptionAndIndexValues(consumptionValues, indexValues, channelToSendTo)
+				processing.ProcessConsumptionAndIndexValues(consumptionValues, indexValues, channelToSendTo, consumptionIndexName)
 
 				rabbitmq.SendStringMessageToElastic("DONE", channelToSendTo)
 
@@ -121,7 +117,8 @@ func main() {
 				eventsBySmcUID,
 				smcDataBySmcUID,
 				smcUIDsByURL,
-				podUIDToSmcUID)
+				podUIDToSmcUID,
+				smcIndexName)
 
 			if index != nil {
 				indexValues = append(indexValues, *index)

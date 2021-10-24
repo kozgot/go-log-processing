@@ -9,7 +9,8 @@ import (
 func ProcessConsumptionAndIndexValues(
 	consumptionValues []models.ConsumtionValue,
 	indexValues []models.IndexValue,
-	channel *amqp.Channel) {
+	channel *amqp.Channel,
+	esIndexName string) {
 	consumptionsBySmcUID := make(map[string][]models.ConsumtionValue)
 	for _, cons := range consumptionValues {
 		smcUID := findRelatedSmc(cons, indexValues)
@@ -17,13 +18,13 @@ func ProcessConsumptionAndIndexValues(
 			initConsumptionArrayIfNeeded(consumptionsBySmcUID, smcUID)
 			cons.SmcUID = smcUID
 			consumptionsBySmcUID[smcUID] = append(consumptionsBySmcUID[smcUID], cons)
-			saveConsumptionToDB(cons, channel)
+			saveConsumptionToDB(cons, channel, esIndexName)
 		}
 	}
 }
 
-func saveConsumptionToDB(cons models.ConsumtionValue, channel *amqp.Channel) {
-	rabbitmq.SendConsumptionToElasticUploader(cons, channel, "consumption")
+func saveConsumptionToDB(cons models.ConsumtionValue, channel *amqp.Channel, esIndexName string) {
+	rabbitmq.SendConsumptionToElasticUploader(cons, channel, esIndexName)
 }
 
 func initConsumptionArrayIfNeeded(consumptionsBySmcUID map[string][]models.ConsumtionValue, uid string) {

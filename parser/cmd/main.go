@@ -41,7 +41,7 @@ func main() {
 
 	for _, file := range inputFiles {
 		wg.Add(1)
-		go processFile(file, &wg, channel)
+		go parseLogFile(file, &wg, channel)
 	}
 
 	wg.Wait()
@@ -51,7 +51,7 @@ func main() {
 	log.Printf("  Sent END to Postprocessing service ...")
 }
 
-func processFile(filePath string, wg *sync.WaitGroup, channel *amqp.Channel) {
+func parseLogFile(filePath string, wg *sync.WaitGroup, channel *amqp.Channel) {
 	defer wg.Done()
 
 	file, ferr := os.Open(filePath)
@@ -61,12 +61,9 @@ func processFile(filePath string, wg *sync.WaitGroup, channel *amqp.Channel) {
 
 	_, shortFileName := filepath.Split(filePath)
 
-	log.Printf("  Processing log file: %s ...", shortFileName)
+	log.Printf("  Parsing log file: %s ...", shortFileName)
 	scanner := bufio.NewScanner(file)
 
-	// Send the name of the index
-	rabbitmq.SendStringMessageToPostProcessor("START", channel)
-	log.Printf("  Sent START to Postprocessing service ...")
 	for scanner.Scan() {
 		line := scanner.Text()
 		relevantLine, success := service.Filter(line)
@@ -85,5 +82,5 @@ func processFile(filePath string, wg *sync.WaitGroup, channel *amqp.Channel) {
 		}
 	}
 
-	log.Printf("  Done processing log file: %s", shortFileName)
+	log.Printf("  Done parsing log file: %s", shortFileName)
 }
