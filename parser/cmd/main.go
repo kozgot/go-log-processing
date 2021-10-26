@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/kozgot/go-log-processing/parser/internal/azure"
 	"github.com/kozgot/go-log-processing/parser/internal/files"
 	"github.com/kozgot/go-log-processing/parser/internal/rabbitmq"
 	"github.com/kozgot/go-log-processing/parser/internal/service"
@@ -25,6 +26,8 @@ func main() {
 	if len(os.Args) == 0 {
 		log.Fatalf("ERROR: Missing log file path param!")
 	}
+
+	azure.Cucc()
 
 	filePath := os.Args[1]
 	inputFiles, err := files.Unzip(filePath, unzippedInputFileFolderName)
