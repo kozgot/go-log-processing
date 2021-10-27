@@ -34,7 +34,7 @@ func Cucc() {
 
 	// todo: add these to environment variables
 	accountName := "kozgotstorage"
-	accountKey := "ET1z3fA9QVNK5sbZ/aH7cootN3f8R4qnUQyfSsAIaBLl7NBjffXEYJ4dIN7r76PFSKxaQ5Vew2YEpu6EdEU9Cw=="
+	accountKey := "insert-key-here" // todo
 	myContainerName := "testcontainer"
 
 	if len(accountName) == 0 || len(accountKey) == 0 {
