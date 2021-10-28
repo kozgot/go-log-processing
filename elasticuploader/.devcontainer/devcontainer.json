@@ -69,8 +69,6 @@
             "--enable",
             "golint",
             "--enable",
-            "gomnd",
-            "--enable",
             "goprintffuncname",
             "--enable",
             "gosec",
