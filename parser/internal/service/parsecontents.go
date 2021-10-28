@@ -4,7 +4,7 @@ import (
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
 
-// ParseContents extracts the params of an error level line in the log file
+// ParseContents extracts the params of an error level line in the log file.
 func ParseContents(line models.LineWithDate) *models.ParsedLogEntry {
 	parsedLine := models.ParsedLogEntry{
 		Level:     line.Level,

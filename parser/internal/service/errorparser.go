@@ -12,7 +12,12 @@ func parseError(line models.LineWithDate) *models.ErrorParams {
 	errorDesc := parseErrorDesc(line.Rest)
 	errorSource := parseErrorSource(line.Rest)
 
-	errorParams := models.ErrorParams{ErrorCode: errorCode, Message: errorMessage, Severity: errorSeverity, Description: errorDesc, Source: errorSource}
+	errorParams := models.ErrorParams{
+		ErrorCode:   errorCode,
+		Message:     errorMessage,
+		Severity:    errorSeverity,
+		Description: errorDesc,
+		Source:      errorSource}
 
 	return &errorParams
 }

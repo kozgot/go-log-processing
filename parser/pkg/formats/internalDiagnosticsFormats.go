@@ -11,4 +11,6 @@ const SmcInternalDiagnosticsPrefix = "SMC internal diagnostics "
 // an internal diagnostics log entry. It is not the same as LastSuccessfulRespDateRegex in dcmessageformats file,
 // as they differ in a space before the [ character.
 // eg.: last_successful_dlms_response_date[Wed Jun 10 12:51:33 2020].
-const LastSuccessfulDlmsResponseDateRegex = "last_successful_dlms_response_date\\[" + anyCharsExceptOpeningParentheses + "\\]"
+const LastSuccessfulDlmsResponseDateRegex = "last_successful_dlms_response_date\\[" +
+	anyCharsExceptOpeningParentheses +
+	"\\]"
