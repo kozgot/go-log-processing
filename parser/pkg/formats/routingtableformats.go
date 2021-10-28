@@ -1,6 +1,6 @@
 package formats
 
-// RoutingTableRegex represents the regular expression that matches a log line that contains data regarding the Rounting Table
+// RoutingTableRegex matches a log line that contains data regarding the Rounting Table.
 const RoutingTableRegex = "(Routing Table: )"
 
 // RoutingAddressRegex matches the Addr[...] field.

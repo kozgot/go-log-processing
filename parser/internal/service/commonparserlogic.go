@@ -162,17 +162,18 @@ func parseTimeFieldFromMilliSeconds(line string, timeStampRegex string) time.Tim
 
 func parseTimeRange(line string) *models.TimeRange {
 	from := parseDateTimeField(line, formats.TimeRangeFromRegex)
-
 	if !isValidDate(from) {
+		// The from field is in a different format, try using that.
 		from = parseTimeFieldFromSeconds(line, formats.TimeRangeStartTicksRegex)
 	}
 
 	to := parseDateTimeField(line, formats.TimeRangeToRegex)
 	if !isValidDate(to) {
+		// The to field is in a different format, try using that.
 		to = parseTimeFieldFromSeconds(line, formats.TimeRangeEndTicksRegex)
 	}
 
-	if from.Year() > 1500 && to.Year() > 1500 {
+	if isValidDate(from) && isValidDate(to) {
 		result := models.TimeRange{From: from, To: to}
 		return &result
 	}
@@ -181,8 +182,7 @@ func parseTimeRange(line string) *models.TimeRange {
 }
 
 func isValidDate(date time.Time) bool {
-	validYearTreshold := 1500
-	return (date.Year() > validYearTreshold)
+	return (date.Year() > 1500)
 }
 
 func convertMillisecondsToSeconds(milliseconds int64) int64 {

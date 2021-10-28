@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kozgot/go-log-processing/parser/internal/utils"
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 
 	"github.com/kozgot/go-log-processing/parser/pkg/formats"
@@ -18,29 +19,21 @@ func ParseDate(line models.Line) (*models.LineWithDate, bool) {
 	dateString := dateRegex.FindString(line.Rest)
 	if dateString != "" {
 		date, err := time.Parse(formats.DateLayoutString, dateString)
-		if err != nil {
-			// Do not die here, log instead
-			panic(err)
-		}
+		utils.FailOnError(err, "Could not parse long date format")
+
 		restOfLine := removeParsedParts(line.Rest, dateString)
 		return &models.LineWithDate{Timestamp: date, Rest: restOfLine, Level: line.Level}, true
 	}
 
-	if dateString == "" {
-		dateString = dateRegexshort.FindString(line.Rest)
-		if dateString != "" {
-			date, err := time.Parse(formats.DateLayoutStringShort, dateString)
-			if err != nil {
-				// Do not die here, log instead
-				panic(err)
-			}
+	dateString = dateRegexshort.FindString(line.Rest)
+	if dateString != "" {
+		date, err := time.Parse(formats.DateLayoutStringShort, dateString)
+		utils.FailOnError(err, "Could not parse short date format")
 
-			restOfLine := removeParsedParts(line.Rest, dateString)
-			return &models.LineWithDate{Timestamp: date, Rest: restOfLine, Level: line.Level}, true
-		}
+		restOfLine := removeParsedParts(line.Rest, dateString)
+		return &models.LineWithDate{Timestamp: date, Rest: restOfLine, Level: line.Level}, true
 	}
 
-	// could not parse date, should log this event
 	return nil, false
 }
 
