@@ -2,8 +2,7 @@ package formats
 
 const anyCharsExceptOpeningParentheses = "[^\\(^\\[]*"
 
-// AnyStringUntilFirstSpaceRegex represents the regular expression
-// that matches the first 'word' in a string until the first space.
+// AnyStringUntilFirstSpaceRegex matches the first 'word' in a string until the first space.
 const AnyStringUntilFirstSpaceRegex = "([^\\s]+)"
 
 // LongNumberRegex matches any number.

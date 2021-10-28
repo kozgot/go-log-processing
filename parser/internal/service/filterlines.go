@@ -8,7 +8,7 @@ import (
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
 
-// Filter decides if a line is relevant in the input file
+// Filter decides if a line is relevant in the input file.
 func Filter(line string) (*models.Line, bool) {
 	levelRegex, _ := regexp.Compile(formats.LogLevelsRegex)
 	logLevel := levelRegex.FindString(line)
