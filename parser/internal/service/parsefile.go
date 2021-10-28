@@ -2,6 +2,7 @@ package service
 
 import (
 	"bufio"
+	"io"
 	"log"
 	"sync"
 
@@ -9,10 +10,10 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func ParseLogFile(scanner *bufio.Scanner, shortFileName string, wg *sync.WaitGroup, channel *amqp.Channel) {
+func ParseLogFile(readCloser io.ReadCloser, logFileName string, wg *sync.WaitGroup, channel *amqp.Channel) {
 	defer wg.Done()
-	log.Printf("  Parsing log file: %s ...", shortFileName)
-
+	log.Printf("  Parsing log file: %s ...", logFileName)
+	scanner := bufio.NewScanner(readCloser)
 	for scanner.Scan() {
 		line := scanner.Text()
 		relevantLine, success := Filter(line)
@@ -31,5 +32,6 @@ func ParseLogFile(scanner *bufio.Scanner, shortFileName string, wg *sync.WaitGro
 		}
 	}
 
-	log.Printf("  Done parsing log file: %s", shortFileName)
+	readCloser.Close()
+	log.Printf("  Done parsing log file: %s", logFileName)
 }

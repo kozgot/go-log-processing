@@ -48,6 +48,7 @@ services:
       - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
       - AZURE_STORAGE_ACCOUNT=kozgotstorage
       - AZURE_STORAGE_ACCESS_KEY=actual-key-here
+      - AZURE_STORAGE_CONTAINER=testcontainer
     build:
       context: .
       dockerfile: ./parser/.devcontainer/Dockerfile
