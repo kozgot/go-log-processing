@@ -32,17 +32,15 @@ func main() {
 	channel, conn := rabbitmq.OpenChannelAndConnection(rabbitMqURL)
 	defer rabbitmq.CloseChannelAndConnection(channel, conn)
 
-	azureFileNames := azure.GetFileNamesFromAzure(azureStorageAccountName, azureStorageAccessKey, azureStorageContainer)
+	azureFileDownloader := azure.SetupDownloader(azureStorageAccountName, azureStorageAccessKey, azureStorageContainer)
+
+	azureFileNames := azureFileDownloader.GetFileNamesFromAzure()
 
 	var wg sync.WaitGroup
 
 	for _, fileName := range azureFileNames {
 		fmt.Println(fileName)
-		readCloser := azure.DownloadFileFromAzure(
-			fileName,
-			azureStorageAccountName,
-			azureStorageAccessKey,
-			azureStorageContainer)
+		readCloser := azureFileDownloader.DownloadFileFromAzure(fileName)
 
 		wg.Add(1)
 		go parser.ParseLogFile(readCloser, fileName, &wg, channel)

@@ -11,17 +11,27 @@ import (
 	"github.com/kozgot/go-log-processing/parser/internal/utils"
 )
 
-func GetFileNamesFromAzure(accountName string, accountKey string, containerName string) []string {
+// DownloaderData contains data needed to list or dowload blobs from azure.
+type DownloaderData struct {
+	Credential        *azblob.SharedKeyCredential
+	StorageAccountURL *url.URL
+	ContainerURL      azblob.ContainerURL
+}
+
+// DownloaderInterface encapsulates the methods used to list and downloads blobs from azure.
+type DownloaderInterface interface {
+	SetupDownloader(accountName string, accountKey string, containerName string) *DownloaderData
+	GetFileNamesFromAzure() []string
+	DownloadFileFromAzure(fileName string) io.ReadCloser
+}
+
+// SetupDownloader creates and returns data a DownloaderData.
+func SetupDownloader(accountName string, accountKey string, containerName string) *DownloaderData {
 	// Create a default request pipeline using your storage account name and account key.
 	credential, err := azblob.NewSharedKeyCredential(accountName, accountKey)
 	utils.FailOnError(err, "Invalid credentials for azure")
 
 	pipeline := azblob.NewPipeline(credential, azblob.PipelineOptions{})
-
-	// Create the container
-	ctx := context.Background() // This example uses a never-expiring context
-
-	fileNames := []string{}
 
 	// From the Azure portal, get your storage account blob service storageAccountURL endpoint.
 	storageAccountURL, _ := url.Parse(
@@ -29,11 +39,25 @@ func GetFileNamesFromAzure(accountName string, accountKey string, containerName 
 
 	containerURL := azblob.NewContainerURL(*storageAccountURL, pipeline)
 
+	downloader := DownloaderData{
+		Credential:        credential,
+		ContainerURL:      containerURL,
+		StorageAccountURL: storageAccountURL,
+	}
+
+	return &downloader
+}
+
+// GetFileNamesFromAzure lists the blobs in the azure container.
+func (downloader *DownloaderData) GetFileNamesFromAzure() []string {
+	fileNames := []string{}
+	ctx := context.Background()
+
 	// List the container that we have created above
 	log.Println("Listing the blobs in the container:")
 	for marker := (azblob.Marker{}); marker.NotDone(); {
 		// Get a result segment starting with the blob indicated by the current Marker.
-		listBlob, err := containerURL.ListBlobsFlatSegment(ctx, marker, azblob.ListBlobsSegmentOptions{})
+		listBlob, err := downloader.ContainerURL.ListBlobsFlatSegment(ctx, marker, azblob.ListBlobsSegmentOptions{})
 		utils.FailOnError(err, "Could not list blobs")
 
 		// ListBlobs returns the start of the next segment; you MUST use this to get
@@ -54,26 +78,10 @@ func GetFileNamesFromAzure(accountName string, accountKey string, containerName 
 	return fileNames
 }
 
-func DownloadFileFromAzure(
-	fileName string,
-	accountName string,
-	accountKey string,
-	containerName string) io.ReadCloser {
-	// Create a default request pipeline using your storage account name and account key.
-	credential, err := azblob.NewSharedKeyCredential(accountName, accountKey)
-	utils.FailOnError(err, "Invalid credentials for azure")
-
-	pipeline := azblob.NewPipeline(credential, azblob.PipelineOptions{})
-
-	// Create the container
-	ctx := context.Background() // This example uses a never-expiring context
-
-	// From the Azure portal, get your storage account blob service storageAccountURL endpoint.
-	storageAccountURL, _ := url.Parse(
-		fmt.Sprintf("https://%s.blob.core.windows.net/%s", accountName, containerName))
-
-	containerURL := azblob.NewContainerURL(*storageAccountURL, pipeline)
-	blobURL := containerURL.NewBlockBlobURL(fileName)
+// DownloadFileFromAzure downloads the blob with the given name from azure.
+func (downloader *DownloaderData) DownloadFileFromAzure(fileName string) io.ReadCloser {
+	blobURL := downloader.ContainerURL.NewBlockBlobURL(fileName)
+	ctx := context.Background()
 
 	// Download the blob
 	downloadResponse, err := blobURL.Download(
