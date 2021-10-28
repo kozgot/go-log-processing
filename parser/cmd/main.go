@@ -20,6 +20,16 @@ func main() {
 	rabbitMqURL := os.Getenv("RABBIT_URL")
 	fmt.Println("Communicationg with RabbitMQ at: ", rabbitMqURL)
 
+	azureStorageAccountName := os.Getenv("AZURE_STORAGE_ACCOUNT")
+	fmt.Println("Azure storage account name: ", azureStorageAccountName)
+
+	azureStorageAccessKey := os.Getenv("AZURE_STORAGE_ACCESS_KEY")
+	fmt.Println("Azure storage access key: ", azureStorageAccessKey[0:5]+"...")
+
+	if len(azureStorageAccountName) == 0 || len(azureStorageAccessKey) == 0 {
+		log.Fatal("Either the AZURE_STORAGE_ACCOUNT or AZURE_STORAGE_ACCESS_KEY environment variable is not set")
+	}
+
 	if len(os.Args) == 0 {
 		log.Fatalf("ERROR: Missing log file path param!")
 	}

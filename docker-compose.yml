@@ -46,6 +46,8 @@ services:
     environment:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
       - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
+      - AZURE_STORAGE_ACCOUNT=kozgotstorage
+      - AZURE_STORAGE_ACCESS_KEY=LT81PLPrWZ4N+46Mk7Q+OXsCzpXKv5mgo54ePAWM04uiqTjpZY3As68JazDBlyQNUj9mSH/qw2JhStv/tAmtkg==
     build:
       context: .
       dockerfile: ./parser/.devcontainer/Dockerfile
