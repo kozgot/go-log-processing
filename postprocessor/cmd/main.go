@@ -102,8 +102,6 @@ func main() {
 				// Further processing to get consumption and index info.
 				processing.ProcessConsumptionAndIndexValues(consumptionValues, indexValues, channelToSendTo, consumptionIndexName)
 
-				rabbitmq.SendStringMessageToElastic("DONE", channelToSendTo)
-
 				// Acknowledge the message after it has been processed.
 				err := d.Ack(false)
 				utils.FailOnError(err, "Could not acknowledge END message")

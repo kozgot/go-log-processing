@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -90,6 +91,8 @@ func main() {
 	forever := make(chan bool)
 	dataCountTreshold := 1000
 	documentID := 1
+	uploadTicker := time.NewTicker(10 * time.Second)
+	mutex := sync.Mutex{}
 
 	go func() {
 		for d := range msgs {
@@ -99,30 +102,27 @@ func main() {
 			case "CREATEINDEX":
 				indexName := strings.Split(string(d.Body), "|")[1]
 				createEsIndex(indexName)
-			case "DONE":
-				for key, value := range linesByIndexNames {
-					documentID = BulkIndexerUpload(value, documentID, key)
-					log.Printf("  Successfully indexed all %d documents (index name: %s)", documentID-1, key)
-				}
-
-				for k := range linesByIndexNames {
-					delete(linesByIndexNames, k)
-				}
-
-				documentID = 1
 			default:
 				// save messages until we hit the 1000 line treshold
 				data := deserialize(d.Body)
+
+				mutex.Lock()
 				_, ok := linesByIndexNames[data.IndexName]
 				if !ok {
 					linesByIndexNames[data.IndexName] = []models.Message{}
 				}
 
 				linesByIndexNames[data.IndexName] = append(linesByIndexNames[data.IndexName], models.Message{Content: data.Data})
+
+				// If we hit the treshold, we upload to ES.
 				if len(linesByIndexNames[data.IndexName]) >= dataCountTreshold {
+					uploadTicker.Reset(10 * time.Second)
+					fmt.Println("Resetting ticker")
 					documentID = BulkIndexerUpload(linesByIndexNames[data.IndexName], documentID, data.IndexName)
 					linesByIndexNames[data.IndexName] = []models.Message{} // clear the buffer after uploading the contents
 				}
+
+				mutex.Unlock()
 			}
 
 			// Acknowledge message
@@ -130,7 +130,24 @@ func main() {
 			failOnError(err, "Could not acknowledge message")
 		}
 	}()
+
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+
+	// Periodically check if we have anything left to upload.
+	go func() {
+		for range uploadTicker.C {
+			mutex.Lock()
+			for k := range linesByIndexNames {
+				if len(linesByIndexNames[k]) > 0 {
+					fmt.Println("Uploading leftovers after timeout into index " + k)
+					documentID = BulkIndexerUpload(linesByIndexNames[k], documentID, k)
+					linesByIndexNames[k] = []models.Message{} // clear the buffer after uploading the contents
+				}
+			}
+			mutex.Unlock()
+		}
+	}()
+
 	<-forever
 }
 
