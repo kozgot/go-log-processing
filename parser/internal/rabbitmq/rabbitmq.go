@@ -9,15 +9,13 @@ import (
 	"github.com/streadway/amqp"
 )
 
-const logEntriesExchangeName = "logentries_direct_durable"
-
 // SendLineToPostProcessor sends the parsed log lines to the message queue.
-func SendLineToPostProcessor(line models.ParsedLogEntry, channel *amqp.Channel) {
-	sendDataToPostprocessor(serializeLine(line), channel)
+func SendLineToPostProcessor(line models.ParsedLogEntry, channel *amqp.Channel, routingKey string, exchangeName string) {
+	sendDataToPostprocessor(serializeLine(line), channel, routingKey, exchangeName)
 }
 
 // OpenChannelAndConnection opens a channel and a connection.
-func OpenChannelAndConnection(rabbitMqURL string) (*amqp.Channel, *amqp.Connection) {
+func OpenChannelAndConnection(rabbitMqURL string, exchangeName string) (*amqp.Channel, *amqp.Connection) {
 	conn, err := amqp.Dial(rabbitMqURL)
 	utils.FailOnError(err, "Failed to connect to RabbitMQ")
 	fmt.Println("Created connection")
@@ -28,13 +26,13 @@ func OpenChannelAndConnection(rabbitMqURL string) (*amqp.Channel, *amqp.Connecti
 	fmt.Println("Created channel")
 
 	err = ch.ExchangeDeclare(
-		logEntriesExchangeName, // name
-		"direct",               // type
-		true,                   // durable
-		false,                  // auto-deleted
-		false,                  // internal
-		false,                  // no-wait
-		nil,                    // arguments
+		exchangeName, // name
+		"direct",     // type
+		true,         // durable
+		false,        // auto-deleted
+		false,        // internal
+		false,        // no-wait
+		nil,          // arguments
 	)
 	utils.FailOnError(err, "Failed to declare an exchange")
 
@@ -50,9 +48,9 @@ func CloseChannelAndConnection(channel *amqp.Channel, connection *amqp.Connectio
 }
 
 // SendStringMessageToPostProcessor sends a string message to the message queue.
-func SendStringMessageToPostProcessor(indexName string, channel *amqp.Channel) {
+func SendStringMessageToPostProcessor(indexName string, channel *amqp.Channel, exchangeName string, routingKey string) {
 	bytes := []byte(indexName)
-	sendDataToPostprocessor(bytes, channel)
+	sendDataToPostprocessor(bytes, channel, routingKey, exchangeName)
 }
 
 func serializeLine(line models.ParsedLogEntry) []byte {
@@ -64,13 +62,12 @@ func serializeLine(line models.ParsedLogEntry) []byte {
 	return bytes
 }
 
-func sendDataToPostprocessor(data []byte, channel *amqp.Channel) {
+func sendDataToPostprocessor(data []byte, channel *amqp.Channel, routingKey string, logEntriesExchangeName string) {
 	body := data
 
-	// TODO: extract routing key to a single place, eg.: env variables
 	err := channel.Publish(
 		logEntriesExchangeName, // exchange
-		"process-entry",        // routing key
+		routingKey,             // routing key
 		false,                  // mandatory
 		false,                  // immediate
 		amqp.Publishing{

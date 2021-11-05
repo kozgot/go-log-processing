@@ -10,7 +10,13 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func ParseLogFile(readCloser io.ReadCloser, logFileName string, wg *sync.WaitGroup, channel *amqp.Channel) {
+func ParseLogFile(
+	readCloser io.ReadCloser,
+	logFileName string,
+	wg *sync.WaitGroup,
+	channel *amqp.Channel,
+	exchangeName string,
+	routingKey string) {
 	defer wg.Done()
 	log.Printf("  Parsing log file: %s ...", logFileName)
 	scanner := bufio.NewScanner(readCloser)
@@ -28,7 +34,7 @@ func ParseLogFile(readCloser io.ReadCloser, logFileName string, wg *sync.WaitGro
 
 		finalParsedLine := ParseContents(*parsedLine)
 		if finalParsedLine != nil {
-			rabbitmq.SendLineToPostProcessor(*finalParsedLine, channel)
+			rabbitmq.SendLineToPostProcessor(*finalParsedLine, channel, routingKey, exchangeName)
 		}
 	}
 

@@ -70,7 +70,6 @@ func (uploader *EsUploadSender) CreateIndex(indexName string) {
 func (uploader *EsUploadSender) sendData(data []byte) {
 	body := data
 
-	// TODO: extract routing key to a single place, eg.: env variables
 	err := uploader.channel.Publish(
 		uploader.ExchangeName, // exchange
 		uploader.RoutingKey,   // routing key

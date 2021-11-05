@@ -14,8 +14,6 @@ import (
 	"github.com/streadway/amqp"
 )
 
-const logEntriesExchangeName = "logentries_direct_durable"
-
 const consumptionIndexName = "consumption"
 const smcIndexName = "smc"
 
@@ -39,6 +37,24 @@ func main() {
 		log.Fatal("The SAVE_DATA_ROUTING_KEY environment variable is not set")
 	}
 
+	logEntriesExchangeName := os.Getenv("LOG_ENTRIES_EXCHANGE")
+	fmt.Println("LOG_ENTRIES_EXCHANGE:", logEntriesExchangeName)
+	if len(logEntriesExchangeName) == 0 {
+		log.Fatal("The LOG_ENTRIES_EXCHANGE environment variable is not set")
+	}
+
+	processingQueueName := os.Getenv("PROCESSING_QUEUE")
+	fmt.Println("PROCESSING_QUEUE:", processingQueueName)
+	if len(processingQueueName) == 0 {
+		log.Fatal("The PROCESSING_QUEUE environment variable is not set")
+	}
+
+	processEntryRoutingKey := os.Getenv("PROCESS_ENTRY_ROUTING_KEY")
+	fmt.Println("PROCESS_ENTRY_ROUTING_KEY:", processEntryRoutingKey)
+	if len(processEntryRoutingKey) == 0 {
+		log.Fatal("The PROCESS_ENTRY_ROUTING_KEY environment variable is not set")
+	}
+
 	conn, err := amqp.Dial(rabbitMqURL)
 	utils.FailOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
@@ -59,20 +75,19 @@ func main() {
 	utils.FailOnError(err, "Failed to declare an exchange")
 
 	q, err := ch.QueueDeclare(
-		"processing_queue_durable", // name
-		true,                       // durable
-		false,                      // delete when unused
-		true,                       // exclusive
-		false,                      // no-wait
-		nil,                        // arguments
+		processingQueueName, // name
+		true,                // durable
+		false,               // delete when unused
+		true,                // exclusive
+		false,               // no-wait
+		nil,                 // arguments
 	)
 
 	utils.FailOnError(err, "Failed to declare a queue")
 
-	// TODO: extract routing key to a single place, eg.: env variables
 	err = ch.QueueBind(
 		q.Name,                 // queue name
-		"process-entry",        // routing key
+		processEntryRoutingKey, // routing key
 		logEntriesExchangeName, // exchange
 		false,
 		nil,
