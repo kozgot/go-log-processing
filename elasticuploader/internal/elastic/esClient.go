@@ -1,15 +1,14 @@
-package service
+package elastic
 
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"log"
 	"strings"
-	"sync"
 	"sync/atomic"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/dustin/go-humanize"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
@@ -17,77 +16,43 @@ import (
 	"github.com/kozgot/go-log-processing/elasticuploader/pkg/models"
 )
 
-// UploadBuffer stores data by index name until the datacount reaches a treshold,
-// then uploads the contents, while implementing mutual exclosure.
-type UploadBuffer struct {
-	mutex    sync.Mutex
-	value    map[string][]models.Message
+type EsClient interface {
+	BulkUpload(lines []models.Message, indexName string)
+	CreateEsIndex(index string)
+}
+
+type EsClientWrapper struct {
 	esClient *elasticsearch.Client
 }
 
-// InitUploadBuffer initializes the buffer.
-func InitUploadBuffer(esClient *elasticsearch.Client) *UploadBuffer {
-	return &UploadBuffer{value: make(map[string][]models.Message)}
-}
-
-// AppendAndUploadIfNeeded appends a message for the given key.
-func (d *UploadBuffer) AppendAndUploadIfNeeded(m models.Message, key string, uploadTicker *time.Ticker) {
-	d.mutex.Lock() // Lock so only one goroutine at a time can access the map.
-	defer d.mutex.Unlock()
-
-	// Check if the key is already present.
-	_, ok := d.value[key]
-	if !ok {
-		d.value[key] = []models.Message{}
+func NewEsClientWrapper() *EsClientWrapper {
+	// Create the ES client
+	// Use a third-party package for implementing the backoff function
+	retryBackoff := backoff.NewExponentialBackOff()
+	elasticSearchClient, err := elasticsearch.NewClient(elasticsearch.Config{
+		// Retry on 429 TooManyRequests statuses
+		RetryOnStatus: []int{502, 503, 504, 429},
+		RetryBackoff: func(i int) time.Duration {
+			if i == 1 {
+				retryBackoff.Reset()
+			}
+			return retryBackoff.NextBackOff()
+		},
+		MaxRetries: 10,
+	})
+	if err != nil {
+		log.Fatalf("Error creating the client: %s", err)
 	}
 
-	d.value[key] = append(d.value[key], m)
+	result := EsClientWrapper{esClient: elasticSearchClient}
 
-	// If we hit the treshold, we upload to ES.
-	if len(d.value[key]) >= 1000 {
-		uploadTicker.Reset(10 * time.Second)
-		fmt.Println("Resetting ticker")
-
-		bulkIndexerUpload(
-			d.value[key],
-			key,
-			d.esClient)
-
-		// Clear
-		d.value[key] = []models.Message{}
-	}
-}
-
-// GetCurrentMessages returns the current messages for a given key.
-func (d *UploadBuffer) GetCurrentMessages(key string) []models.Message {
-	d.mutex.Lock() // Lock so only one goroutine at a time can access the map.
-	defer d.mutex.Unlock()
-	return d.value[key]
-}
-
-// UploadRemaining uploads the data left in the buffer and clears the buffer.
-func (d *UploadBuffer) UploadRemaining() {
-	d.mutex.Lock() // Lock so only one goroutine at a time can access the map.
-	defer d.mutex.Unlock()
-
-	for indexName := range d.value {
-		if len(d.value[indexName]) > 0 {
-			fmt.Println("Uploading leftovers after timeout into index " + indexName)
-			bulkIndexerUpload(
-				d.value[indexName],
-				indexName,
-				d.esClient)
-
-			// Clear the buffer after uploading the contents.
-			d.value[indexName] = []models.Message{}
-		}
-	}
+	return &result
 }
 
 const numWorkers = 4
 const flushBytes = 1000000
 
-func bulkIndexerUpload(lines []models.Message, indexName string, esClient *elasticsearch.Client) {
+func (esuploader *EsClientWrapper) BulkUpload(lines []models.Message, indexName string) {
 	var (
 		countSuccessful uint64
 		err             error
@@ -97,11 +62,11 @@ func bulkIndexerUpload(lines []models.Message, indexName string, esClient *elast
 
 	// Create the BulkIndexer
 	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
-		Index:         indexName,     // The default index name
-		Client:        esClient,      // The Elasticsearch client
-		NumWorkers:    numWorkers,    // The number of worker goroutines
-		FlushBytes:    flushBytes,    // The flush threshold in bytes
-		FlushInterval: flushInterval, // The periodic flush interval
+		Index:         indexName,           // The default index name
+		Client:        esuploader.esClient, // The Elasticsearch client
+		NumWorkers:    numWorkers,          // The number of worker goroutines
+		FlushBytes:    flushBytes,          // The flush threshold in bytes
+		FlushInterval: flushInterval,       // The periodic flush interval
 	})
 	if err != nil {
 		log.Fatalf("Error creating the indexer: %s", err)
@@ -153,7 +118,7 @@ func bulkIndexerUpload(lines []models.Message, indexName string, esClient *elast
 }
 
 // CreateEsIndex creates an ES index.
-func CreateEsIndex(index string, esClient *elasticsearch.Client) {
+func (esuploader *EsClientWrapper) CreateEsIndex(index string) {
 	var (
 		res *esapi.Response
 		err error
@@ -162,16 +127,16 @@ func CreateEsIndex(index string, esClient *elasticsearch.Client) {
 	log.Println("Deleting index:  ", index, "...")
 
 	// Re-create the index
-	if res, err = esClient.Indices.Delete(
+	if res, err = esuploader.esClient.Indices.Delete(
 		[]string{index},
-		esClient.Indices.Delete.WithIgnoreUnavailable(true)); err != nil || res.IsError() {
+		esuploader.esClient.Indices.Delete.WithIgnoreUnavailable(true)); err != nil || res.IsError() {
 		log.Fatalf("Cannot delete index: %s", err)
 	}
 
 	res.Body.Close()
 
 	log.Println("Creating index:  ", index, "...")
-	res, err = esClient.Indices.Create(index)
+	res, err = esuploader.esClient.Indices.Create(index)
 	if err != nil {
 		log.Fatalf("Cannot create index: %s", err)
 	}
