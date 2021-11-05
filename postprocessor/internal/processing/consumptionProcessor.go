@@ -4,7 +4,7 @@ import (
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 )
 
-func (processor *EntryProcessor) ProcessConsumptionAndIndexValues(esIndexName string) {
+func (processor *EntryProcessor) ProcessConsumptionAndIndexValues() {
 	consumptionsBySmcUID := make(map[string][]models.ConsumtionValue)
 	for _, cons := range processor.consumptionValues {
 		smcUID := findRelatedSmc(cons, processor.indexValues)
@@ -12,7 +12,7 @@ func (processor *EntryProcessor) ProcessConsumptionAndIndexValues(esIndexName st
 			initConsumptionArrayIfNeeded(consumptionsBySmcUID, smcUID)
 			cons.SmcUID = smcUID
 			consumptionsBySmcUID[smcUID] = append(consumptionsBySmcUID[smcUID], cons)
-			processor.esUploader.SendConsumptionToElasticUploader(cons, esIndexName)
+			processor.esUploader.SendConsumptionToElasticUploader(cons)
 		}
 	}
 }

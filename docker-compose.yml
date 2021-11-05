@@ -73,6 +73,8 @@ services:
       - LOG_ENTRIES_EXCHANGE=logentries_direct_durable
       - PROCESSING_QUEUE=processing_queue_durable
       - PROCESS_ENTRY_ROUTING_KEY=process-entry
+      - CONSUMPTION_INDEX_NAME=consumption
+      - EVENTS_INDEX_NAME=smc
     build:
       context: .
       dockerfile: ./postprocessor/.devcontainer/Dockerfile

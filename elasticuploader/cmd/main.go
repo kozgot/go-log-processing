@@ -24,7 +24,7 @@ func failOnError(err error, msg string) {
 func main() {
 	log.Println("Elastic Uploader starting...")
 
-	// Create the Elasticsearch client
+	// Create the ES client
 	// Use a third-party package for implementing the backoff function
 	retryBackoff := backoff.NewExponentialBackOff()
 	elasticSearchClient, err := elasticsearch.NewClient(elasticsearch.Config{

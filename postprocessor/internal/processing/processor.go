@@ -4,9 +4,16 @@ import (
 	"fmt"
 
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
-	"github.com/kozgot/go-log-processing/postprocessor/internal/rabbitmq"
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 )
+
+// ESUploader encapsulates methods used to save data into ES.
+type ESUploader interface {
+	SendEventToElasticUploader(event models.SmcEvent)
+	SendConsumptionToElasticUploader(cons models.ConsumtionValue)
+	Connect(rabbitMqURL string)
+	CloseChannelAndConnection()
+}
 
 type EntryProcessor struct {
 	eventsBySmcUID    map[string][]models.SmcEvent
@@ -16,10 +23,10 @@ type EntryProcessor struct {
 	consumptionValues []models.ConsumtionValue
 	indexValues       []models.IndexValue
 
-	esUploader *rabbitmq.EsUploadSender
+	esUploader ESUploader
 }
 
-func InitEntryProcessor(uploader *rabbitmq.EsUploadSender) *EntryProcessor {
+func InitEntryProcessor(uploader ESUploader) *EntryProcessor {
 	eventsBySmcUID := make(map[string][]models.SmcEvent)
 	smcDataBySmcUID := make(map[string]models.SmcData)
 	smcUIDsByURL := make(map[string]string)
@@ -40,10 +47,8 @@ func InitEntryProcessor(uploader *rabbitmq.EsUploadSender) *EntryProcessor {
 	return &result
 }
 
-// Process processes the log entry received as a parameter.
-func (processor *EntryProcessor) Process(
-	logEntry parsermodels.ParsedLogEntry,
-	esIndexName string) {
+// ProcessEntry processes the log entry received as a parameter.
+func (processor *EntryProcessor) ProcessEntry(logEntry parsermodels.ParsedLogEntry) {
 	var data *models.SmcData
 	var event *models.SmcEvent
 	var consumption *models.ConsumtionValue
@@ -84,7 +89,7 @@ func (processor *EntryProcessor) Process(
 		fmt.Printf("Unknown log level %s", logEntry.Level)
 	}
 
-	processor.registerEvent(event, data, esIndexName)
+	processor.registerEvent(event, data)
 	processor.updateSmcData(data)
 }
 
@@ -95,10 +100,7 @@ func initArrayIfNeeded(eventsBySmcUID map[string][]models.SmcEvent, uid string) 
 	}
 }
 
-func (processor *EntryProcessor) registerEvent(
-	event *models.SmcEvent,
-	data *models.SmcData,
-	esIndexName string) {
+func (processor *EntryProcessor) registerEvent(event *models.SmcEvent, data *models.SmcData) {
 	if data == nil {
 		return
 	}
@@ -123,7 +125,7 @@ func (processor *EntryProcessor) registerEvent(
 	processor.eventsBySmcUID[smcUID] = append(processor.eventsBySmcUID[smcUID], *event)
 
 	// send to ES
-	processor.esUploader.SendEventToElasticUploader(*event, esIndexName)
+	processor.esUploader.SendEventToElasticUploader(*event)
 }
 
 func (processor *EntryProcessor) updateSmcData(data *models.SmcData) {
