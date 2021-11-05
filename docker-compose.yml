@@ -66,6 +66,9 @@ services:
     environment:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
       - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
+      - PROCESSED_DATA_EXCHANGE=processeddata_direct_durable
+      - SAVE_DATA_QUEUE=save_data_queue_durable
+      - SAVE_DATA_ROUTING_KEY=save-data
     build:
       context: .
       dockerfile: ./postprocessor/.devcontainer/Dockerfile
@@ -100,6 +103,9 @@ services:
     environment:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
       - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
+      - PROCESSED_DATA_EXCHANGE=processeddata_direct_durable
+      - SAVE_DATA_QUEUE=save_data_queue_durable
+      - SAVE_DATA_ROUTING_KEY=save-data
     build:
       context: .
       dockerfile: ./elasticuploader/.devcontainer/Dockerfile

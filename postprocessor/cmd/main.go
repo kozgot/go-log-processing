@@ -10,7 +10,6 @@ import (
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
 	"github.com/kozgot/go-log-processing/postprocessor/internal/processing"
 	"github.com/kozgot/go-log-processing/postprocessor/internal/rabbitmq"
-	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
 	"github.com/streadway/amqp"
 )
@@ -24,6 +23,21 @@ func main() {
 	log.Println("PostProcessor service starting...")
 	rabbitMqURL := os.Getenv("RABBIT_URL")
 	fmt.Println("RABBIT_URL:", rabbitMqURL)
+	if len(rabbitMqURL) == 0 {
+		log.Fatal("The RABBIT_URL environment variable is not set")
+	}
+
+	processedDataExchangeName := os.Getenv("PROCESSED_DATA_EXCHANGE")
+	fmt.Println("PROCESSED_DATA_EXCHANGE:", processedDataExchangeName)
+	if len(processedDataExchangeName) == 0 {
+		log.Fatal("The PROCESSED_DATA_EXCHANGE environment variable is not set")
+	}
+
+	saveDataRoutingKey := os.Getenv("SAVE_DATA_ROUTING_KEY")
+	fmt.Println("SAVE_DATA_ROUTING_KEY:", saveDataRoutingKey)
+	if len(saveDataRoutingKey) == 0 {
+		log.Fatal("The SAVE_DATA_ROUTING_KEY environment variable is not set")
+	}
 
 	conn, err := amqp.Dial(rabbitMqURL)
 	utils.FailOnError(err, "Failed to connect to RabbitMQ")
@@ -78,21 +92,21 @@ func main() {
 
 	utils.FailOnError(err, "Failed to register a consumer")
 
+	esUploader := rabbitmq.EsUploadSender{
+		RabbitMqURL:  rabbitMqURL,
+		ExchangeName: processedDataExchangeName,
+		RoutingKey:   saveDataRoutingKey}
+	esUploader.OpenChannelAndConnection(rabbitMqURL)
+
+	defer esUploader.CloseChannelAndConnection()
+
 	forever := make(chan bool)
 
-	channelToSendTo, connectionToSendTo := rabbitmq.OpenChannelAndConnection(rabbitMqURL)
-	defer rabbitmq.CloseChannelAndConnection(channelToSendTo, connectionToSendTo)
-
 	// Create indices in ES.
-	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+smcIndexName, channelToSendTo)
-	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+consumptionIndexName, channelToSendTo)
+	esUploader.CreateIndex(smcIndexName)
+	esUploader.CreateIndex(consumptionIndexName)
 
-	eventsBySmcUID := make(map[string][]models.SmcEvent)
-	smcDataBySmcUID := make(map[string]models.SmcData)
-	smcUIDsByURL := make(map[string]string)
-	podUIDToSmcUID := make(map[string]string)
-	consumptionValues := []models.ConsumtionValue{}
-	indexValues := []models.IndexValue{}
+	processor := processing.InitEntryProcessor(&esUploader)
 
 	go func() {
 		for d := range msgs {
@@ -100,7 +114,7 @@ func main() {
 				fmt.Println("End of entries...")
 
 				// Further processing to get consumption and index info.
-				processing.ProcessConsumptionAndIndexValues(consumptionValues, indexValues, channelToSendTo, consumptionIndexName)
+				processor.ProcessConsumptionAndIndexValues(consumptionIndexName)
 
 				// Acknowledge the message after it has been processed.
 				err := d.Ack(false)
@@ -109,21 +123,7 @@ func main() {
 			}
 
 			entry := deserializeMessage(d.Body)
-			consumption, index := processing.Process(
-				entry,
-				channelToSendTo,
-				eventsBySmcUID,
-				smcDataBySmcUID,
-				smcUIDsByURL,
-				podUIDToSmcUID,
-				smcIndexName)
-
-			if index != nil {
-				indexValues = append(indexValues, *index)
-			}
-			if consumption != nil {
-				consumptionValues = append(consumptionValues, *consumption)
-			}
+			processor.Process(entry, smcIndexName)
 
 			// Acknowledge the message after it has been processed.
 			err := d.Ack(false)

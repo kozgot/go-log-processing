@@ -21,8 +21,6 @@ func failOnError(err error, msg string) {
 	}
 }
 
-const processedDataExchangeName = "processeddata_direct_durable"
-
 func main() {
 	log.Println("Elastic Uploader starting...")
 
@@ -46,6 +44,27 @@ func main() {
 
 	rabbitMqURL := os.Getenv("RABBIT_URL")
 	fmt.Println("RABBIT_URL:", rabbitMqURL)
+	if len(rabbitMqURL) == 0 {
+		log.Fatal("The RABBIT_URL environment variable is not set")
+	}
+
+	processedDataExchangeName := os.Getenv("PROCESSED_DATA_EXCHANGE")
+	fmt.Println("PROCESSED_DATA_EXCHANGE:", processedDataExchangeName)
+	if len(processedDataExchangeName) == 0 {
+		log.Fatal("The PROCESSED_DATA_EXCHANGE environment variable is not set")
+	}
+
+	saveDataQueueName := os.Getenv("SAVE_DATA_QUEUE")
+	fmt.Println("SAVE_DATA_QUEUE:", saveDataQueueName)
+	if len(saveDataQueueName) == 0 {
+		log.Fatal("The SAVE_DATA_QUEUE environment variable is not set")
+	}
+
+	saveDataRoutingKey := os.Getenv("SAVE_DATA_ROUTING_KEY")
+	fmt.Println("SAVE_DATA_ROUTING_KEY:", saveDataRoutingKey)
+	if len(saveDataRoutingKey) == 0 {
+		log.Fatal("The SAVE_DATA_ROUTING_KEY environment variable is not set")
+	}
 
 	rabbitMQConsumer := rabbit.AmqpConsumer{HostDsn: rabbitMqURL}
 	err = rabbitMQConsumer.Connect()
@@ -56,8 +75,7 @@ func main() {
 	failOnError(err, "Could not open channel")
 	defer rabbitMQConsumer.CloseChannel()
 
-	// TODO: extract routing key to a single place, eg.: env variables
-	msgs, err := rabbitMQConsumer.Consume(processedDataExchangeName, "save_data_queue_durable", "save-data")
+	msgs, err := rabbitMQConsumer.Consume(processedDataExchangeName, saveDataQueueName, saveDataRoutingKey)
 	failOnError(err, "Failed to register a consumer")
 
 	forever := make(chan bool)
