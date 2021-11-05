@@ -25,9 +25,9 @@ func main() {
 		log.Fatal("The RABBIT_URL environment variable is not set")
 	}
 
-	processedDataExchangeName := os.Getenv("PROCESSED_DATA_EXCHANGE")
-	fmt.Println("PROCESSED_DATA_EXCHANGE:", processedDataExchangeName)
-	if len(processedDataExchangeName) == 0 {
+	saveDataExchangeName := os.Getenv("PROCESSED_DATA_EXCHANGE")
+	fmt.Println("PROCESSED_DATA_EXCHANGE:", saveDataExchangeName)
+	if len(saveDataExchangeName) == 0 {
 		log.Fatal("The PROCESSED_DATA_EXCHANGE environment variable is not set")
 	}
 
@@ -37,9 +37,9 @@ func main() {
 		log.Fatal("The SAVE_DATA_ROUTING_KEY environment variable is not set")
 	}
 
-	logEntriesExchangeName := os.Getenv("LOG_ENTRIES_EXCHANGE")
-	fmt.Println("LOG_ENTRIES_EXCHANGE:", logEntriesExchangeName)
-	if len(logEntriesExchangeName) == 0 {
+	processEntriesExchangeName := os.Getenv("LOG_ENTRIES_EXCHANGE")
+	fmt.Println("LOG_ENTRIES_EXCHANGE:", processEntriesExchangeName)
+	if len(processEntriesExchangeName) == 0 {
 		log.Fatal("The LOG_ENTRIES_EXCHANGE environment variable is not set")
 	}
 
@@ -55,76 +55,57 @@ func main() {
 		log.Fatal("The PROCESS_ENTRY_ROUTING_KEY environment variable is not set")
 	}
 
-	conn, err := amqp.Dial(rabbitMqURL)
-	utils.FailOnError(err, "Failed to connect to RabbitMQ")
-	defer conn.Close()
+	rabbitMQConsumer := rabbitmq.AmqpConsumer{HostDsn: rabbitMqURL}
+	err := rabbitMQConsumer.Connect()
+	utils.FailOnError(err, "Could not connect ro RabbitMQ")
+	defer rabbitMQConsumer.CloseConnection()
 
-	ch, err := conn.Channel()
-	utils.FailOnError(err, "Failed to open a channel")
-	defer ch.Close()
+	err = rabbitMQConsumer.Channel()
+	utils.FailOnError(err, "Could not open channel")
+	defer rabbitMQConsumer.CloseChannel()
 
-	err = ch.ExchangeDeclare(
-		logEntriesExchangeName, // name
-		"direct",               // type
-		true,                   // durable
-		false,                  // auto-deleted
-		false,                  // internal
-		false,                  // no-wait
-		nil,                    // arguments
-	)
-	utils.FailOnError(err, "Failed to declare an exchange")
-
-	q, err := ch.QueueDeclare(
-		processingQueueName, // name
-		true,                // durable
-		false,               // delete when unused
-		true,                // exclusive
-		false,               // no-wait
-		nil,                 // arguments
-	)
-
-	utils.FailOnError(err, "Failed to declare a queue")
-
-	err = ch.QueueBind(
-		q.Name,                 // queue name
-		processEntryRoutingKey, // routing key
-		logEntriesExchangeName, // exchange
-		false,
-		nil,
-	)
-
-	utils.FailOnError(err, "Failed to bind a queue")
-
-	msgs, err := ch.Consume(
-		q.Name, // queue
-		"",     // consumer
-		false,  // auto-ack
-		false,  // exclusive
-		false,  // no-local
-		false,  // no-wait
-		nil,    // args
-	)
-
+	msgs, err := rabbitMQConsumer.Consume(processEntriesExchangeName, processingQueueName, processEntryRoutingKey)
 	utils.FailOnError(err, "Failed to register a consumer")
-
-	esUploader := rabbitmq.EsUploadSender{
-		RabbitMqURL:  rabbitMqURL,
-		ExchangeName: processedDataExchangeName,
-		RoutingKey:   saveDataRoutingKey}
-	esUploader.OpenChannelAndConnection(rabbitMqURL)
-
-	defer esUploader.CloseChannelAndConnection()
 
 	forever := make(chan bool)
 
-	// Create indices in ES.
-	esUploader.CreateIndex(smcIndexName)
-	esUploader.CreateIndex(consumptionIndexName)
+	handleEntries(msgs, rabbitMqURL, saveDataExchangeName, saveDataRoutingKey)
 
-	processor := processing.InitEntryProcessor(&esUploader)
+	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	<-forever
+}
 
+func deserializeMessage(message []byte) parsermodels.ParsedLogEntry {
+	var data parsermodels.ParsedLogEntry
+	if err := json.Unmarshal(message, &data); err != nil {
+		fmt.Println("Failed to unmarshal: ", err)
+	}
+
+	return data
+}
+
+func handleEntries(
+	deliveries <-chan amqp.Delivery,
+	rabbitMqURL string,
+	saveDataExchangeName string,
+	saveDataRoutingKey string) {
 	go func() {
-		for d := range msgs {
+		esUploader := rabbitmq.EsUploadSender{
+			RabbitMqURL:  rabbitMqURL,
+			ExchangeName: saveDataExchangeName,
+			RoutingKey:   saveDataRoutingKey}
+
+		// Open rabbitmq channel and connection.
+		esUploader.OpenChannelAndConnection(rabbitMqURL)
+		defer esUploader.CloseChannelAndConnection()
+
+		// Create indices in ES.
+		esUploader.CreateIndex(smcIndexName)
+		esUploader.CreateIndex(consumptionIndexName)
+
+		processor := processing.InitEntryProcessor(&esUploader)
+
+		for d := range deliveries {
 			if strings.Contains(string(d.Body), "END") {
 				fmt.Println("End of entries...")
 
@@ -146,15 +127,4 @@ func main() {
 				"Could not acknowledge message with timestamp: "+entry.Timestamp.Format("2 Jan 2006 15:04:05"))
 		}
 	}()
-	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
-	<-forever
-}
-
-func deserializeMessage(message []byte) parsermodels.ParsedLogEntry {
-	var data parsermodels.ParsedLogEntry
-	if err := json.Unmarshal(message, &data); err != nil {
-		fmt.Println("Failed to unmarshal: ", err)
-	}
-
-	return data
 }
