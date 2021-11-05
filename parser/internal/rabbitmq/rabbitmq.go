@@ -1,7 +1,6 @@
 package rabbitmq
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/kozgot/go-log-processing/parser/internal/utils"
@@ -9,67 +8,70 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// SendLineToPostProcessor sends the parsed log lines to the message queue.
-func SendLineToPostProcessor(line models.ParsedLogEntry, channel *amqp.Channel, routingKey string, exchangeName string) {
-	sendDataToPostprocessor(serializeLine(line), channel, routingKey, exchangeName)
+type AmqpProducer struct {
+	connection   *amqp.Connection
+	channel      *amqp.Channel
+	routingKey   string
+	exchangeName string
+	rabbitMqURL  string
+}
+
+func InitProducer(routingKey string, exchangeName string, rabbitMqURL string) *AmqpProducer {
+	result := AmqpProducer{routingKey: routingKey, exchangeName: exchangeName, rabbitMqURL: rabbitMqURL}
+	return &result
 }
 
 // OpenChannelAndConnection opens a channel and a connection.
-func OpenChannelAndConnection(rabbitMqURL string, exchangeName string) (*amqp.Channel, *amqp.Connection) {
-	conn, err := amqp.Dial(rabbitMqURL)
+func (producer *AmqpProducer) OpenChannelAndConnection() {
+	var err error
+	producer.connection, err = amqp.Dial(producer.rabbitMqURL)
 	utils.FailOnError(err, "Failed to connect to RabbitMQ")
 	fmt.Println("Created connection")
 
 	// create the channel
-	ch, err := conn.Channel()
+	producer.channel, err = producer.connection.Channel()
 	utils.FailOnError(err, "Failed to open a channel")
 	fmt.Println("Created channel")
 
-	err = ch.ExchangeDeclare(
-		exchangeName, // name
-		"direct",     // type
-		true,         // durable
-		false,        // auto-deleted
-		false,        // internal
-		false,        // no-wait
-		nil,          // arguments
+	err = producer.channel.ExchangeDeclare(
+		producer.exchangeName, // name
+		"direct",              // type
+		true,                  // durable
+		false,                 // auto-deleted
+		false,                 // internal
+		false,                 // no-wait
+		nil,                   // arguments
 	)
 	utils.FailOnError(err, "Failed to declare an exchange")
-
-	return ch, conn
 }
 
 // CloseChannelAndConnection closes the channel and connection received in params.
-func CloseChannelAndConnection(channel *amqp.Channel, connection *amqp.Connection) {
-	connection.Close()
+func (producer *AmqpProducer) CloseChannelAndConnection() {
+	producer.connection.Close()
 	fmt.Println("Closed connection")
-	channel.Close()
+	producer.channel.Close()
 	fmt.Println("Closed channel")
 }
 
 // SendStringMessageToPostProcessor sends a string message to the message queue.
-func SendStringMessageToPostProcessor(indexName string, channel *amqp.Channel, exchangeName string, routingKey string) {
+func (producer *AmqpProducer) SendStringMessageToPostProcessor(indexName string) {
 	bytes := []byte(indexName)
-	sendDataToPostprocessor(bytes, channel, routingKey, exchangeName)
+	producer.sendDataToPostprocessor(bytes)
 }
 
-func serializeLine(line models.ParsedLogEntry) []byte {
-	bytes, err := json.Marshal(line)
-	if err != nil {
-		fmt.Println("Can't serialize", line)
-	}
-
-	return bytes
+// SendDataToPostProcessor sends the parsed log lines to the message queue.
+func (producer *AmqpProducer) SendDataToPostProcessor(line models.ParsedLogEntry) {
+	producer.sendDataToPostprocessor(line.Serialize())
 }
 
-func sendDataToPostprocessor(data []byte, channel *amqp.Channel, routingKey string, logEntriesExchangeName string) {
+func (producer *AmqpProducer) sendDataToPostprocessor(data []byte) {
 	body := data
 
-	err := channel.Publish(
-		logEntriesExchangeName, // exchange
-		routingKey,             // routing key
-		false,                  // mandatory
-		false,                  // immediate
+	err := producer.channel.Publish(
+		producer.exchangeName, // exchange
+		producer.routingKey,   // routing key
+		false,                 // mandatory
+		false,                 // immediate
 		amqp.Publishing{
 			DeliveryMode: amqp.Persistent,
 			ContentType:  "application/json",

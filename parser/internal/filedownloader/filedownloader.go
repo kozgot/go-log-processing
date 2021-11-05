@@ -1,4 +1,4 @@
-package azure
+package filedownloader
 
 import (
 	"context"
@@ -11,18 +11,17 @@ import (
 	"github.com/kozgot/go-log-processing/parser/internal/utils"
 )
 
+// FileDownloader interface describes the methods needed to list and download files to process.
+type FileDownloader interface {
+	ListFileNames() []string
+	DownloadFile(fileName string) io.ReadCloser
+}
+
 // DownloaderData contains data needed to list or dowload blobs from azure.
 type DownloaderData struct {
 	Credential        *azblob.SharedKeyCredential
 	StorageAccountURL *url.URL
 	ContainerURL      azblob.ContainerURL
-}
-
-// DownloaderInterface encapsulates the methods used to list and downloads blobs from azure.
-type DownloaderInterface interface {
-	SetupDownloader(accountName string, accountKey string, containerName string) *DownloaderData
-	GetFileNamesFromAzure() []string
-	DownloadFileFromAzure(fileName string) io.ReadCloser
 }
 
 // SetupDownloader creates and returns data a DownloaderData.
@@ -48,8 +47,8 @@ func SetupDownloader(accountName string, accountKey string, containerName string
 	return &downloader
 }
 
-// GetFileNamesFromAzure lists the blobs in the azure container.
-func (downloader *DownloaderData) GetFileNamesFromAzure() []string {
+// ListFileNames lists the blobs in the azure container.
+func (downloader *DownloaderData) ListFileNames() []string {
 	fileNames := []string{}
 	ctx := context.Background()
 
@@ -78,8 +77,8 @@ func (downloader *DownloaderData) GetFileNamesFromAzure() []string {
 	return fileNames
 }
 
-// DownloadFileFromAzure downloads the blob with the given name from azure.
-func (downloader *DownloaderData) DownloadFileFromAzure(fileName string) io.ReadCloser {
+// DownloadFile downloads the blob with the given name from azure.
+func (downloader *DownloaderData) DownloadFile(fileName string) io.ReadCloser {
 	blobURL := downloader.ContainerURL.NewBlockBlobURL(fileName)
 	ctx := context.Background()
 

@@ -6,7 +6,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/kozgot/go-log-processing/parser/internal/azure"
+	"github.com/kozgot/go-log-processing/parser/internal/filedownloader"
 	"github.com/kozgot/go-log-processing/parser/internal/rabbitmq"
 	parser "github.com/kozgot/go-log-processing/parser/internal/service"
 )
@@ -40,27 +40,32 @@ func main() {
 		log.Fatal("The PROCESS_ENTRY_ROUTING_KEY environment variable is not set")
 	}
 
-	// todo: add rabbitmq service with DI
-	channel, conn := rabbitmq.OpenChannelAndConnection(rabbitMqURL, logEntriesExchangeName)
-	defer rabbitmq.CloseChannelAndConnection(channel, conn)
+	rabbitMqProducer := rabbitmq.InitProducer(processEntryRoutingKey, logEntriesExchangeName, rabbitMqURL)
 
-	azureFileDownloader := azure.SetupDownloader(azureStorageAccountName, azureStorageAccessKey, azureStorageContainer)
+	azureFileDownloader := filedownloader.SetupDownloader(
+		azureStorageAccountName,
+		azureStorageAccessKey,
+		azureStorageContainer)
 
-	azureFileNames := azureFileDownloader.GetFileNamesFromAzure()
+	parseLogfiles(azureFileDownloader, rabbitMqProducer)
+}
+
+func parseLogfiles(fileDownloader filedownloader.FileDownloader, rabbitMqProducer *rabbitmq.AmqpProducer) {
+	rabbitMqProducer.OpenChannelAndConnection()
+	defer rabbitMqProducer.CloseChannelAndConnection()
+	azureFileNames := fileDownloader.ListFileNames()
 
 	var wg sync.WaitGroup
-
 	for _, fileName := range azureFileNames {
 		fmt.Println(fileName)
-		readCloser := azureFileDownloader.DownloadFileFromAzure(fileName)
+		readCloser := fileDownloader.DownloadFile(fileName)
 
 		wg.Add(1)
-		go parser.ParseLogFile(readCloser, fileName, &wg, channel, logEntriesExchangeName, processEntryRoutingKey)
+		go parser.ParseLogFile(readCloser, fileName, &wg, rabbitMqProducer)
 	}
-
 	wg.Wait()
 
 	// Send a message indicating that this is the end of the processing
-	rabbitmq.SendStringMessageToPostProcessor("END", channel, logEntriesExchangeName, processEntryRoutingKey)
+	rabbitMqProducer.SendStringMessageToPostProcessor("END")
 	log.Printf("  Sent END to Postprocessing service ...")
 }
