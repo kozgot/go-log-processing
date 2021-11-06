@@ -13,7 +13,7 @@ func ParseSingleFile(readCloser io.ReadCloser, logFileName string,
 	wg *sync.WaitGroup,
 	rabbitMQProducer rabbitmq.MessageProducer) {
 	defer wg.Done()
-	log.Printf("  Parsing log file: %s ...", logFileName)
+	log.Printf("  [PARSER] Parsing log file: %s ...", logFileName)
 	scanner := bufio.NewScanner(readCloser)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -34,5 +34,5 @@ func ParseSingleFile(readCloser io.ReadCloser, logFileName string,
 	}
 
 	readCloser.Close()
-	log.Printf("  Done parsing log file: %s", logFileName)
+	log.Printf("  [PARSER] Done parsing log file: %s", logFileName)
 }

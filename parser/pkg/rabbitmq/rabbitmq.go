@@ -1,7 +1,7 @@
 package rabbitmq
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/kozgot/go-log-processing/parser/internal/utils"
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
@@ -28,12 +28,12 @@ func (producer *AmqpProducer) OpenChannelAndConnection() {
 	var err error
 	producer.connection, err = amqp.Dial(producer.rabbitMqURL)
 	utils.FailOnError(err, "Failed to connect to RabbitMQ")
-	fmt.Println("Created connection")
+	log.Println("  [RABBITMQ PRODUCER] Created connection")
 
 	// create the channel
 	producer.channel, err = producer.connection.Channel()
 	utils.FailOnError(err, "Failed to open a channel")
-	fmt.Println("Created channel")
+	log.Println("  [RABBITMQ PRODUCER] Created channel")
 
 	err = producer.channel.ExchangeDeclare(
 		producer.exchangeName, // name
@@ -50,9 +50,9 @@ func (producer *AmqpProducer) OpenChannelAndConnection() {
 // CloseChannelAndConnection closes the channel and connection received in params.
 func (producer *AmqpProducer) CloseChannelAndConnection() {
 	producer.connection.Close()
-	fmt.Println("Closed connection")
+	log.Println("  [RABBITMQ PRODUCER] Closed connection")
 	producer.channel.Close()
-	fmt.Println("Closed channel")
+	log.Println("  [RABBITMQ PRODUCER] Closed channel")
 }
 
 // PublishStringMessage sends a string message to the message queue.

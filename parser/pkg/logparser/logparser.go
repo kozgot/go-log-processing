@@ -34,7 +34,6 @@ func (logparser *LogParser) ParseLogfiles() {
 
 	var wg sync.WaitGroup
 	for _, fileName := range azureFileNames {
-		fmt.Println(fileName)
 		readCloser := logparser.fileDownloader.DownloadFile(fileName)
 
 		wg.Add(1)
@@ -44,7 +43,7 @@ func (logparser *LogParser) ParseLogfiles() {
 
 	// Send a message indicating that this is the end of the processing
 	logparser.rabbitMqProducer.PublishStringMessage("END")
-	log.Printf("  Sent END to Postprocessing service ...")
+	log.Printf("  [PARSER] Sent END to Postprocessing service ...")
 }
 
 // Hello returns a greeting for the named person.
