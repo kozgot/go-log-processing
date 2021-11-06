@@ -8,6 +8,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// AmqpProducer implements the RabbitMQProducer interface.
 type AmqpProducer struct {
 	connection   *amqp.Connection
 	channel      *amqp.Channel
@@ -16,7 +17,8 @@ type AmqpProducer struct {
 	rabbitMqURL  string
 }
 
-func InitProducer(routingKey string, exchangeName string, rabbitMqURL string) *AmqpProducer {
+// NewAmqpProducer creates a new AmqpProducer instance with the given parameters.
+func NewAmqpProducer(routingKey string, exchangeName string, rabbitMqURL string) *AmqpProducer {
 	result := AmqpProducer{routingKey: routingKey, exchangeName: exchangeName, rabbitMqURL: rabbitMqURL}
 	return &result
 }
@@ -53,14 +55,14 @@ func (producer *AmqpProducer) CloseChannelAndConnection() {
 	fmt.Println("Closed channel")
 }
 
-// SendStringMessageToPostProcessor sends a string message to the message queue.
-func (producer *AmqpProducer) SendStringMessageToPostProcessor(indexName string) {
+// PublishStringMessage sends a string message to the message queue.
+func (producer *AmqpProducer) PublishStringMessage(indexName string) {
 	bytes := []byte(indexName)
 	producer.sendDataToPostprocessor(bytes)
 }
 
-// SendDataToPostProcessor sends the parsed log lines to the message queue.
-func (producer *AmqpProducer) SendDataToPostProcessor(line models.ParsedLogEntry) {
+// PublishEntry sends the parsed log lines to the message queue.
+func (producer *AmqpProducer) PublishEntry(line models.ParsedLogEntry) {
 	producer.sendDataToPostprocessor(line.Serialize())
 }
 

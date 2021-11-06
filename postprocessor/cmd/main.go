@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/kozgot/go-log-processing/postprocessor/internal/processing"
 	"github.com/kozgot/go-log-processing/postprocessor/internal/rabbitmq"
-	"github.com/kozgot/go-log-processing/postprocessor/pkg/service"
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
 )
 
@@ -76,7 +76,7 @@ func main() {
 
 	forever := make(chan bool)
 
-	esUploader := rabbitmq.NewEsUploadSender(
+	esUploader := rabbitmq.NewAmqpProducer(
 		rabbitMqURL,
 		saveDataExchangeName,
 		saveDataRoutingKey,
@@ -91,7 +91,8 @@ func main() {
 	esUploader.CreateIndex(eventsIndexName)
 	esUploader.CreateIndex(consumptionIndexName)
 
-	service.HandleEntries(rabbitMQConsumer, esUploader)
+	processor := processing.NewEntryProcessor(esUploader, rabbitMQConsumer)
+	processor.HandleEntries()
 
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
 	<-forever

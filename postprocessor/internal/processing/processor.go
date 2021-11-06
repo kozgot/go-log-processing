@@ -1,19 +1,15 @@
 package processing
 
 import (
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
+	"github.com/kozgot/go-log-processing/postprocessor/internal/rabbitmq"
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
+	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
 )
-
-// ESUploader encapsulates methods used to save data into ES.
-type ESUploader interface {
-	SendEventToElasticUploader(event models.SmcEvent)
-	SendConsumptionToElasticUploader(cons models.ConsumtionValue)
-	Connect(rabbitMqURL string)
-	CloseChannelAndConnection()
-}
 
 type EntryProcessor struct {
 	eventsBySmcUID    map[string][]models.SmcEvent
@@ -23,10 +19,11 @@ type EntryProcessor struct {
 	consumptionValues []models.ConsumtionValue
 	indexValues       []models.IndexValue
 
-	esUploader ESUploader
+	messageProducer rabbitmq.MessageProducer
+	messageConsumer rabbitmq.MessageConsumer
 }
 
-func InitEntryProcessor(uploader ESUploader) *EntryProcessor {
+func NewEntryProcessor(uploader rabbitmq.MessageProducer, messageConsumer rabbitmq.MessageConsumer) *EntryProcessor {
 	eventsBySmcUID := make(map[string][]models.SmcEvent)
 	smcDataBySmcUID := make(map[string]models.SmcData)
 	smcUIDsByURL := make(map[string]string)
@@ -41,14 +38,50 @@ func InitEntryProcessor(uploader ESUploader) *EntryProcessor {
 		podUIDToSmcUID:    podUIDToSmcUID,
 		consumptionValues: consumptionValues,
 		indexValues:       indexValues,
-		esUploader:        uploader,
+		messageProducer:   uploader,
+		messageConsumer:   messageConsumer,
 	}
 
 	return &result
 }
 
-// ProcessEntry processes the log entry received as a parameter.
-func (processor *EntryProcessor) ProcessEntry(logEntry parsermodels.ParsedLogEntry) {
+// HandleEntries consumes entries from the provided MessageConsumer,
+// and uploads them to ES using the provided ESUploader.
+func (processor *EntryProcessor) HandleEntries() {
+	msgs, err := processor.messageConsumer.ConsumeMessages()
+	utils.FailOnError(err, "Failed to register a consumer")
+
+	go func() {
+		for d := range msgs {
+			if strings.Contains(string(d.Body), "END") {
+				fmt.Println("End of entries...")
+
+				// Further processing to get consumption and index info.
+				consumptionProcessor := NewConsumptionProcessor(
+					processor.consumptionValues,
+					processor.indexValues,
+					processor.messageProducer)
+				consumptionProcessor.ProcessConsumptionAndIndexValues()
+
+				// Acknowledge the message after it has been processed.
+				err := d.Ack(false)
+				utils.FailOnError(err, "Could not acknowledge END message")
+				continue
+			}
+
+			entry := deserializeParsedLogEntry(d.Body)
+			processor.processEntry(entry)
+
+			// Acknowledge the message after it has been processed.
+			err := d.Ack(false)
+			utils.FailOnError(err,
+				"Could not acknowledge message with timestamp: "+entry.Timestamp.Format("2 Jan 2006 15:04:05"))
+		}
+	}()
+}
+
+// processEntry processes the log entry received as a parameter.
+func (processor *EntryProcessor) processEntry(logEntry parsermodels.ParsedLogEntry) {
 	var data *models.SmcData
 	var event *models.SmcEvent
 	var consumption *models.ConsumtionValue
@@ -125,7 +158,7 @@ func (processor *EntryProcessor) registerEvent(event *models.SmcEvent, data *mod
 	processor.eventsBySmcUID[smcUID] = append(processor.eventsBySmcUID[smcUID], *event)
 
 	// send to ES
-	processor.esUploader.SendEventToElasticUploader(*event)
+	processor.messageProducer.PublishEvent(*event)
 }
 
 func (processor *EntryProcessor) updateSmcData(data *models.SmcData) {
@@ -235,4 +268,11 @@ func containsPod(pod models.Pod, list []models.Pod) bool {
 		}
 	}
 	return false
+}
+
+func deserializeParsedLogEntry(bytes []byte) parsermodels.ParsedLogEntry {
+	var parsedEntry parsermodels.ParsedLogEntry
+	err := json.Unmarshal(bytes, &parsedEntry)
+	utils.FailOnError(err, "Failed to unmarshal log entry")
+	return parsedEntry
 }

@@ -5,15 +5,11 @@ import (
 	"io"
 	"log"
 	"sync"
-
-	"github.com/kozgot/go-log-processing/parser/internal/rabbitmq"
 )
 
-func ParseLogFile(
-	readCloser io.ReadCloser,
-	logFileName string,
+func ParseSingleFile(readCloser io.ReadCloser, logFileName string,
 	wg *sync.WaitGroup,
-	producer *rabbitmq.AmqpProducer) {
+	rabbitMQProducer RabbitMQProducer) {
 	defer wg.Done()
 	log.Printf("  Parsing log file: %s ...", logFileName)
 	scanner := bufio.NewScanner(readCloser)
@@ -31,7 +27,7 @@ func ParseLogFile(
 
 		finalParsedLine := ParseContents(*parsedLine)
 		if finalParsedLine != nil {
-			producer.SendDataToPostProcessor(*finalParsedLine)
+			rabbitMQProducer.PublishEntry(*finalParsedLine)
 		}
 	}
 

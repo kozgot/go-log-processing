@@ -53,8 +53,8 @@ func (c *AmqpConsumer) CloseChannel() {
 	c.channel.Close()
 }
 
-// Consume consumes messages from rabbitmq, returns the deliveries.
-func (c *AmqpConsumer) Consume() (<-chan amqp.Delivery, error) {
+// ConsumeMessages consumes messages from rabbitmq, returns the deliveries.
+func (c *AmqpConsumer) ConsumeMessages() (<-chan amqp.Delivery, error) {
 	var err error
 	var msgs <-chan amqp.Delivery
 	err = c.channel.ExchangeDeclare(

@@ -9,8 +9,8 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// EsUploader implements the ESUploader interface.
-type EsUploader struct {
+// AmqpProducer implements the ESUploader interface.
+type AmqpProducer struct {
 	rabbitMqURL          string
 	connection           *amqp.Connection
 	channel              *amqp.Channel
@@ -20,14 +20,14 @@ type EsUploader struct {
 	consumptionIndexName string
 }
 
-// NewEsUploadSender creates a new EsUploadSender.
-func NewEsUploadSender(
+// NewAmqpProducer creates a new message producer that publishes messages to rabbitmq.
+func NewAmqpProducer(
 	rabbitMqURL string,
 	exchangeName string,
 	routingKey string,
 	eventIndexName string,
-	consumptionIndexName string) *EsUploader {
-	esUploader := EsUploader{
+	consumptionIndexName string) *AmqpProducer {
+	esUploader := AmqpProducer{
 		rabbitMqURL:          rabbitMqURL,
 		exchangeName:         exchangeName,
 		routingKey:           routingKey,
@@ -37,20 +37,20 @@ func NewEsUploadSender(
 	return &esUploader
 }
 
-// SendEventToElasticUploader sends an SMC event to the uploader service.
-func (uploader *EsUploader) SendEventToElasticUploader(event models.SmcEvent) {
+// PublishEvent sends an SMC event to the uploader service.
+func (uploader *AmqpProducer) PublishEvent(event models.SmcEvent) {
 	dataToSend := models.DataUnit{IndexName: uploader.eventIndexName, Data: event.Serialize()}
 	uploader.sendData(dataToSend.Serialize())
 }
 
-// SendConsumptionToElasticUploader sends a consumption data item to the uploader service.
-func (uploader *EsUploader) SendConsumptionToElasticUploader(cons models.ConsumtionValue) {
+// PublishConsumption sends a consumption data item to the uploader service.
+func (uploader *AmqpProducer) PublishConsumption(cons models.ConsumtionValue) {
 	dataToSend := models.DataUnit{IndexName: uploader.consumptionIndexName, Data: cons.Serialize()}
 	uploader.sendData(dataToSend.Serialize())
 }
 
 // Connect opens a channel and a connection.
-func (uploader *EsUploader) Connect(rabbitMqURL string) {
+func (uploader *AmqpProducer) Connect(rabbitMqURL string) {
 	var err error
 	uploader.connection, err = amqp.Dial(rabbitMqURL)
 	utils.FailOnError(err, "Failed to connect to RabbitMQ")
@@ -74,7 +74,7 @@ func (uploader *EsUploader) Connect(rabbitMqURL string) {
 }
 
 // CloseChannelAndConnection closes the channel and connection received in parameter.
-func (uploader *EsUploader) CloseChannelAndConnection() {
+func (uploader *AmqpProducer) CloseChannelAndConnection() {
 	uploader.connection.Close()
 	fmt.Println("Closed connection")
 	uploader.channel.Close()
@@ -82,12 +82,12 @@ func (uploader *EsUploader) CloseChannelAndConnection() {
 }
 
 // CreateIndex sends a string message to the message queue.
-func (uploader *EsUploader) CreateIndex(indexName string) {
+func (uploader *AmqpProducer) CreateIndex(indexName string) {
 	bytes := []byte("CREATEINDEX|" + indexName)
 	uploader.sendData(bytes)
 }
 
-func (uploader *EsUploader) sendData(data []byte) {
+func (uploader *AmqpProducer) sendData(data []byte) {
 	body := data
 
 	err := uploader.channel.Publish(
@@ -100,5 +100,6 @@ func (uploader *EsUploader) sendData(data []byte) {
 			ContentType:  "application/json",
 			Body:         body,
 		})
+
 	utils.FailOnError(err, "Failed to publish a message")
 }

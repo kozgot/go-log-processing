@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sync"
 
 	"github.com/kozgot/go-log-processing/parser/internal/filedownloader"
 	"github.com/kozgot/go-log-processing/parser/internal/rabbitmq"
-	parser "github.com/kozgot/go-log-processing/parser/internal/service"
+	"github.com/kozgot/go-log-processing/parser/internal/service"
 )
 
 func main() {
@@ -40,32 +39,20 @@ func main() {
 		log.Fatal("The PROCESS_ENTRY_ROUTING_KEY environment variable is not set")
 	}
 
-	rabbitMqProducer := rabbitmq.InitProducer(processEntryRoutingKey, logEntriesExchangeName, rabbitMqURL)
+	// Initialize rabbitMQ producer.
+	rabbitMqProducer := rabbitmq.NewAmqpProducer(processEntryRoutingKey, logEntriesExchangeName, rabbitMqURL)
 
-	azureFileDownloader := filedownloader.SetupDownloader(
+	// Open a connection and a channel to send the log entries to.
+	rabbitMqProducer.OpenChannelAndConnection()
+	defer rabbitMqProducer.CloseChannelAndConnection()
+
+	// Initialize file downloader.
+	azureFileDownloader := filedownloader.NewAzureDownloader(
 		azureStorageAccountName,
 		azureStorageAccessKey,
 		azureStorageContainer)
 
-	parseLogfiles(azureFileDownloader, rabbitMqProducer)
-}
-
-func parseLogfiles(fileDownloader filedownloader.FileDownloader, rabbitMqProducer *rabbitmq.AmqpProducer) {
-	rabbitMqProducer.OpenChannelAndConnection()
-	defer rabbitMqProducer.CloseChannelAndConnection()
-	azureFileNames := fileDownloader.ListFileNames()
-
-	var wg sync.WaitGroup
-	for _, fileName := range azureFileNames {
-		fmt.Println(fileName)
-		readCloser := fileDownloader.DownloadFile(fileName)
-
-		wg.Add(1)
-		go parser.ParseLogFile(readCloser, fileName, &wg, rabbitMqProducer)
-	}
-	wg.Wait()
-
-	// Send a message indicating that this is the end of the processing
-	rabbitMqProducer.SendStringMessageToPostProcessor("END")
-	log.Printf("  Sent END to Postprocessing service ...")
+	// Init and run parser.
+	logParser := service.NewLogParser(azureFileDownloader, rabbitMqProducer)
+	logParser.ParseLogfiles()
 }

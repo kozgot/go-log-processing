@@ -22,9 +22,9 @@ type UploaderService struct {
 }
 
 // NewUploaderService creates a new uploader service instance.
-func NewUploaderService(rabbitMQConsumer MessageConsumer, esClient elastic.EsClient) *UploaderService {
+func NewUploaderService(messageConsumer MessageConsumer, esClient elastic.EsClient) *UploaderService {
 	service := UploaderService{
-		rabbitMQConsumer: rabbitMQConsumer,
+		rabbitMQConsumer: messageConsumer,
 		esClient:         esClient,
 	}
 	return &service
