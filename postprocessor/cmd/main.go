@@ -7,7 +7,6 @@ import (
 
 	"github.com/kozgot/go-log-processing/postprocessor/internal/processing"
 	"github.com/kozgot/go-log-processing/postprocessor/internal/rabbitmq"
-	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
 )
 
 func main() {
@@ -60,38 +59,30 @@ func main() {
 		log.Fatal("The EVENTS_INDEX_NAME environment variable is not set")
 	}
 
+	// Init message consumer.
 	rabbitMQConsumer := rabbitmq.NewAmqpConsumer(
 		rabbitMqURL,
 		processEntryRoutingKey,
 		processEntriesExchangeName,
 		processingQueueName)
 
-	err := rabbitMQConsumer.Connect()
-	utils.FailOnError(err, "Could not connect ro RabbitMQ")
-	defer rabbitMQConsumer.CloseConnection()
+	// Open consumer channel and connection.
+	rabbitMQConsumer.Connect()
+	defer rabbitMQConsumer.CloseConnectionAndChannel()
 
-	err = rabbitMQConsumer.Channel()
-	utils.FailOnError(err, "Could not open channel")
-	defer rabbitMQConsumer.CloseChannel()
+	// Init message producer.
+	rabbitMqProducer := rabbitmq.NewAmqpProducer(
+		rabbitMqURL,
+		saveDataExchangeName,
+		saveDataRoutingKey)
+
+	// Open producer channel and connection.
+	rabbitMqProducer.Connect(rabbitMqURL)
+	defer rabbitMqProducer.CloseChannelAndConnection()
 
 	forever := make(chan bool)
 
-	esUploader := rabbitmq.NewAmqpProducer(
-		rabbitMqURL,
-		saveDataExchangeName,
-		saveDataRoutingKey,
-		eventsIndexName,
-		consumptionIndexName)
-
-	// Open rabbitmq channel and connection.
-	esUploader.Connect(rabbitMqURL)
-	defer esUploader.CloseChannelAndConnection()
-
-	// Create indices in ES.
-	esUploader.CreateIndex(eventsIndexName)
-	esUploader.CreateIndex(consumptionIndexName)
-
-	processor := processing.NewEntryProcessor(esUploader, rabbitMQConsumer)
+	processor := processing.NewEntryProcessor(rabbitMqProducer, rabbitMQConsumer, eventsIndexName, consumptionIndexName)
 	processor.HandleEntries()
 
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")

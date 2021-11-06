@@ -1,6 +1,8 @@
 package rabbitmq
 
 import (
+	"fmt"
+
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
 	"github.com/streadway/amqp"
 )
@@ -28,29 +30,21 @@ func NewAmqpConsumer(hostURL string, routingKey string, exchangeName string, que
 }
 
 // Connect initializes a connection.
-func (c *AmqpConsumer) Connect() error {
+func (c *AmqpConsumer) Connect() {
 	var err error
 	c.connection, err = amqp.Dial(c.hostURL)
+	utils.FailOnError(err, "Failed to connect to RabbitMQ server.")
 
-	return err
+	c.channel, err = c.connection.Channel()
+	utils.FailOnError(err, "Failed to open a channel.")
 }
 
 // CloseConnection closes the connection.
-func (c *AmqpConsumer) CloseConnection() {
+func (c *AmqpConsumer) CloseConnectionAndChannel() {
 	c.connection.Close()
-}
-
-// Channel initializes a channel.
-func (c *AmqpConsumer) Channel() error {
-	var err error
-	c.channel, err = c.connection.Channel()
-
-	return err
-}
-
-// CloseChannel closes the channel.
-func (c *AmqpConsumer) CloseChannel() {
+	fmt.Println("Closed consumer connection")
 	c.channel.Close()
+	fmt.Println("Closed consumer channel")
 }
 
 // ConsumeMessages consumes messages from rabbitmq, returns the deliveries.

@@ -11,41 +11,35 @@ import (
 
 // AmqpProducer implements the ESUploader interface.
 type AmqpProducer struct {
-	rabbitMqURL          string
-	connection           *amqp.Connection
-	channel              *amqp.Channel
-	routingKey           string
-	exchangeName         string
-	eventIndexName       string
-	consumptionIndexName string
+	rabbitMqURL  string
+	connection   *amqp.Connection
+	channel      *amqp.Channel
+	routingKey   string
+	exchangeName string
 }
 
 // NewAmqpProducer creates a new message producer that publishes messages to rabbitmq.
 func NewAmqpProducer(
 	rabbitMqURL string,
 	exchangeName string,
-	routingKey string,
-	eventIndexName string,
-	consumptionIndexName string) *AmqpProducer {
+	routingKey string) *AmqpProducer {
 	esUploader := AmqpProducer{
-		rabbitMqURL:          rabbitMqURL,
-		exchangeName:         exchangeName,
-		routingKey:           routingKey,
-		eventIndexName:       eventIndexName,
-		consumptionIndexName: consumptionIndexName}
+		rabbitMqURL:  rabbitMqURL,
+		exchangeName: exchangeName,
+		routingKey:   routingKey}
 
 	return &esUploader
 }
 
 // PublishEvent sends an SMC event to the uploader service.
-func (uploader *AmqpProducer) PublishEvent(event models.SmcEvent) {
-	dataToSend := models.DataUnit{IndexName: uploader.eventIndexName, Data: event.Serialize()}
+func (uploader *AmqpProducer) PublishEvent(event models.SmcEvent, eventIndexName string) {
+	dataToSend := models.DataUnit{IndexName: eventIndexName, Data: event.Serialize()}
 	uploader.sendData(dataToSend.Serialize())
 }
 
 // PublishConsumption sends a consumption data item to the uploader service.
-func (uploader *AmqpProducer) PublishConsumption(cons models.ConsumtionValue) {
-	dataToSend := models.DataUnit{IndexName: uploader.consumptionIndexName, Data: cons.Serialize()}
+func (uploader *AmqpProducer) PublishConsumption(cons models.ConsumtionValue, consumptionIndexName string) {
+	dataToSend := models.DataUnit{IndexName: consumptionIndexName, Data: cons.Serialize()}
 	uploader.sendData(dataToSend.Serialize())
 }
 
@@ -81,8 +75,8 @@ func (uploader *AmqpProducer) CloseChannelAndConnection() {
 	fmt.Println("Closed channel")
 }
 
-// CreateIndex sends a string message to the message queue.
-func (uploader *AmqpProducer) CreateIndex(indexName string) {
+// PublishCreateIndexMessage sends a string message to the message queue.
+func (uploader *AmqpProducer) PublishCreateIndexMessage(indexName string) {
 	bytes := []byte("CREATEINDEX|" + indexName)
 	uploader.sendData(bytes)
 }

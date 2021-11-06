@@ -21,9 +21,16 @@ type EntryProcessor struct {
 
 	messageProducer rabbitmq.MessageProducer
 	messageConsumer rabbitmq.MessageConsumer
+
+	eventIndexName       string
+	consumptionIndexName string
 }
 
-func NewEntryProcessor(uploader rabbitmq.MessageProducer, messageConsumer rabbitmq.MessageConsumer) *EntryProcessor {
+func NewEntryProcessor(
+	uploader rabbitmq.MessageProducer,
+	messageConsumer rabbitmq.MessageConsumer,
+	eventIndexName string,
+	consumptionIndexName string) *EntryProcessor {
 	eventsBySmcUID := make(map[string][]models.SmcEvent)
 	smcDataBySmcUID := make(map[string]models.SmcData)
 	smcUIDsByURL := make(map[string]string)
@@ -32,14 +39,16 @@ func NewEntryProcessor(uploader rabbitmq.MessageProducer, messageConsumer rabbit
 	indexValues := []models.IndexValue{}
 
 	result := EntryProcessor{
-		eventsBySmcUID:    eventsBySmcUID,
-		smcDataBySmcUID:   smcDataBySmcUID,
-		smcUIDsByURL:      smcUIDsByURL,
-		podUIDToSmcUID:    podUIDToSmcUID,
-		consumptionValues: consumptionValues,
-		indexValues:       indexValues,
-		messageProducer:   uploader,
-		messageConsumer:   messageConsumer,
+		eventsBySmcUID:       eventsBySmcUID,
+		smcDataBySmcUID:      smcDataBySmcUID,
+		smcUIDsByURL:         smcUIDsByURL,
+		podUIDToSmcUID:       podUIDToSmcUID,
+		consumptionValues:    consumptionValues,
+		indexValues:          indexValues,
+		messageProducer:      uploader,
+		messageConsumer:      messageConsumer,
+		eventIndexName:       eventIndexName,
+		consumptionIndexName: consumptionIndexName,
 	}
 
 	return &result
@@ -48,6 +57,10 @@ func NewEntryProcessor(uploader rabbitmq.MessageProducer, messageConsumer rabbit
 // HandleEntries consumes entries from the provided MessageConsumer,
 // and uploads them to ES using the provided ESUploader.
 func (processor *EntryProcessor) HandleEntries() {
+	// Create indices in ES.
+	processor.messageProducer.PublishCreateIndexMessage(processor.eventIndexName)
+	processor.messageProducer.PublishCreateIndexMessage(processor.consumptionIndexName)
+
 	msgs, err := processor.messageConsumer.ConsumeMessages()
 	utils.FailOnError(err, "Failed to register a consumer")
 
@@ -60,7 +73,8 @@ func (processor *EntryProcessor) HandleEntries() {
 				consumptionProcessor := NewConsumptionProcessor(
 					processor.consumptionValues,
 					processor.indexValues,
-					processor.messageProducer)
+					processor.messageProducer,
+					processor.consumptionIndexName)
 				consumptionProcessor.ProcessConsumptionAndIndexValues()
 
 				// Acknowledge the message after it has been processed.
@@ -158,7 +172,7 @@ func (processor *EntryProcessor) registerEvent(event *models.SmcEvent, data *mod
 	processor.eventsBySmcUID[smcUID] = append(processor.eventsBySmcUID[smcUID], *event)
 
 	// send to ES
-	processor.messageProducer.PublishEvent(*event)
+	processor.messageProducer.PublishEvent(*event, processor.eventIndexName)
 }
 
 func (processor *EntryProcessor) updateSmcData(data *models.SmcData) {

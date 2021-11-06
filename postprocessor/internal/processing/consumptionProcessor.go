@@ -7,20 +7,23 @@ import (
 
 // ConsumptionProcessor encapsulates consumption processsing data and logic.
 type ConsumptionProcessor struct {
-	consumptionValues []models.ConsumtionValue
-	indexValues       []models.IndexValue
-	messageProducer   rabbitmq.MessageProducer
+	consumptionValues    []models.ConsumtionValue
+	indexValues          []models.IndexValue
+	messageProducer      rabbitmq.MessageProducer
+	consumptionIndexName string
 }
 
 // NewConsumptionProcessor creates a new consmptionprocessor instance.
 func NewConsumptionProcessor(
 	consumptionValues []models.ConsumtionValue,
 	indexValues []models.IndexValue,
-	messageProducer rabbitmq.MessageProducer) *ConsumptionProcessor {
+	messageProducer rabbitmq.MessageProducer,
+	consumptionIndexName string) *ConsumptionProcessor {
 	consumptionProcessor := ConsumptionProcessor{
-		consumptionValues: consumptionValues,
-		indexValues:       indexValues,
-		messageProducer:   messageProducer,
+		consumptionValues:    consumptionValues,
+		indexValues:          indexValues,
+		messageProducer:      messageProducer,
+		consumptionIndexName: consumptionIndexName,
 	}
 
 	return &consumptionProcessor
@@ -32,7 +35,7 @@ func (consumptionProcessor *ConsumptionProcessor) ProcessConsumptionAndIndexValu
 		smcUID := consumptionProcessor.findRelatedSmc(cons)
 		if smcUID != "" {
 			cons.SmcUID = smcUID
-			consumptionProcessor.messageProducer.PublishConsumption(cons)
+			consumptionProcessor.messageProducer.PublishConsumption(cons, consumptionProcessor.consumptionIndexName)
 		}
 	}
 }
