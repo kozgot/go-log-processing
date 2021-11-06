@@ -5,24 +5,19 @@ import (
 	"time"
 
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/elastic"
+	"github.com/kozgot/go-log-processing/elasticuploader/internal/rabbit"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/utils"
 	"github.com/kozgot/go-log-processing/elasticuploader/pkg/models"
-	"github.com/streadway/amqp"
 )
-
-// MessageConsumer encapsulates messages needed to consume rabbitmq messages.
-type MessageConsumer interface {
-	Consume() (<-chan amqp.Delivery, error)
-}
 
 // UploaderService encapsultes the data and logic of the uploading service.
 type UploaderService struct {
-	rabbitMQConsumer MessageConsumer
+	rabbitMQConsumer rabbit.MessageConsumer
 	esClient         elastic.EsClient
 }
 
 // NewUploaderService creates a new uploader service instance.
-func NewUploaderService(messageConsumer MessageConsumer, esClient elastic.EsClient) *UploaderService {
+func NewUploaderService(messageConsumer rabbit.MessageConsumer, esClient elastic.EsClient) *UploaderService {
 	service := UploaderService{
 		rabbitMQConsumer: messageConsumer,
 		esClient:         esClient,
