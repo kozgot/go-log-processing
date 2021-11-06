@@ -1,30 +1,23 @@
-package service
+package logparser
 
 import (
 	"fmt"
 	"log"
 	"sync"
 
-	"github.com/kozgot/go-log-processing/parser/internal/filedownloader"
-	"github.com/kozgot/go-log-processing/parser/pkg/models"
+	"github.com/kozgot/go-log-processing/parser/internal/service"
+	"github.com/kozgot/go-log-processing/parser/pkg/filedownloader"
+	"github.com/kozgot/go-log-processing/parser/pkg/rabbitmq"
 )
-
-// RabbitMQProducer encapsulates methods used to communicate with rabbitMQ server.
-type RabbitMQProducer interface {
-	PublishStringMessage(indexName string)
-	PublishEntry(line models.ParsedLogEntry)
-	OpenChannelAndConnection()
-	CloseChannelAndConnection()
-}
 
 // LogParser encapsulates parser data and logic.
 type LogParser struct {
 	fileDownloader   filedownloader.FileDownloader
-	rabbitMqProducer RabbitMQProducer
+	rabbitMqProducer rabbitmq.MessageProducer
 }
 
 // NewLogParser creates a new LogParser.
-func NewLogParser(fileDownloader filedownloader.FileDownloader, rabbitMqProducer RabbitMQProducer) *LogParser {
+func NewLogParser(fileDownloader filedownloader.FileDownloader, rabbitMqProducer rabbitmq.MessageProducer) *LogParser {
 	logparser := LogParser{
 		fileDownloader:   fileDownloader,
 		rabbitMqProducer: rabbitMqProducer,
@@ -44,7 +37,7 @@ func (logparser *LogParser) ParseLogfiles() {
 		readCloser := logparser.fileDownloader.DownloadFile(fileName)
 
 		wg.Add(1)
-		go ParseSingleFile(readCloser, fileName, &wg, logparser.rabbitMqProducer)
+		go service.ParseSingleFile(readCloser, fileName, &wg, logparser.rabbitMqProducer)
 	}
 	wg.Wait()
 

@@ -5,9 +5,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/kozgot/go-log-processing/parser/internal/filedownloader"
-	"github.com/kozgot/go-log-processing/parser/internal/rabbitmq"
-	"github.com/kozgot/go-log-processing/parser/internal/service"
+	"github.com/kozgot/go-log-processing/parser/pkg/filedownloader"
+	"github.com/kozgot/go-log-processing/parser/pkg/logparser"
+	"github.com/kozgot/go-log-processing/parser/pkg/rabbitmq"
 )
 
 func main() {
@@ -53,6 +53,6 @@ func main() {
 		azureStorageContainer)
 
 	// Init and run parser.
-	logParser := service.NewLogParser(azureFileDownloader, rabbitMqProducer)
+	logParser := logparser.NewLogParser(azureFileDownloader, rabbitMqProducer)
 	logParser.ParseLogfiles()
 }

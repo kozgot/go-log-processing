@@ -5,10 +5,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kozgot/go-log-processing/parser/internal/formats"
 	"github.com/kozgot/go-log-processing/parser/internal/utils"
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
-
-	"github.com/kozgot/go-log-processing/parser/pkg/formats"
 )
 
 // ParseDate returns a date parsed from the input (a line of the currently processed log file).
