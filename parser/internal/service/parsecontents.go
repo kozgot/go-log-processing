@@ -5,7 +5,7 @@ import (
 )
 
 // ParseContents extracts the params of an error level line in the log file.
-func ParseContents(line models.LineWithDate) *models.ParsedLogEntry {
+func ParseContents(line models.EntryWithLevelAndTimestamp) *models.ParsedLogEntry {
 	parsedLine := models.ParsedLogEntry{
 		Level:     line.Level,
 		Timestamp: line.Timestamp}

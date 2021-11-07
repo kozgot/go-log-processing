@@ -4,7 +4,7 @@ package formats
 const MessageRegex = "message" + AnyLettersBetweenBrackets
 
 // ErrorSeverityRegex represents the regular expression that matches the severity[number] field in an error line.
-const ErrorSeverityRegex = "severity" + NumberBetweenBrackets
+const ErrorSeverityRegex = "severity" + SingleNumberBetweenBrackets
 
 // ErrorDescRegex represents the regular expression that matches the description[...] field in an error line.
 const ErrorDescRegex = "description\\[" + "(.*?)" + "\\]"
@@ -13,4 +13,4 @@ const ErrorDescRegex = "description\\[" + "(.*?)" + "\\]"
 const ErrorSourceRegex = "source\\[" + "(.*?)" + "\\]"
 
 // ErrorCodeRegex represents the regular expression that matches the error_code[number] field in an error line.
-const ErrorCodeRegex = "error_code" + NumberBetweenBrackets
+const ErrorCodeRegex = "error_code" + LongNumberBetweenBracketsRegex

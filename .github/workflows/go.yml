@@ -2,19 +2,20 @@ name: Go
 
 on:
   push:
-    branches: [ master, 'feature/**' ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
 jobs:
 
+  # Test and build Parser service
   testparser:
     name: Build and test Parser
     runs-on: ubuntu-latest
-    # Docker Hub image that `container-job` executes in
+    # Docker Hub image that `testparser` executes in
     container: golang:1.16
 
-    # Service containers to run with `build`
+    # Service containers to run with `testparser`
     services:
       # Label used to access the service container
       rabbitmq:
@@ -55,13 +56,14 @@ jobs:
         cd ./parser/tests
         go test -v ./...
 
+  # Test and build ElasticUploader service
   testuploader:
     name: Build and test ElasticUploader
     runs-on: ubuntu-latest
-    # Docker Hub image that `container-job` executes in
+    # Docker Hub image that `testuploader` executes in
     container: golang:1.16
 
-    # Service containers to run with `build`
+    # Service containers to run with `testuploader`
     services:
       # Label used to access the service container
       rabbitmq:
@@ -102,13 +104,14 @@ jobs:
         cd ./elasticuploader
         go test -v ./...
 
+  # Test and build Postprocessor service
   testpostprocessor:
     name: Build and test Postprocessor
     runs-on: ubuntu-latest
-    # Docker Hub image that `container-job` executes in
+    # Docker Hub image that `testpostprocessor` executes in
     container: golang:1.16
 
-    # Service containers to run with `build`
+    # Service containers to run with `testpostprocessor`
     services:
       # Label used to access the service container
       rabbitmq:

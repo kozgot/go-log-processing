@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 // InfoParams contains the parsed info parameters.
 type InfoParams struct {
@@ -16,15 +18,113 @@ type InfoParams struct {
 	InternalDiagnosticsData *InternalDiagnosticsData
 }
 
+func (i *InfoParams) Equals(other InfoParams) bool {
+	if i.EntryType != other.EntryType {
+		return false
+	}
+
+	// RoutingMessage
+	if i.RoutingMessage != nil && other.RoutingMessage == nil ||
+		i.RoutingMessage == nil && other.RoutingMessage != nil {
+		return false
+	}
+	if i.RoutingMessage != nil && !i.RoutingMessage.Equals(*other.RoutingMessage) {
+		return false
+	}
+
+	// JoinMessage
+	if i.JoinMessage != nil && other.JoinMessage == nil ||
+		i.JoinMessage == nil && other.JoinMessage != nil {
+		return false
+	}
+	if i.JoinMessage != nil && !i.JoinMessage.Equals(*other.JoinMessage) {
+		return false
+	}
+
+	// StatusMessage
+	if i.StatusMessage != nil && other.StatusMessage == nil ||
+		i.StatusMessage == nil && other.StatusMessage != nil {
+		return false
+	}
+	if i.StatusMessage != nil && !i.StatusMessage.Equals(*other.StatusMessage) {
+		return false
+	}
+
+	// DCMessage
+	if i.DCMessage != nil && other.DCMessage == nil ||
+		i.DCMessage == nil && other.DCMessage != nil {
+		return false
+	}
+	if i.DCMessage != nil && !i.DCMessage.Equals(*other.DCMessage) {
+		return false
+	}
+
+	// ConnectionAttempt
+	if i.ConnectionAttempt != nil && other.ConnectionAttempt == nil ||
+		i.ConnectionAttempt == nil && other.ConnectionAttempt != nil {
+		return false
+	}
+	if i.ConnectionAttempt != nil && !i.ConnectionAttempt.Equals(*other.ConnectionAttempt) {
+		return false
+	}
+
+	// SmcConfigUpdate
+	if i.SmcConfigUpdate != nil && other.SmcConfigUpdate == nil ||
+		i.SmcConfigUpdate == nil && other.SmcConfigUpdate != nil {
+		return false
+	}
+	if i.SmcConfigUpdate != nil && !i.SmcConfigUpdate.Equals(*other.SmcConfigUpdate) {
+		return false
+	}
+
+	// ConnectionReleased
+	if i.ConnectionReleased != nil && other.ConnectionReleased == nil ||
+		i.ConnectionReleased == nil && other.ConnectionReleased != nil {
+		return false
+	}
+	if i.ConnectionReleased != nil && !i.ConnectionReleased.Equals(*other.ConnectionReleased) {
+		return false
+	}
+
+	// InitConnection
+	if i.InitConnection != nil && other.InitConnection == nil ||
+		i.InitConnection == nil && other.InitConnection != nil {
+		return false
+	}
+	if i.InitConnection != nil && !i.InitConnection.Equals(*other.InitConnection) {
+		return false
+	}
+
+	// InternalDiagnosticsData
+	if i.InternalDiagnosticsData != nil && other.InternalDiagnosticsData == nil ||
+		i.InternalDiagnosticsData == nil && other.InternalDiagnosticsData != nil {
+		return false
+	}
+	if i.InternalDiagnosticsData != nil && !i.InternalDiagnosticsData.Equals(*other.InternalDiagnosticsData) {
+		return false
+	}
+
+	return true
+}
+
 // InternalDiagnosticsData contains a parsed internal diagnostics log entry.
 type InternalDiagnosticsData struct {
 	SmcUID                         string
 	LastSuccessfulDlmsResponseDate time.Time
 }
 
+func (i *InternalDiagnosticsData) Equals(other InternalDiagnosticsData) bool {
+	return i.LastSuccessfulDlmsResponseDate == other.LastSuccessfulDlmsResponseDate &&
+		i.SmcUID == other.SmcUID
+}
+
 // InitConnectionParams contains a parsed initialize dlms connection log entry.
 type InitConnectionParams struct {
 	URL string
+}
+
+func (i *InitConnectionParams) Equals(other InitConnectionParams) bool {
+	return i.URL == other.URL
 }
 
 // ConnectionAttemptParams contains a parsed connection attempt log entry.
@@ -34,9 +134,19 @@ type ConnectionAttemptParams struct {
 	At     string // eg. (@ 000A)
 }
 
+func (c *ConnectionAttemptParams) Equals(other ConnectionAttemptParams) bool {
+	return c.URL == other.URL &&
+		c.SmcUID == other.SmcUID &&
+		c.At == other.At
+}
+
 // ConnectionReleasedParams contains a parsed connection attempt log entry.
 type ConnectionReleasedParams struct {
 	URL string
+}
+
+func (c *ConnectionReleasedParams) Equals(other ConnectionReleasedParams) bool {
+	return c.URL == other.URL
 }
 
 // SmcConfigUpdateParams contains a parsed SMC config update log entry.
@@ -51,6 +161,14 @@ type SmcConfigUpdateParams struct {
 	SmcUID          string
 }
 
+func (s *SmcConfigUpdateParams) Equals(other SmcConfigUpdateParams) bool {
+	return s.PhysicalAddress == other.PhysicalAddress &&
+		s.LogicalAddress == other.LogicalAddress &&
+		s.ShortAddress == other.ShortAddress &&
+		s.LastJoiningDate == other.LastJoiningDate &&
+		s.SmcUID == other.SmcUID
+}
+
 // RoutingTableParams contains the parsed routing table message parameters.
 type RoutingTableParams struct {
 	Address        string
@@ -61,12 +179,35 @@ type RoutingTableParams struct {
 	ValidTimeMins  int
 }
 
+func (r *RoutingTableParams) Equals(other RoutingTableParams) bool {
+	return r.Address == other.Address &&
+		r.NextHopAddress == other.NextHopAddress &&
+		r.RouteCost == other.RouteCost &&
+		r.HopCount == other.HopCount &&
+		r.WeakLink == other.WeakLink &&
+		r.ValidTimeMins == other.ValidTimeMins
+}
+
 // SmcJoinMessageParams contains the parsed SMC join message parameters.
 type SmcJoinMessageParams struct {
 	Ok         bool
 	Response   string
 	JoinType   string
 	SmcAddress SmcAddressParams
+}
+
+func (j *SmcJoinMessageParams) Equals(other SmcJoinMessageParams) bool {
+	if j.JoinType != other.JoinType ||
+		j.Ok != other.Ok ||
+		j.Response != other.Response {
+		return false
+	}
+
+	if !j.SmcAddress.Equals(other.SmcAddress) {
+		return false
+	}
+
+	return true
 }
 
 // SmcAddressParams contains the parsed SMC address parameters of an SMC join log entry.
@@ -78,10 +219,26 @@ type SmcAddressParams struct {
 	LastJoiningDate time.Time
 }
 
+func (a *SmcAddressParams) Equals(other SmcAddressParams) bool {
+	if a.LastJoiningDate != other.LastJoiningDate ||
+		a.LogicalAddress != other.LogicalAddress ||
+		a.PhysicalAddress != other.PhysicalAddress ||
+		a.ShortAddress != other.ShortAddress ||
+		a.SmcUID != other.SmcUID {
+		return false
+	}
+
+	return true
+}
+
 // StatusMessageParams contains the parsed message lines from plc_manager.log.
 type StatusMessageParams struct {
 	Message    string
 	StatusByte string
+}
+
+func (s *StatusMessageParams) Equals(other StatusMessageParams) bool {
+	return s.Message == other.Message && s.StatusByte == other.StatusByte
 }
 
 // DCMessageParams contains the parsed info level messages that have been sent or received by the dc.
@@ -92,170 +249,21 @@ type DCMessageParams struct {
 	Payload          *DcMessagePayload
 }
 
-// DcMessagePayload contains the parsed payload of info level messages that have been sent or received by the dc.
-type DcMessagePayload struct {
-	SmcUID         string
-	PodUID         string
-	ServiceLevelID int
-	Value          int
-	Time           time.Time
+func (d *DCMessageParams) Equals(other DCMessageParams) bool {
+	if d.IsInComing != other.IsInComing ||
+		d.SourceOrDestName != other.SourceOrDestName ||
+		d.MessageType != other.MessageType {
+		return false
+	}
 
-	TimeRange *TimeRange
+	// Check Payload
+	if d.Payload != nil && other.Payload == nil ||
+		d.Payload == nil && other.Payload != nil {
+		return false
+	}
+	if d.Payload != nil && !d.Payload.Equals(*other.Payload) {
+		return false
+	}
 
-	ConnectOrDisconnectPayload       *ConnectOrDisconnectPayload
-	DLMSLogPayload                   *DLMSLogPayload
-	IndexPayload                     *IndexPayload
-	GenericIndexProfilePayload       *GenericIndexProfilePayload
-	MessagePayload                   *MessagePayload
-	SettingsPayload                  *SettingsPayload
-	ServiceLevelPayload              *ServiceLevelPayload
-	SmcAddressPayload                *SmcAddressParams
-	SmcConfigPayload                 *SmcConfigPayload
-	PodConfigPayload                 *PodConfigPayload
-	ConnectToPLCPayload              *ConnectToPLCPayload
-	StatisticsEntryPayload           *StatisticsEntryPayload
-	ReadIndexLowProfilesEntryPayload *ReadIndexLowProfilesEntryPayload
-	ReadIndexProfilesEntryPayload    *ReadIndexProfilesEntryPayload
-}
-
-// ReadIndexLowProfilesEntryPayload contains the parsed --[read index low profiles]-->(SMC) entries.
-type ReadIndexLowProfilesEntryPayload struct {
-	SmcUID string
-	From   time.Time
-	To     time.Time
-}
-
-// ReadIndexProfilesEntryPayload contains the parsed <--[read index profiles]--(SMC) entries.
-type ReadIndexProfilesEntryPayload struct {
-	SmcUID string
-	Count  int
-}
-
-// StatisticsEntryPayload contains the parsed statistics log entry sent to the SVI.
-type StatisticsEntryPayload struct {
-	Type     string
-	Value    float64
-	Time     time.Time
-	SourceID string
-}
-
-// GenericIndexProfilePayload contains the parsed index high/low profile generic payload.
-type GenericIndexProfilePayload struct {
-	CapturePeriod  int
-	CaptureObjects int
-}
-
-// ConnectToPLCPayload contains the parsed connect to PLC payload.
-type ConnectToPLCPayload struct {
-	Interface          string
-	DestinationAddress string
-}
-
-// SettingsPayload contains the parsed settings payload
-// of info level messages that have been sent or received by the dc.
-type SettingsPayload struct {
-	DcUID                         string
-	Locality                      string
-	Region                        string
-	Timezone                      string
-	GlobalFtpAddress              string
-	TargetFirmwareVersion         string
-	IndexCollection               int
-	DataPublish                   int
-	LastServerCommunicationTime   time.Time
-	DcDistroTargetFirmwareVersion string
-	LastDcStartTime               time.Time // it might be ticks or something (eg. 1591780709)
-	FrequencyBandChanged          bool
-	FrequencyBandRollBackDone     bool
-}
-
-// ServiceLevelPayload contains the parsed service level related data
-// in info level log entries that describe messages sent or received by the dc.
-type ServiceLevelPayload struct {
-	MeterMode                      int
-	StartHourDailyCycle            string // eg. 20h
-	LoadSheddingDailyEnergyBudget  int
-	LocalSheddingDailyEnergyBudget int
-	MaxActivePower                 int
-	InService                      bool
-	Name                           string
-	HourlyEnergyLimits             [24]HourlyEnergyLimit
-	LocalHourlyEnergyLimits        [24]HourlyEnergyLimit
-}
-
-// HourlyEnergyLimit contains the value and the hour number of an hourly energy limit.
-type HourlyEnergyLimit struct {
-	HourNumber int
-	Limit      int
-}
-
-// SmcConfigPayload contains data related to the configuration of an SMC.
-type SmcConfigPayload struct {
-	CustomerSerialNumber           string
-	PhysicalAddress                string
-	SmcStatus                      string
-	CurrentApp1Fw                  string
-	CurrentApp2Fw                  string
-	CurrentPlcFw                   string
-	LastSuccessfulDlmsResponseDate time.Time
-	NextHop                        int
-}
-
-// MessagePayload contains the parameters of a log entry related to a DC message.
-type MessagePayload struct {
-	Current float64
-	Total   float64
-	URL     string
-	Topic   string
-}
-
-// PodConfigPayload contains the parameters of a log entry related to a pod configuration event.
-type PodConfigPayload struct {
-	SerialNumber            int
-	Phase                   int
-	PositionInSmc           int
-	SoftwareFirmwareVersion string
-}
-
-// TimeRange represents a time range.
-type TimeRange struct {
-	From time.Time
-	To   time.Time
-}
-
-// DLMSLogPayload contains data of a log entry related to DLMS Log contents.
-type DLMSLogPayload struct {
-	DLMSRequestTime  time.Time
-	DLMSResponseTime time.Time
-	DLMSError        string
-}
-
-// IndexPayload contains data of an index log entry.
-type IndexPayload struct {
-	PreviousTime  time.Time // it might be ticks or something (eg. 1591776000)
-	PreviousValue int
-	SerialNumber  int
-}
-
-// ConnectOrDisconnectPayload contains information related to a connect or disconnect event.
-type ConnectOrDisconnectPayload struct {
-	Type      int
-	ClientID  string
-	URL       string
-	Topic     string
-	Timeout   int
-	Connected bool
-}
-
-// Calendar contains data related to the calendar of a tariff settings log entry.
-type Calendar struct {
-	CalendarName CalendarName
-}
-
-// CalendarName contains data related to the calendar of a tariff settings log entry.
-type CalendarName struct {
-	IsActive      bool
-	SeasonProfile string // for now, the exact type is unknown
-	WeekProfile   string // for now, the exact type is unknown
-	DayProfile    string // for now, the exact type is unknown
+	return true
 }

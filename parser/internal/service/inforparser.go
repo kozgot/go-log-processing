@@ -8,7 +8,7 @@ import (
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
 
-func parseInfo(line models.LineWithDate) *models.InfoParams {
+func parseInfo(line models.EntryWithLevelAndTimestamp) *models.InfoParams {
 	infoParams := models.InfoParams{}
 
 	routingMessage := parseRoutingTableLine(line.Rest)

@@ -5,7 +5,7 @@ import (
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
 
-func parseError(line models.LineWithDate) *models.ErrorParams {
+func parseError(line models.EntryWithLevelAndTimestamp) *models.ErrorParams {
 	errorCode := parseErrorCode(line.Rest)
 	errorMessage := parseErrorMessage(line.Rest)
 	errorSeverity := parseErrorSeverity(line.Rest)

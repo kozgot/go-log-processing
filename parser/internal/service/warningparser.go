@@ -10,7 +10,7 @@ import (
 )
 
 // Parses an smc join log entry with a WARNING log level.
-func parseWarning(line models.LineWithDate) *models.WarningParams {
+func parseWarning(line models.EntryWithLevelAndTimestamp) *models.WarningParams {
 	warningParams := models.WarningParams{}
 	smcJoinParams := parseSmcJoinLine(line.Rest)
 	warningParams.JoinMessageParams = smcJoinParams
@@ -19,7 +19,7 @@ func parseWarning(line models.LineWithDate) *models.WarningParams {
 }
 
 // Parses WARN level log entries from the dc_main.log file.
-func parseWarn(line models.LineWithDate) *models.WarningParams {
+func parseWarn(line models.EntryWithLevelAndTimestamp) *models.WarningParams {
 	warningParams := models.WarningParams{}
 
 	if strings.Contains(line.Rest, formats.LostConnectionPrefix) {
