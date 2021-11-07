@@ -1,0 +1,957 @@
+{
+ "Lines": [
+  {
+   "Timestamp": "2020-06-10T09:18:28Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 6,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": {
+     "IsInComing": true,
+     "SourceOrDestName": "DB",
+     "MessageType": 6,
+     "Payload": {
+      "SmcUID": "dc18-smc3",
+      "PodUID": "",
+      "ServiceLevelID": 0,
+      "Value": 0,
+      "Time": "0001-01-01T00:00:00Z",
+      "TimeRange": null,
+      "ConnectOrDisconnectPayload": null,
+      "DLMSLogPayload": null,
+      "IndexPayload": null,
+      "GenericIndexProfilePayload": null,
+      "MessagePayload": null,
+      "SettingsPayload": null,
+      "ServiceLevelPayload": null,
+      "SmcAddressPayload": null,
+      "SmcConfigPayload": {
+       "CustomerSerialNumber": "SAG0980200000963",
+       "PhysicalAddress": "EEBEDDFFFE62112A",
+       "SmcStatus": "",
+       "CurrentApp1Fw": "01.07",
+       "CurrentApp2Fw": "01.07",
+       "CurrentPlcFw": "14.3.13.0",
+       "LastSuccessfulDlmsResponseDate": "2020-06-10T08:01:35Z",
+       "NextHop": 0
+      },
+      "PodConfigPayload": null,
+      "ConnectToPLCPayload": null,
+      "StatisticsEntryPayload": null,
+      "ReadIndexLowProfilesEntryPayload": null,
+      "ReadIndexProfilesEntryPayload": null
+     }
+    },
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:18:28Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 6,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": {
+     "IsInComing": true,
+     "SourceOrDestName": "DB",
+     "MessageType": 4,
+     "Payload": {
+      "SmcUID": "dc18-smc3",
+      "PodUID": "1479",
+      "ServiceLevelID": 9,
+      "Value": 0,
+      "Time": "0001-01-01T00:00:00Z",
+      "TimeRange": null,
+      "ConnectOrDisconnectPayload": null,
+      "DLMSLogPayload": null,
+      "IndexPayload": null,
+      "GenericIndexProfilePayload": null,
+      "MessagePayload": null,
+      "SettingsPayload": null,
+      "ServiceLevelPayload": null,
+      "SmcAddressPayload": null,
+      "SmcConfigPayload": null,
+      "PodConfigPayload": {
+       "SerialNumber": 98020068957,
+       "Phase": 2,
+       "PositionInSmc": 3,
+       "SoftwareFirmwareVersion": "IMETER190530"
+      },
+      "ConnectToPLCPayload": null,
+      "StatisticsEntryPayload": null,
+      "ReadIndexLowProfilesEntryPayload": null,
+      "ReadIndexProfilesEntryPayload": null
+     }
+    },
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:18:28Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 6,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": {
+     "IsInComing": true,
+     "SourceOrDestName": "DB",
+     "MessageType": 4,
+     "Payload": {
+      "SmcUID": "dc18-smc3",
+      "PodUID": "1478",
+      "ServiceLevelID": 9,
+      "Value": 0,
+      "Time": "0001-01-01T00:00:00Z",
+      "TimeRange": null,
+      "ConnectOrDisconnectPayload": null,
+      "DLMSLogPayload": null,
+      "IndexPayload": null,
+      "GenericIndexProfilePayload": null,
+      "MessagePayload": null,
+      "SettingsPayload": null,
+      "ServiceLevelPayload": null,
+      "SmcAddressPayload": null,
+      "SmcConfigPayload": null,
+      "PodConfigPayload": {
+       "SerialNumber": 98020068031,
+       "Phase": 2,
+       "PositionInSmc": 2,
+       "SoftwareFirmwareVersion": "IMETER190530"
+      },
+      "ConnectToPLCPayload": null,
+      "StatisticsEntryPayload": null,
+      "ReadIndexLowProfilesEntryPayload": null,
+      "ReadIndexProfilesEntryPayload": null
+     }
+    },
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:18:28Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 6,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": {
+     "IsInComing": true,
+     "SourceOrDestName": "DB",
+     "MessageType": 4,
+     "Payload": {
+      "SmcUID": "dc18-smc3",
+      "PodUID": "1477",
+      "ServiceLevelID": 9,
+      "Value": 0,
+      "Time": "0001-01-01T00:00:00Z",
+      "TimeRange": null,
+      "ConnectOrDisconnectPayload": null,
+      "DLMSLogPayload": null,
+      "IndexPayload": null,
+      "GenericIndexProfilePayload": null,
+      "MessagePayload": null,
+      "SettingsPayload": null,
+      "ServiceLevelPayload": null,
+      "SmcAddressPayload": null,
+      "SmcConfigPayload": null,
+      "PodConfigPayload": {
+       "SerialNumber": 98020069914,
+       "Phase": 1,
+       "PositionInSmc": 1,
+       "SoftwareFirmwareVersion": "IMETER190801"
+      },
+      "ConnectToPLCPayload": null,
+      "StatisticsEntryPayload": null,
+      "ReadIndexLowProfilesEntryPayload": null,
+      "ReadIndexProfilesEntryPayload": null
+     }
+    },
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:18:30Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 6,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": {
+     "IsInComing": true,
+     "SourceOrDestName": "DB",
+     "MessageType": 0,
+     "Payload": {
+      "SmcUID": "",
+      "PodUID": "1477",
+      "ServiceLevelID": 0,
+      "Value": 0,
+      "Time": "2020-06-10T08:00:00Z",
+      "TimeRange": null,
+      "ConnectOrDisconnectPayload": null,
+      "DLMSLogPayload": null,
+      "IndexPayload": null,
+      "GenericIndexProfilePayload": null,
+      "MessagePayload": null,
+      "SettingsPayload": null,
+      "ServiceLevelPayload": null,
+      "SmcAddressPayload": null,
+      "SmcConfigPayload": null,
+      "PodConfigPayload": null,
+      "ConnectToPLCPayload": null,
+      "StatisticsEntryPayload": null,
+      "ReadIndexLowProfilesEntryPayload": null,
+      "ReadIndexProfilesEntryPayload": null
+     }
+    },
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:18:30Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 6,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": {
+     "IsInComing": true,
+     "SourceOrDestName": "DB",
+     "MessageType": 5,
+     "Payload": {
+      "SmcUID": "dc18-smc3",
+      "PodUID": "",
+      "ServiceLevelID": 0,
+      "Value": 0,
+      "Time": "0001-01-01T00:00:00Z",
+      "TimeRange": null,
+      "ConnectOrDisconnectPayload": null,
+      "DLMSLogPayload": null,
+      "IndexPayload": null,
+      "GenericIndexProfilePayload": null,
+      "MessagePayload": null,
+      "SettingsPayload": null,
+      "ServiceLevelPayload": null,
+      "SmcAddressPayload": {
+       "SmcUID": "dc18-smc3",
+       "PhysicalAddress": "EEBEDDFFFE62112A",
+       "LogicalAddress": "FE80::4021:FF:FE00:0009:61616",
+       "ShortAddress": 9,
+       "LastJoiningDate": "0001-01-01T00:00:00Z"
+      },
+      "SmcConfigPayload": null,
+      "PodConfigPayload": null,
+      "ConnectToPLCPayload": null,
+      "StatisticsEntryPayload": null,
+      "ReadIndexLowProfilesEntryPayload": null,
+      "ReadIndexProfilesEntryPayload": null
+     }
+    },
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:18:30Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 6,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": {
+     "IsInComing": true,
+     "SourceOrDestName": "DB",
+     "MessageType": 0,
+     "Payload": {
+      "SmcUID": "",
+      "PodUID": "1478",
+      "ServiceLevelID": 0,
+      "Value": 14989,
+      "Time": "2020-06-10T08:00:00Z",
+      "TimeRange": null,
+      "ConnectOrDisconnectPayload": null,
+      "DLMSLogPayload": null,
+      "IndexPayload": null,
+      "GenericIndexProfilePayload": null,
+      "MessagePayload": null,
+      "SettingsPayload": null,
+      "ServiceLevelPayload": null,
+      "SmcAddressPayload": null,
+      "SmcConfigPayload": null,
+      "PodConfigPayload": null,
+      "ConnectToPLCPayload": null,
+      "StatisticsEntryPayload": null,
+      "ReadIndexLowProfilesEntryPayload": null,
+      "ReadIndexProfilesEntryPayload": null
+     }
+    },
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:18:30Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 6,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": {
+     "IsInComing": true,
+     "SourceOrDestName": "DB",
+     "MessageType": 0,
+     "Payload": {
+      "SmcUID": "",
+      "PodUID": "1479",
+      "ServiceLevelID": 0,
+      "Value": 25795,
+      "Time": "2020-06-10T08:00:00Z",
+      "TimeRange": null,
+      "ConnectOrDisconnectPayload": null,
+      "DLMSLogPayload": null,
+      "IndexPayload": null,
+      "GenericIndexProfilePayload": null,
+      "MessagePayload": null,
+      "SettingsPayload": null,
+      "ServiceLevelPayload": null,
+      "SmcAddressPayload": null,
+      "SmcConfigPayload": null,
+      "PodConfigPayload": null,
+      "ConnectToPLCPayload": null,
+      "StatisticsEntryPayload": null,
+      "ReadIndexLowProfilesEntryPayload": null,
+      "ReadIndexProfilesEntryPayload": null
+     }
+    },
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:18:38Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 9,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": {
+     "SmcUID": "dc18-smc3",
+     "LastSuccessfulDlmsResponseDate": "0001-01-01T00:00:00Z"
+    }
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:18:39Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 4,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": {
+     "URL": "fe80::4021:ff:fe00:9:61616",
+     "SmcUID": "dc18-smc3",
+     "At": "(@ 0009)"
+    },
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:28:38Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 9,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": {
+     "SmcUID": "dc18-smc3",
+     "LastSuccessfulDlmsResponseDate": "0001-01-01T00:00:00Z"
+    }
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:38:38Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 9,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": {
+     "SmcUID": "dc18-smc3",
+     "LastSuccessfulDlmsResponseDate": "0001-01-01T00:00:00Z"
+    }
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:39:26Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 5,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": {
+     "PhysicalAddress": "EEBEDDFFFE62112A",
+     "LogicalAddress": "FE80::4021:FF:FE00:0009:61616",
+     "ShortAddress": 9,
+     "LastJoiningDate": "2020-06-10T09:39:26Z",
+     "SmcUID": "dc18-smc3"
+    },
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:39:43Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 4,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": {
+     "URL": "fe80::4021:ff:fe00:9:61616",
+     "SmcUID": "dc18-smc3",
+     "At": "(@ 0009)"
+    },
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:44:00Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 6,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": {
+     "IsInComing": false,
+     "SourceOrDestName": "PLC",
+     "MessageType": 13,
+     "Payload": {
+      "SmcUID": "",
+      "PodUID": "",
+      "ServiceLevelID": 0,
+      "Value": 0,
+      "Time": "0001-01-01T00:00:00Z",
+      "TimeRange": null,
+      "ConnectOrDisconnectPayload": null,
+      "DLMSLogPayload": null,
+      "IndexPayload": null,
+      "GenericIndexProfilePayload": null,
+      "MessagePayload": null,
+      "SettingsPayload": null,
+      "ServiceLevelPayload": null,
+      "SmcAddressPayload": null,
+      "SmcConfigPayload": null,
+      "PodConfigPayload": null,
+      "ConnectToPLCPayload": {
+       "Interface": "plc0",
+       "DestinationAddress": "fe80::4021:ff:fe00:9:61616"
+      },
+      "StatisticsEntryPayload": null,
+      "ReadIndexLowProfilesEntryPayload": null,
+      "ReadIndexProfilesEntryPayload": null
+     }
+    },
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:44:00Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 8,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": {
+     "URL": "fe80::4021:ff:fe00:9:61616"
+    },
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:44:30Z",
+   "Level": "WARN",
+   "ErrorParams": null,
+   "WarningParams": {
+    "Name": "",
+    "SmcUID": "",
+    "UID": 0,
+    "Priority": 0,
+    "Retry": 0,
+    "Creation": "0001-01-01T00:00:00Z",
+    "MinLaunchTime": "0001-01-01T00:00:00Z",
+    "Details": null,
+    "FileName": "",
+    "JoinMessageParams": null,
+    "TimeoutParams": {
+     "Protocol": "plc-udp",
+     "URL": "fe80::4021:ff:fe00:9:61616"
+    },
+    "LostConnectionParams": null
+   },
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:44:30Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 0,
+    "Message": "PLC socket receive error",
+    "Severity": 2,
+    "Description": "n/a",
+    "Source": ""
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:44:30Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 9,
+    "Message": "DLMS communication error",
+    "Severity": 3,
+    "Description": "n/a",
+    "Source": ""
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:44:30Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 0,
+    "Message": "DLMS error",
+    "Severity": 3,
+    "Description": "n/a",
+    "Source": ""
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:44:30Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 0,
+    "Message": "DLMS initialization error",
+    "Severity": 3,
+    "Description": "n/a",
+    "Source": ""
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:44:30Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 0,
+    "Message": "DLMS connection error",
+    "Severity": 3,
+    "Description": "n/a",
+    "Source": ""
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:44:30Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 0,
+    "Message": "DLMS error",
+    "Severity": 3,
+    "Description": "n/a",
+    "Source": ""
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:44:30Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 0,
+    "Message": "DLMS error",
+    "Severity": 3,
+    "Description": "n/a",
+    "Source": ""
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:44:30Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 0,
+    "Message": "DLMS error",
+    "Severity": 3,
+    "Description": "n/a",
+    "Source": "dc18-smc3"
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:44:30Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 0,
+    "Message": "DLMS error",
+    "Severity": 3,
+    "Description": "n/a",
+    "Source": "dc18-smc3"
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:44:30Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 0,
+    "Message": "DLMS error",
+    "Severity": 3,
+    "Description": "n/a",
+    "Source": "dc18-smc3"
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:44:30Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 6,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": {
+     "IsInComing": false,
+     "SourceOrDestName": "PLC",
+     "MessageType": 13,
+     "Payload": {
+      "SmcUID": "",
+      "PodUID": "",
+      "ServiceLevelID": 0,
+      "Value": 0,
+      "Time": "0001-01-01T00:00:00Z",
+      "TimeRange": null,
+      "ConnectOrDisconnectPayload": null,
+      "DLMSLogPayload": null,
+      "IndexPayload": null,
+      "GenericIndexProfilePayload": null,
+      "MessagePayload": null,
+      "SettingsPayload": null,
+      "ServiceLevelPayload": null,
+      "SmcAddressPayload": null,
+      "SmcConfigPayload": null,
+      "PodConfigPayload": null,
+      "ConnectToPLCPayload": {
+       "Interface": "plc0",
+       "DestinationAddress": "fe80::4021:ff:fe00:9:61616"
+      },
+      "StatisticsEntryPayload": null,
+      "ReadIndexLowProfilesEntryPayload": null,
+      "ReadIndexProfilesEntryPayload": null
+     }
+    },
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:44:30Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 8,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": {
+     "URL": "fe80::4021:ff:fe00:9:61616"
+    },
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:45:00Z",
+   "Level": "WARN",
+   "ErrorParams": null,
+   "WarningParams": {
+    "Name": "",
+    "SmcUID": "",
+    "UID": 0,
+    "Priority": 0,
+    "Retry": 0,
+    "Creation": "0001-01-01T00:00:00Z",
+    "MinLaunchTime": "0001-01-01T00:00:00Z",
+    "Details": null,
+    "FileName": "",
+    "JoinMessageParams": null,
+    "TimeoutParams": {
+     "Protocol": "plc-udp",
+     "URL": "fe80::4021:ff:fe00:9:61616"
+    },
+    "LostConnectionParams": null
+   },
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:45:00Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 0,
+    "Message": "PLC socket receive error",
+    "Severity": 2,
+    "Description": "n/a",
+    "Source": ""
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:45:00Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 9,
+    "Message": "DLMS communication error",
+    "Severity": 3,
+    "Description": "n/a",
+    "Source": ""
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:45:00Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 0,
+    "Message": "DLMS error",
+    "Severity": 3,
+    "Description": "n/a",
+    "Source": ""
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:45:00Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 0,
+    "Message": "DLMS initialization error",
+    "Severity": 3,
+    "Description": "n/a",
+    "Source": ""
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:45:00Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 0,
+    "Message": "DLMS connection error",
+    "Severity": 3,
+    "Description": "n/a",
+    "Source": ""
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:45:00Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 0,
+    "Message": "DLMS error",
+    "Severity": 3,
+    "Description": "n/a",
+    "Source": ""
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:45:00Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 0,
+    "Message": "DLMS error",
+    "Severity": 3,
+    "Description": "n/a",
+    "Source": ""
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:45:00Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 0,
+    "Message": "DLMS error",
+    "Severity": 3,
+    "Description": "n/a",
+    "Source": "dc18-smc3"
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:45:00Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 0,
+    "Message": "DLMS error",
+    "Severity": 3,
+    "Description": "n/a",
+    "Source": "dc18-smc3"
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:45:00Z",
+   "Level": "ERROR",
+   "ErrorParams": {
+    "ErrorCode": 0,
+    "Message": "DLMS error",
+    "Severity": 3,
+    "Description": "n/a",
+    "Source": "dc18-smc3"
+   },
+   "WarningParams": null,
+   "InfoParams": null
+  }
+ ]
+}

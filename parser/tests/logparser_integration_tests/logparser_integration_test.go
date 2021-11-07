@@ -44,7 +44,7 @@ func TestLogParser(t *testing.T) {
 	utils.FailOnError(err, "Could not register test consumer")
 
 	// Create mock filedownloader.
-	mockFileDownloader := mocks.MockFileDownloader{FileNameToDownload: "../resources/test_dc_main.log"}
+	mockFileDownloader := mocks.MockFileDownloader{FileNameToDownload: "./resources/test_dc_main.log"}
 
 	// Parse
 	logParser := logparser.NewLogParser(&mockFileDownloader, rabbitMqProducer)
@@ -70,8 +70,13 @@ func TestLogParser(t *testing.T) {
 
 	log.Printf("Got %d entries.\n", len(entries))
 	testParsedLogFile := testmodels.TestParsedLogFile{Lines: entries}
-	_ = ioutil.WriteFile("test.json", testParsedLogFile.ToJSON(), 0644)
+	actualBytes := testParsedLogFile.ToJSON()
+	expectedBytes, err := ioutil.ReadFile("./resources/expected_parsed_log.json")
+	utils.FailOnError(err, "Could not read test json file.")
 
+	if string(actualBytes) != string(expectedBytes) {
+		t.Fatal("Expected json does not match actual json value of created partsed entries.")
+	}
 	if len(entries) != 40 {
 		t.Fatal("Expected some entries")
 	}
