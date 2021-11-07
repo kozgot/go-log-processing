@@ -590,10 +590,10 @@
     "UID": 0,
     "Priority": 0,
     "Retry": 0,
+    "FileName": "",
     "Creation": "0001-01-01T00:00:00Z",
     "MinLaunchTime": "0001-01-01T00:00:00Z",
     "Details": null,
-    "FileName": "",
     "JoinMessageParams": null,
     "TimeoutParams": {
      "Protocol": "plc-udp",
@@ -607,7 +607,7 @@
    "Timestamp": "2020-06-10T09:44:30Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 0,
+    "ErrorCode": 65,
     "Message": "PLC socket receive error",
     "Severity": 2,
     "Description": "n/a",
@@ -620,7 +620,7 @@
    "Timestamp": "2020-06-10T09:44:30Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 9,
+    "ErrorCode": 245,
     "Message": "DLMS communication error",
     "Severity": 3,
     "Description": "n/a",
@@ -633,7 +633,7 @@
    "Timestamp": "2020-06-10T09:44:30Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 0,
+    "ErrorCode": 241,
     "Message": "DLMS error",
     "Severity": 3,
     "Description": "n/a",
@@ -646,7 +646,7 @@
    "Timestamp": "2020-06-10T09:44:30Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 0,
+    "ErrorCode": 243,
     "Message": "DLMS initialization error",
     "Severity": 3,
     "Description": "n/a",
@@ -659,7 +659,7 @@
    "Timestamp": "2020-06-10T09:44:30Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 0,
+    "ErrorCode": 242,
     "Message": "DLMS connection error",
     "Severity": 3,
     "Description": "n/a",
@@ -672,7 +672,7 @@
    "Timestamp": "2020-06-10T09:44:30Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 0,
+    "ErrorCode": 241,
     "Message": "DLMS error",
     "Severity": 3,
     "Description": "n/a",
@@ -685,7 +685,7 @@
    "Timestamp": "2020-06-10T09:44:30Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 0,
+    "ErrorCode": 241,
     "Message": "DLMS error",
     "Severity": 3,
     "Description": "n/a",
@@ -698,7 +698,7 @@
    "Timestamp": "2020-06-10T09:44:30Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 0,
+    "ErrorCode": 241,
     "Message": "DLMS error",
     "Severity": 3,
     "Description": "n/a",
@@ -711,7 +711,7 @@
    "Timestamp": "2020-06-10T09:44:30Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 0,
+    "ErrorCode": 241,
     "Message": "DLMS error",
     "Severity": 3,
     "Description": "n/a",
@@ -724,7 +724,7 @@
    "Timestamp": "2020-06-10T09:44:30Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 0,
+    "ErrorCode": 241,
     "Message": "DLMS error",
     "Severity": 3,
     "Description": "n/a",
@@ -810,10 +810,10 @@
     "UID": 0,
     "Priority": 0,
     "Retry": 0,
+    "FileName": "",
     "Creation": "0001-01-01T00:00:00Z",
     "MinLaunchTime": "0001-01-01T00:00:00Z",
     "Details": null,
-    "FileName": "",
     "JoinMessageParams": null,
     "TimeoutParams": {
      "Protocol": "plc-udp",
@@ -827,7 +827,7 @@
    "Timestamp": "2020-06-10T09:45:00Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 0,
+    "ErrorCode": 65,
     "Message": "PLC socket receive error",
     "Severity": 2,
     "Description": "n/a",
@@ -840,7 +840,7 @@
    "Timestamp": "2020-06-10T09:45:00Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 9,
+    "ErrorCode": 245,
     "Message": "DLMS communication error",
     "Severity": 3,
     "Description": "n/a",
@@ -853,7 +853,7 @@
    "Timestamp": "2020-06-10T09:45:00Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 0,
+    "ErrorCode": 241,
     "Message": "DLMS error",
     "Severity": 3,
     "Description": "n/a",
@@ -866,7 +866,7 @@
    "Timestamp": "2020-06-10T09:45:00Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 0,
+    "ErrorCode": 243,
     "Message": "DLMS initialization error",
     "Severity": 3,
     "Description": "n/a",
@@ -879,7 +879,7 @@
    "Timestamp": "2020-06-10T09:45:00Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 0,
+    "ErrorCode": 242,
     "Message": "DLMS connection error",
     "Severity": 3,
     "Description": "n/a",
@@ -892,7 +892,7 @@
    "Timestamp": "2020-06-10T09:45:00Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 0,
+    "ErrorCode": 241,
     "Message": "DLMS error",
     "Severity": 3,
     "Description": "n/a",
@@ -905,7 +905,7 @@
    "Timestamp": "2020-06-10T09:45:00Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 0,
+    "ErrorCode": 241,
     "Message": "DLMS error",
     "Severity": 3,
     "Description": "n/a",
@@ -918,7 +918,7 @@
    "Timestamp": "2020-06-10T09:45:00Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 0,
+    "ErrorCode": 241,
     "Message": "DLMS error",
     "Severity": 3,
     "Description": "n/a",
@@ -931,7 +931,7 @@
    "Timestamp": "2020-06-10T09:45:00Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 0,
+    "ErrorCode": 241,
     "Message": "DLMS error",
     "Severity": 3,
     "Description": "n/a",
@@ -944,7 +944,7 @@
    "Timestamp": "2020-06-10T09:45:00Z",
    "Level": "ERROR",
    "ErrorParams": {
-    "ErrorCode": 0,
+    "ErrorCode": 241,
     "Message": "DLMS error",
     "Severity": 3,
     "Description": "n/a",

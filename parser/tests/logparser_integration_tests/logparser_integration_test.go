@@ -16,6 +16,8 @@ import (
 	"github.com/streadway/amqp"
 )
 
+const updateResourcesEnabled = false
+
 // TestLogParserDCMain calls logparser.ParseLogfiles()
 // with a mock file downloader that passes a dc main test file and a real rabbitmq producer,
 // checking for valid messages.
@@ -49,13 +51,15 @@ func TestLogParserDCMain(t *testing.T) {
 	testParsedLogFile := testmodels.TestParsedLogFile{Lines: entries}
 	actualBytes := testParsedLogFile.ToJSON()
 
+	updateResourcesIfEnabled("./resources/expected_parsed_log.json", actualBytes)
+
 	// Read expected outcome from resource file.
 	expectedBytes, err := ioutil.ReadFile("./resources/expected_parsed_log.json")
 	utils.FailOnError(err, "Could not read test json file.")
 
 	// Assert
 	if string(actualBytes) != string(expectedBytes) {
-		t.Fatal("Expected json does not match actual json value of created partsed entries.")
+		t.Fatal("Expected json does not match actual json value of created parsed entries.")
 	}
 	if len(entries) != 40 {
 		t.Fatalf("Expected 40 entries, got %d entries", len(entries))
@@ -94,13 +98,15 @@ func TestLogParserPLCManager(t *testing.T) {
 	testParsedLogFile := testmodels.TestParsedLogFile{Lines: entries}
 	actualBytes := testParsedLogFile.ToJSON()
 
+	updateResourcesIfEnabled("./resources/expected_plc_manager.json", actualBytes)
+
 	// Read expected outcome from resource file.
 	expectedBytes, err := ioutil.ReadFile("./resources/expected_plc_manager.json")
 	utils.FailOnError(err, "Could not read test json file.")
 
 	// Assert
 	if string(actualBytes) != string(expectedBytes) {
-		t.Fatal("Expected json does not match actual json value of created partsed entries.")
+		t.Fatal("Expected json does not match actual json value of created parsed entries.")
 	}
 	if len(entries) != 50 {
 		t.Fatalf("Expected 50 entries, got %d entries.", len(entries))
@@ -164,4 +170,10 @@ func getSentParsedEntries(deliveries <-chan amqp.Delivery) []models.ParsedLogEnt
 	}
 
 	return entries
+}
+
+func updateResourcesIfEnabled(resourceFileName string, newData []byte) {
+	if updateResourcesEnabled {
+		_ = ioutil.WriteFile(resourceFileName, newData, 0600)
+	}
 }

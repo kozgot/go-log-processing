@@ -12,6 +12,8 @@ import (
 	"github.com/kozgot/go-log-processing/parser/tests/testmodels"
 )
 
+const updateResourcesEnabled = false
+
 func TestLogParserDCMain(t *testing.T) {
 	// Init a mock message producer.
 	mockMessageProducer := mocks.MessageProducerMock{Entries: []models.ParsedLogEntry{}}
@@ -30,12 +32,14 @@ func TestLogParserDCMain(t *testing.T) {
 	log.Printf("Expected %d entries.\n", expectedEntryCount)
 	log.Printf("Got %d entries.\n", actualEntryCount)
 
+	testParsedLogFile := testmodels.TestParsedLogFile{Lines: mockMessageProducer.Entries}
+	actualBytes := testParsedLogFile.ToJSON()
+
+	updateResourcesIfEnabled("./resources/expected_dc_main.json", actualBytes)
+
 	// Read expected outcome from resource file.
 	expectedBytes, err := ioutil.ReadFile("./resources/expected_dc_main.json")
 	utils.FailOnError(err, "Could not read test json file.")
-
-	testParsedLogFile := testmodels.TestParsedLogFile{Lines: mockMessageProducer.Entries}
-	actualBytes := testParsedLogFile.ToJSON()
 
 	// Assert
 	if string(actualBytes) != string(expectedBytes) {
@@ -64,12 +68,14 @@ func TestLogParserPLCManager(t *testing.T) {
 	log.Printf("Expected %d entries.\n", expectedEntryCount)
 	log.Printf("Got %d entries.\n", actualEntryCount)
 
+	testParsedLogFile := testmodels.TestParsedLogFile{Lines: mockMessageProducer.Entries}
+	actualBytes := testParsedLogFile.ToJSON()
+
+	updateResourcesIfEnabled("./resources/expected_plc_manager.json", actualBytes)
+
 	// Read expected outcome from resource file.
 	expectedBytes, err := ioutil.ReadFile("./resources/expected_plc_manager.json")
 	utils.FailOnError(err, "Could not read test json file.")
-
-	testParsedLogFile := testmodels.TestParsedLogFile{Lines: mockMessageProducer.Entries}
-	actualBytes := testParsedLogFile.ToJSON()
 
 	// Assert
 	if string(actualBytes) != string(expectedBytes) {
@@ -77,5 +83,11 @@ func TestLogParserPLCManager(t *testing.T) {
 	}
 	if actualEntryCount != expectedEntryCount {
 		t.Fatalf("Expected %d entries, got %d entries.", expectedEntryCount, actualEntryCount)
+	}
+}
+
+func updateResourcesIfEnabled(resourceFileName string, newData []byte) {
+	if updateResourcesEnabled {
+		_ = ioutil.WriteFile(resourceFileName, newData, 0600)
 	}
 }
