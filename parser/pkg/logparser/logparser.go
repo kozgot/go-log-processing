@@ -1,8 +1,6 @@
 package logparser
 
 import (
-	"errors"
-	"fmt"
 	"log"
 	"sync"
 
@@ -44,17 +42,4 @@ func (logparser *LogParser) ParseLogfiles() {
 	// Send a message indicating that this is the end of the processing
 	logparser.rabbitMqProducer.PublishStringMessage("END")
 	log.Printf("  [PARSER] Sent END to Postprocessing service ...")
-}
-
-// Hello returns a greeting for the named person.
-func Hello(name string) (string, error) {
-	// If no name was given, return an error with a message.
-	if name == "" {
-		return "", errors.New("empty name")
-	}
-
-	// If a name was received, return a value that embeds the name
-	// in a greeting message.
-	message := fmt.Sprintf("Hi, %v. Welcome!", name)
-	return message, nil
 }

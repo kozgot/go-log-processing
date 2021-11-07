@@ -47,7 +47,7 @@ func (downloader *AzureDownloader) ListFileNames() []string {
 	ctx := context.Background()
 
 	// List the container that we have created above
-	log.Println("Listing the blobs in the container:")
+	log.Println("  [AZURE DOWNLOADER] Listing the blobs in the container:")
 	for marker := (azblob.Marker{}); marker.NotDone(); {
 		// Get a result segment starting with the blob indicated by the current Marker.
 		listBlob, err := downloader.ContainerURL.ListBlobsFlatSegment(ctx, marker, azblob.ListBlobsSegmentOptions{})
@@ -59,13 +59,13 @@ func (downloader *AzureDownloader) ListFileNames() []string {
 
 		// Process the blobs returned in this result segment (if the segment is empty, the loop body won't execute)
 		for _, blobInfo := range listBlob.Segment.BlobItems {
-			log.Print("	Blob name: " + blobInfo.Name + "\n")
+			log.Print("	 [AZURE DOWNLOADER]  Blob name: " + blobInfo.Name + "\n")
 			fileNames = append(fileNames, blobInfo.Name)
 		}
 	}
 
 	if len(fileNames) == 0 {
-		log.Println("No files found in Azure blob storage container.")
+		log.Println("  [AZURE DOWNLOADER] No files found in Azure blob storage container.")
 	}
 
 	return fileNames

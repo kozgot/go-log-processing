@@ -1,36 +1,18 @@
-package logparser
+package logparserintegrationtests
 
 import (
 	"encoding/json"
 	"log"
-	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/kozgot/go-log-processing/parser/internal/utils"
+	"github.com/kozgot/go-log-processing/parser/pkg/logparser"
+	"github.com/kozgot/go-log-processing/parser/pkg/mocks"
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 	"github.com/kozgot/go-log-processing/parser/pkg/rabbitmq"
+	"github.com/kozgot/go-log-processing/parser/tests/testutils"
 )
-
-// TestHelloName calls greetings.Hello with a name, checking
-// for a valid return value.
-func TestHelloName(t *testing.T) {
-	name := "Gladys"
-	want := regexp.MustCompile(`\b` + name + `\b`)
-	msg, err := Hello("Gladys")
-	if !want.MatchString(msg) || err != nil {
-		t.Fatalf(`Hello("Gladys") = %q, %v, want match for %#q, nil`, msg, err, want)
-	}
-}
-
-// TestHelloEmpty calls greetings.Hello with an empty string,
-// checking for an error.
-func TestHelloEmpty(t *testing.T) {
-	msg, err := Hello("")
-	if msg != "" || err == nil {
-		t.Fatalf(`Hello("") = %q, %v, want "", error`, msg, err)
-	}
-}
 
 // TestLogParser calls logparser.ParseLogfiles()
 // with a mock file downloader that passes a dc main test file and a real rabbitmq producer,
@@ -52,7 +34,7 @@ func TestLogParser(t *testing.T) {
 	defer rabbitMqProducer.CloseChannelAndConnection()
 
 	// Init test consumer.
-	testConsumer := NewTestRabbitConsumer(rabbitMqURL, testRoutingKey, testExchangeName, testQueueName)
+	testConsumer := testutils.NewTestRabbitConsumer(rabbitMqURL, testRoutingKey, testExchangeName, testQueueName)
 	testConsumer.Connect()
 	defer testConsumer.CloseConnectionAndChannel()
 
@@ -61,10 +43,10 @@ func TestLogParser(t *testing.T) {
 	utils.FailOnError(err, "Could not register test consumer")
 
 	// Create mock filedownloader.
-	mockFileDownloader := MockFileDownloader{FileNameToDownload: "test_dc_main.log"}
+	mockFileDownloader := mocks.MockFileDownloader{FileNameToDownload: "../resources/test_dc_main.log"}
 
 	// Parse
-	logParser := NewLogParser(&mockFileDownloader, rabbitMqProducer)
+	logParser := logparser.NewLogParser(&mockFileDownloader, rabbitMqProducer)
 	logParser.ParseLogfiles()
 
 	entries := []models.ParsedLogEntry{}
@@ -86,7 +68,7 @@ func TestLogParser(t *testing.T) {
 
 	log.Printf("Got %d entries.\n", len(entries))
 
-	if len(entries) == 0 {
+	if len(entries) != 40 {
 		t.Fatal("Expected some entries")
 	}
 }
