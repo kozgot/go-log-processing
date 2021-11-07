@@ -8,6 +8,15 @@ import (
 func processDCMessageEntry(
 	logEntry parsermodels.ParsedLogEntry,
 	podUIDToSmcUID map[string]string) models.ProcessedEntryData {
+	if logEntry.InfoParams.DCMessage == nil {
+		return models.ProcessedEntryData{
+			SmcData:         nil,
+			SmcEvent:        nil,
+			ConsumtionValue: nil,
+			IndexValue:      nil,
+		}
+	}
+
 	messageType := logEntry.InfoParams.DCMessage.MessageType
 	switch messageType {
 	case parsermodels.Connect:
@@ -192,6 +201,10 @@ func processDCMessageEntry(
 }
 
 func processIndexLowProfileGeneric(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+	if logEntry.InfoParams.DCMessage.Payload == nil {
+		return nil, nil
+	}
+
 	// there are two more params (capture period and capture objects), but they are not really interesting for us here.
 	smcUID := logEntry.InfoParams.DCMessage.Payload.SmcUID
 
@@ -212,6 +225,10 @@ func processIndexLowProfileGeneric(logEntry parsermodels.ParsedLogEntry) (*model
 }
 
 func processIndexHighProfileGeneric(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+	if logEntry.InfoParams.DCMessage.Payload == nil {
+		return nil, nil
+	}
+
 	// there are two more params (capture period and capture objects), but they are not really interesting for us here.
 	smcUID := logEntry.InfoParams.DCMessage.Payload.SmcUID
 
@@ -232,6 +249,10 @@ func processIndexHighProfileGeneric(logEntry parsermodels.ParsedLogEntry) (*mode
 }
 
 func processReadIndexProfiles(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+	if logEntry.InfoParams.DCMessage.Payload == nil {
+		return nil, nil
+	}
+
 	smcUID := logEntry.InfoParams.DCMessage.Payload.ReadIndexProfilesEntryPayload.SmcUID
 	data := models.SmcData{
 		SmcUID: smcUID,
@@ -250,6 +271,13 @@ func processReadIndexProfiles(logEntry parsermodels.ParsedLogEntry) (*models.Smc
 }
 
 func processReadIndexLowProfiles(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+	if logEntry.InfoParams.DCMessage.Payload == nil {
+		return nil, nil
+	}
+	if logEntry.InfoParams.DCMessage.Payload.ReadIndexLowProfilesEntryPayload == nil {
+		return nil, nil
+	}
+
 	smcUID := logEntry.InfoParams.DCMessage.Payload.ReadIndexLowProfilesEntryPayload.SmcUID
 	to := logEntry.InfoParams.DCMessage.Payload.ReadIndexLowProfilesEntryPayload.To
 	from := logEntry.InfoParams.DCMessage.Payload.ReadIndexLowProfilesEntryPayload.From
@@ -277,6 +305,13 @@ func processReadIndexLowProfiles(logEntry parsermodels.ParsedLogEntry) (*models.
 // If the changes in dex or consumption values are interesting, we can get them from these messages.
 // The pod UID and serial number fields can be used to pair these entries to SMC-s.
 func processIndexReceived(logEntry parsermodels.ParsedLogEntry, podUIDToSmcUID map[string]string) *models.IndexValue {
+	if logEntry.InfoParams.DCMessage.Payload == nil {
+		return nil
+	}
+	if logEntry.InfoParams.DCMessage.Payload.IndexPayload == nil {
+		return nil
+	}
+
 	smcUID := podUIDToSmcUID[logEntry.InfoParams.DCMessage.Payload.PodUID]
 	result := models.IndexValue{
 		ReceiveTime:   logEntry.Timestamp,
@@ -298,6 +333,10 @@ func processIndexReceived(logEntry parsermodels.ParsedLogEntry, podUIDToSmcUID m
 // If the changes in dex or consumption values are interesting, we can get them from these messages.
 // There are no UID fields so only the timestamp and start/end fields can help us pair them to the smc-s.
 func processConsumption(logEntry parsermodels.ParsedLogEntry) *models.ConsumtionValue {
+	if logEntry.InfoParams.DCMessage.Payload == nil {
+		return nil
+	}
+
 	result := models.ConsumtionValue{
 		ReceiveTime:  logEntry.Timestamp,
 		StartTime:    logEntry.InfoParams.DCMessage.Payload.TimeRange.From,

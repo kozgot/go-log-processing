@@ -11,6 +11,10 @@ func ProcessInfoEntry(logEntry parsermodels.ParsedLogEntry,
 	*models.SmcEvent,
 	*models.ConsumtionValue,
 	*models.IndexValue) {
+	if logEntry.InfoParams == nil {
+		return nil, nil, nil, nil
+	}
+
 	switch logEntry.InfoParams.EntryType {
 	case parsermodels.Routing:
 		// this case is not really interesting for our logic
@@ -77,6 +81,10 @@ func ProcessInfoEntry(logEntry parsermodels.ParsedLogEntry,
 }
 
 func processJoinEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+	if logEntry.InfoParams.JoinMessage == nil {
+		return nil, nil
+	}
+
 	smcUID := logEntry.InfoParams.JoinMessage.SmcAddress.SmcUID
 	address := models.AddressDetails{
 		PhysicalAddress: logEntry.InfoParams.JoinMessage.SmcAddress.PhysicalAddress,
@@ -106,6 +114,10 @@ func processJoinEntry(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *m
 }
 
 func processConnectionAttempt(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+	if logEntry.InfoParams.ConnectionAttempt == nil {
+		return nil, nil
+	}
+
 	smcUID := logEntry.InfoParams.ConnectionAttempt.SmcUID
 	address := models.AddressDetails{
 		URL: logEntry.InfoParams.ConnectionAttempt.URL,
@@ -128,6 +140,10 @@ func processConnectionAttempt(logEntry parsermodels.ParsedLogEntry) (*models.Smc
 }
 
 func processConnectionReleased(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+	if logEntry.InfoParams.ConnectionReleased == nil {
+		return nil, nil
+	}
+
 	address := models.AddressDetails{
 		URL: logEntry.InfoParams.ConnectionReleased.URL,
 	}
@@ -147,6 +163,10 @@ func processConnectionReleased(logEntry parsermodels.ParsedLogEntry) (*models.Sm
 }
 
 func processInitDLMSConnection(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+	if logEntry.InfoParams.InitConnection == nil {
+		return nil, nil
+	}
+
 	address := models.AddressDetails{
 		URL: logEntry.InfoParams.InitConnection.URL,
 	}
@@ -166,6 +186,10 @@ func processInitDLMSConnection(logEntry parsermodels.ParsedLogEntry) (*models.Sm
 }
 
 func processInternalDiagnostics(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+	if logEntry.InfoParams.InternalDiagnosticsData == nil {
+		return nil, nil
+	}
+
 	smcUID := logEntry.InfoParams.InternalDiagnosticsData.SmcUID
 	data := models.SmcData{
 		SmcUID:                    smcUID,
@@ -185,6 +209,10 @@ func processInternalDiagnostics(logEntry parsermodels.ParsedLogEntry) (*models.S
 }
 
 func processSmcConfigUpdate(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+	if logEntry.InfoParams.SmcConfigUpdate == nil {
+		return nil, nil
+	}
+
 	smcUID := logEntry.InfoParams.SmcConfigUpdate.SmcUID
 	address := models.AddressDetails{
 		PhysicalAddress: logEntry.InfoParams.SmcConfigUpdate.PhysicalAddress,

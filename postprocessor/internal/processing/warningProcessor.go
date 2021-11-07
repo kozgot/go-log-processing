@@ -7,6 +7,14 @@ import (
 
 // ProcessWarn processes a log entry with WARN log level.
 func ProcessWarn(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+	if logEntry.WarningParams == nil {
+		return nil, nil
+	}
+
+	if logEntry.WarningParams.TimeoutParams == nil {
+		return nil, nil
+	}
+
 	if logEntry.WarningParams.TimeoutParams.Protocol != "" && logEntry.WarningParams.TimeoutParams.URL != "" {
 		address := models.AddressDetails{
 			URL: logEntry.WarningParams.TimeoutParams.URL,
@@ -33,6 +41,14 @@ func ProcessWarn(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models
 
 // ProcessWarning processes a log entry with WARNING log level.
 func ProcessWarning(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+	if logEntry.WarningParams == nil {
+		return nil, nil
+	}
+
+	if logEntry.WarningParams.JoinMessageParams == nil {
+		return nil, nil
+	}
+
 	address := models.AddressDetails{
 		PhysicalAddress: logEntry.WarningParams.JoinMessageParams.SmcAddress.PhysicalAddress,
 		LogicalAddress:  logEntry.WarningParams.JoinMessageParams.SmcAddress.LogicalAddress,

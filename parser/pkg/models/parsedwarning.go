@@ -11,11 +11,11 @@ type WarningParams struct {
 	Retry                int
 	Creation             time.Time
 	MinLaunchTime        time.Time
-	Details              ErrorParams
+	Details              *ErrorParams
 	FileName             string
-	JoinMessageParams    SmcJoinMessageParams
-	TimeoutParams        TimelineOutParams
-	LostConnectionParams LostConnectionParams
+	JoinMessageParams    *SmcJoinMessageParams
+	TimeoutParams        *TimelineOutParams
+	LostConnectionParams *LostConnectionParams
 }
 
 // LostConnectionParams contains a parsed lost connaction warning entry.

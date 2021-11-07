@@ -13,7 +13,7 @@ import (
 func parseWarning(line models.LineWithDate) *models.WarningParams {
 	warningParams := models.WarningParams{}
 	smcJoinParams := parseSmcJoinLine(line.Rest)
-	warningParams.JoinMessageParams = *smcJoinParams
+	warningParams.JoinMessageParams = smcJoinParams
 
 	return &warningParams
 }
@@ -31,7 +31,7 @@ func parseWarn(line models.LineWithDate) *models.WarningParams {
 		// This is a Timeout warn entry.
 		timeoutParams := parseTimeoutEntry(line.Rest)
 		if timeoutParams != nil {
-			warningParams.TimeoutParams = *timeoutParams
+			warningParams.TimeoutParams = timeoutParams
 		}
 
 		return &warningParams
@@ -77,12 +77,12 @@ func parseWarn(line models.LineWithDate) *models.WarningParams {
 
 	// parse inner error params
 	innerErrorParams := parseError(line)
-	warningParams.Details = *innerErrorParams
+	warningParams.Details = innerErrorParams
 
 	return &warningParams
 }
 
-func parseLostConnectionParams(line string) models.LostConnectionParams {
+func parseLostConnectionParams(line string) *models.LostConnectionParams {
 	result := models.LostConnectionParams{}
 	params := parseConnectOrDisconnectPayload(line)
 	if params != nil {
@@ -104,7 +104,7 @@ func parseLostConnectionParams(line string) models.LostConnectionParams {
 		}
 	}
 
-	return result
+	return &result
 }
 
 func parseTimeoutEntry(line string) *models.TimelineOutParams {
