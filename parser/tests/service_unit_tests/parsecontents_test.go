@@ -8,12 +8,7 @@ import (
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
 
-func TestLogParserPLCManager(t *testing.T) {
-	/*
-		error := "Wed Jun 10 14:56:03 2020 ERROR   : error_code[241] message[DLMS error] severity[3] description[n/a] source[dc18-smc18]  (smart_meter_cabinet.cc::129)"
-		warning := "Wed Jun 10 14:55:31 2020 WARN    : Timeout protocol[plc-udp] url[fe80::4021:ff:fe00:10:61616] (plc_bridge_connector.cc::227)"
-		infoConsumption := "Wed Jun 10 14:56:19 2020 INFO    : <--[consumption]--(SMC) start[1591800000] end[1591800600] value[0] service_level_id[9] (abstract_smart_meter_cabinet.h::314)"
-	*/
+func TestParseContents(t *testing.T) {
 	errorEntry := models.EntryWithLevelAndTimestamp{
 		Level:     "ERROR",
 		Timestamp: time.Date(2020, time.June, 10, 14, 56, 3, 0, time.UTC),

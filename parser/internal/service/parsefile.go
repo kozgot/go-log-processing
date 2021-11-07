@@ -22,8 +22,8 @@ func ParseSingleFile(readCloser io.ReadCloser, logFileName string,
 			continue
 		}
 
-		lineWithTimestamp, ok := ParseTimestamp(*relevantLine)
-		if !ok {
+		lineWithTimestamp := ParseTimestamp(*relevantLine)
+		if lineWithTimestamp == nil {
 			continue
 		}
 

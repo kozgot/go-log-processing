@@ -11,7 +11,7 @@ import (
 )
 
 // ParseTimestamp returns a date parsed from the input (a line of the currently processed log file).
-func ParseTimestamp(line models.Line) (*models.EntryWithLevelAndTimestamp, bool) {
+func ParseTimestamp(line models.EntryWithLogLevel) *models.EntryWithLevelAndTimestamp {
 	dateRegex, _ := regexp.Compile(formats.DateFormatRegex)
 	dateRegexshort, _ := regexp.Compile(formats.DateFormatRegexShort)
 
@@ -21,7 +21,7 @@ func ParseTimestamp(line models.Line) (*models.EntryWithLevelAndTimestamp, bool)
 		utils.FailOnError(err, "Could not parse long date format")
 
 		restOfLine := removeParsedParts(line.Rest, dateString)
-		return &models.EntryWithLevelAndTimestamp{Timestamp: date, Rest: restOfLine, Level: line.Level}, true
+		return &models.EntryWithLevelAndTimestamp{Timestamp: date, Rest: restOfLine, Level: line.Level}
 	}
 
 	dateString = dateRegexshort.FindString(line.Rest)
@@ -30,10 +30,10 @@ func ParseTimestamp(line models.Line) (*models.EntryWithLevelAndTimestamp, bool)
 		utils.FailOnError(err, "Could not parse short date format")
 
 		restOfLine := removeParsedParts(line.Rest, dateString)
-		return &models.EntryWithLevelAndTimestamp{Timestamp: date, Rest: restOfLine, Level: line.Level}, true
+		return &models.EntryWithLevelAndTimestamp{Timestamp: date, Rest: restOfLine, Level: line.Level}
 	}
 
-	return nil, false
+	return nil
 }
 
 func removeParsedParts(line string, parsedPart string) (rest string) {
