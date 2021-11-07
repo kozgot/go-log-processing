@@ -9,6 +9,10 @@ import (
 
 // ProcessError processes a log entry with ERROR log level.
 func ProcessError(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+	if logEntry.ErrorParams == nil {
+		return nil, nil
+	}
+
 	if logEntry.ErrorParams.Source == "" {
 		// We do not know the source, so we do not know what to pair it with...
 		return nil, nil
