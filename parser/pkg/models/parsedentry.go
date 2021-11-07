@@ -2,8 +2,9 @@ package models
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
+
+	"github.com/kozgot/go-log-processing/parser/internal/utils"
 )
 
 // ParsedLogEntry contains a parsed line from the log file.
@@ -18,9 +19,12 @@ type ParsedLogEntry struct {
 // Serialize serialzes a parsed log enrty.
 func (p *ParsedLogEntry) Serialize() []byte {
 	bytes, err := json.Marshal(p)
-	if err != nil {
-		fmt.Println("Can't serialize", p)
-	}
-
+	utils.FailOnError(err, "Can't serialize parsed log entry")
 	return bytes
+}
+
+// Serialize serialzes a parsed log enrty.
+func (p *ParsedLogEntry) FromJSON(bytes []byte) {
+	err := json.Unmarshal(bytes, p)
+	utils.FailOnError(err, "Failed to unmarshal log entry")
 }

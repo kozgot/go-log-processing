@@ -1,7 +1,7 @@
 package logparserintegrationtests
 
 import (
-	"encoding/json"
+	"io/ioutil"
 	"log"
 	"strings"
 	"testing"
@@ -11,6 +11,7 @@ import (
 	"github.com/kozgot/go-log-processing/parser/pkg/mocks"
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 	"github.com/kozgot/go-log-processing/parser/pkg/rabbitmq"
+	"github.com/kozgot/go-log-processing/parser/tests/testmodels"
 	"github.com/kozgot/go-log-processing/parser/tests/testutils"
 )
 
@@ -60,22 +61,18 @@ func TestLogParser(t *testing.T) {
 			utils.FailOnError(err, "Could not acknowledge END message")
 			break
 		}
-		entry := deserializeParsedLogEntry(d.Body)
+		entry := models.ParsedLogEntry{}
+		entry.FromJSON(d.Body)
 		entries = append(entries, entry)
 		err := d.Ack(false)
 		utils.FailOnError(err, "Could not acknowledge")
 	}
 
 	log.Printf("Got %d entries.\n", len(entries))
+	testParsedLogFile := testmodels.TestParsedLogFile{Lines: entries}
+	_ = ioutil.WriteFile("test.json", testParsedLogFile.ToJSON(), 0644)
 
 	if len(entries) != 40 {
 		t.Fatal("Expected some entries")
 	}
-}
-
-func deserializeParsedLogEntry(bytes []byte) models.ParsedLogEntry {
-	var parsedEntry models.ParsedLogEntry
-	err := json.Unmarshal(bytes, &parsedEntry)
-	utils.FailOnError(err, "Failed to unmarshal log entry")
-	return parsedEntry
 }
