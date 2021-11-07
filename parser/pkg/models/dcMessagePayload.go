@@ -28,6 +28,7 @@ type DcMessagePayload struct {
 	ReadIndexProfilesEntryPayload    *ReadIndexProfilesEntryPayload
 }
 
+// Equals checks equality.
 func (d *DcMessagePayload) Equals(other DcMessagePayload) bool {
 	if d.ServiceLevelID != other.ServiceLevelID ||
 		d.PodUID != other.PodUID ||
@@ -183,6 +184,7 @@ type ReadIndexLowProfilesEntryPayload struct {
 	To     time.Time
 }
 
+// Equals checks equality.
 func (r *ReadIndexLowProfilesEntryPayload) Equals(other ReadIndexLowProfilesEntryPayload) bool {
 	return r.SmcUID == other.SmcUID &&
 		r.From == other.From &&
@@ -195,6 +197,7 @@ type ReadIndexProfilesEntryPayload struct {
 	Count  int
 }
 
+// Equals checks equality.
 func (r *ReadIndexProfilesEntryPayload) Equals(other ReadIndexProfilesEntryPayload) bool {
 	return r.SmcUID == other.SmcUID &&
 		r.Count == other.Count
@@ -208,6 +211,7 @@ type StatisticsEntryPayload struct {
 	SourceID string
 }
 
+// Equals checks equality.
 func (s *StatisticsEntryPayload) Equals(other StatisticsEntryPayload) bool {
 	return s.Type == other.Type &&
 		s.Value == other.Value &&
@@ -221,6 +225,7 @@ type GenericIndexProfilePayload struct {
 	CaptureObjects int
 }
 
+// Equals checks equality.
 func (g *GenericIndexProfilePayload) Equals(other GenericIndexProfilePayload) bool {
 	return g.CapturePeriod == other.CapturePeriod &&
 		g.CaptureObjects == other.CaptureObjects
@@ -232,6 +237,7 @@ type ConnectToPLCPayload struct {
 	DestinationAddress string
 }
 
+// Equals checks equality.
 func (c *ConnectToPLCPayload) Equals(other ConnectToPLCPayload) bool {
 	return c.Interface == other.Interface &&
 		c.DestinationAddress == other.DestinationAddress
@@ -255,6 +261,7 @@ type SettingsPayload struct {
 	FrequencyBandRollBackDone     bool
 }
 
+// Equals checks equality.
 func (s *SettingsPayload) Equals(other SettingsPayload) bool {
 	return s.DcUID == other.DcUID &&
 		s.Locality == other.Locality &&
@@ -285,6 +292,7 @@ type ServiceLevelPayload struct {
 	LocalHourlyEnergyLimits        [24]HourlyEnergyLimit
 }
 
+// Equals checks equality.
 func (s *ServiceLevelPayload) Equals(other ServiceLevelPayload) bool {
 	return s.MeterMode == other.MeterMode &&
 		s.StartHourDailyCycle == other.StartHourDailyCycle &&
@@ -302,6 +310,7 @@ type HourlyEnergyLimit struct {
 	Limit      int
 }
 
+// Equals checks equality.
 func (h *HourlyEnergyLimit) Equals(other HourlyEnergyLimit) bool {
 	return h.HourNumber == other.HourNumber &&
 		h.Limit == other.Limit
@@ -319,6 +328,7 @@ type SmcConfigPayload struct {
 	NextHop                        int
 }
 
+// Equals checks equality.
 func (s *SmcConfigPayload) Equals(other SmcConfigPayload) bool {
 	return s.CustomerSerialNumber == other.CustomerSerialNumber &&
 		s.PhysicalAddress == other.PhysicalAddress &&
@@ -338,6 +348,7 @@ type MessagePayload struct {
 	Topic   string
 }
 
+// Equals checks equality.
 func (m *MessagePayload) Equals(other MessagePayload) bool {
 	return m.Current == other.Current &&
 		m.Total == other.Total &&
@@ -353,6 +364,7 @@ type PodConfigPayload struct {
 	SoftwareFirmwareVersion string
 }
 
+// Equals checks equality.
 func (p *PodConfigPayload) Equals(other PodConfigPayload) bool {
 	return p.SerialNumber == other.SerialNumber &&
 		p.Phase == other.Phase &&
@@ -366,6 +378,7 @@ type TimeRange struct {
 	To   time.Time
 }
 
+// Equals checks equality.
 func (t *TimeRange) Equals(other TimeRange) bool {
 	return t.From == other.From && t.To == other.To
 }
@@ -377,6 +390,7 @@ type DLMSLogPayload struct {
 	DLMSError        string
 }
 
+// Equals checks equality.
 func (d *DLMSLogPayload) Equals(other DLMSLogPayload) bool {
 	return d.DLMSRequestTime == other.DLMSRequestTime &&
 		d.DLMSResponseTime == other.DLMSResponseTime &&
@@ -390,6 +404,7 @@ type IndexPayload struct {
 	SerialNumber  int
 }
 
+// Equals checks equality.
 func (i *IndexPayload) Equals(other IndexPayload) bool {
 	return i.PreviousTime == other.PreviousTime &&
 		i.PreviousValue == other.PreviousValue &&
@@ -406,6 +421,7 @@ type ConnectOrDisconnectPayload struct {
 	Connected bool
 }
 
+// Equals checks equality.
 func (c *ConnectOrDisconnectPayload) Equals(other ConnectOrDisconnectPayload) bool {
 	return c.Type == other.Type &&
 		c.ClientID == other.ClientID &&
@@ -420,6 +436,7 @@ type Calendar struct {
 	CalendarName CalendarName
 }
 
+// Equals checks equality.
 func (c *Calendar) Equals(other Calendar) bool {
 	return c.CalendarName.Equals(other.CalendarName)
 }
@@ -432,6 +449,7 @@ type CalendarName struct {
 	DayProfile    string // for now, the exact type is unknown
 }
 
+// Equals checks equality.
 func (c *CalendarName) Equals(other CalendarName) bool {
 	return c.IsActive == other.IsActive &&
 		c.SeasonProfile == other.SeasonProfile &&

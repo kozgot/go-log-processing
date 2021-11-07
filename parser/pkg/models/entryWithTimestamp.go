@@ -9,6 +9,7 @@ type EntryWithLevelAndTimestamp struct {
 	Rest      string
 }
 
+// Equals checks equality.
 func (e *EntryWithLevelAndTimestamp) Equals(other EntryWithLevelAndTimestamp) bool {
 	return e.Timestamp == other.Timestamp && e.Level == other.Level && e.Rest == other.Rest
 }

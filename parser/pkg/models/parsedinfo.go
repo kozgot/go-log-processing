@@ -18,6 +18,7 @@ type InfoParams struct {
 	InternalDiagnosticsData *InternalDiagnosticsData
 }
 
+// Equals checks equality.
 func (i *InfoParams) Equals(other InfoParams) bool {
 	if i.EntryType != other.EntryType {
 		return false
@@ -113,6 +114,7 @@ type InternalDiagnosticsData struct {
 	LastSuccessfulDlmsResponseDate time.Time
 }
 
+// Equals checks equality.
 func (i *InternalDiagnosticsData) Equals(other InternalDiagnosticsData) bool {
 	return i.LastSuccessfulDlmsResponseDate == other.LastSuccessfulDlmsResponseDate &&
 		i.SmcUID == other.SmcUID
@@ -123,6 +125,7 @@ type InitConnectionParams struct {
 	URL string
 }
 
+// Equals checks equality.
 func (i *InitConnectionParams) Equals(other InitConnectionParams) bool {
 	return i.URL == other.URL
 }
@@ -134,6 +137,7 @@ type ConnectionAttemptParams struct {
 	At     string // eg. (@ 000A)
 }
 
+// Equals checks equality.
 func (c *ConnectionAttemptParams) Equals(other ConnectionAttemptParams) bool {
 	return c.URL == other.URL &&
 		c.SmcUID == other.SmcUID &&
@@ -145,6 +149,7 @@ type ConnectionReleasedParams struct {
 	URL string
 }
 
+// Equals checks equality.
 func (c *ConnectionReleasedParams) Equals(other ConnectionReleasedParams) bool {
 	return c.URL == other.URL
 }
@@ -161,6 +166,7 @@ type SmcConfigUpdateParams struct {
 	SmcUID          string
 }
 
+// Equals checks equality.
 func (s *SmcConfigUpdateParams) Equals(other SmcConfigUpdateParams) bool {
 	return s.PhysicalAddress == other.PhysicalAddress &&
 		s.LogicalAddress == other.LogicalAddress &&
@@ -179,6 +185,7 @@ type RoutingTableParams struct {
 	ValidTimeMins  int
 }
 
+// Equals checks equality.
 func (r *RoutingTableParams) Equals(other RoutingTableParams) bool {
 	return r.Address == other.Address &&
 		r.NextHopAddress == other.NextHopAddress &&
@@ -196,6 +203,7 @@ type SmcJoinMessageParams struct {
 	SmcAddress SmcAddressParams
 }
 
+// Equals checks equality.
 func (j *SmcJoinMessageParams) Equals(other SmcJoinMessageParams) bool {
 	if j.JoinType != other.JoinType ||
 		j.Ok != other.Ok ||
@@ -219,6 +227,7 @@ type SmcAddressParams struct {
 	LastJoiningDate time.Time
 }
 
+// Equals checks equality.
 func (a *SmcAddressParams) Equals(other SmcAddressParams) bool {
 	if a.LastJoiningDate != other.LastJoiningDate ||
 		a.LogicalAddress != other.LogicalAddress ||
@@ -237,6 +246,7 @@ type StatusMessageParams struct {
 	StatusByte string
 }
 
+// Equals checks equality.
 func (s *StatusMessageParams) Equals(other StatusMessageParams) bool {
 	return s.Message == other.Message && s.StatusByte == other.StatusByte
 }
@@ -249,6 +259,7 @@ type DCMessageParams struct {
 	Payload          *DcMessagePayload
 }
 
+// Equals checks equality.
 func (d *DCMessageParams) Equals(other DCMessageParams) bool {
 	if d.IsInComing != other.IsInComing ||
 		d.SourceOrDestName != other.SourceOrDestName ||

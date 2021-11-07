@@ -9,6 +9,7 @@ type ErrorParams struct {
 	Source      string // If not empty, this is the UID of an smc.
 }
 
+// Equals checks equality.
 func (e *ErrorParams) Equals(other ErrorParams) bool {
 	if e.ErrorCode == other.ErrorCode &&
 		e.Description == other.Description &&

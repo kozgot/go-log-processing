@@ -36,6 +36,7 @@ type TimelineOutParams struct {
 	URL      string
 }
 
+// Equals checks equality.
 func (w *WarningParams) Equals(other WarningParams) bool {
 	if w.Creation != other.Creation ||
 		w.Details != other.Details ||
@@ -89,6 +90,7 @@ func (w *WarningParams) Equals(other WarningParams) bool {
 	return true
 }
 
+// Equals checks equality.
 func (l *LostConnectionParams) Equals(other LostConnectionParams) bool {
 	if l.Type != other.Type ||
 		l.Reason != other.Reason ||
@@ -103,6 +105,7 @@ func (l *LostConnectionParams) Equals(other LostConnectionParams) bool {
 	return true
 }
 
+// Equals checks equality.
 func (t *TimelineOutParams) Equals(other TimelineOutParams) bool {
 	if t.Protocol != other.Protocol || t.URL != other.URL {
 		return false

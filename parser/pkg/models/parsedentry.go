@@ -29,6 +29,7 @@ func (p *ParsedLogEntry) FromJSON(bytes []byte) {
 	utils.FailOnError(err, "Failed to unmarshal log entry")
 }
 
+// Equals checks equality.
 func (p *ParsedLogEntry) Equals(other ParsedLogEntry) bool {
 	if p.Level != other.Level || p.Timestamp != other.Timestamp {
 		return false
