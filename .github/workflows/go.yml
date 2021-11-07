@@ -8,50 +8,8 @@ on:
 
 jobs:
 
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-
-    - name: Set up Go 1.x
-      uses: actions/setup-go@v2
-      with:
-        go-version: ^1.13
-      id: go
-
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v2
-
-    - name: Get dependencies for Elastic Uploader
-      run: |
-        cd ./elasticuploader
-        go get -v -t -d ./...
-        if [ -f Gopkg.toml ]; then
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-            dep ensure
-        fi
-
-    - name: Build Elastic Uploader
-      run: |
-        cd ./elasticuploader
-        go build -o elasticuploader -v ./cmd
-
-    - name: Get dependencies for Parser
-      run: |
-        cd ./parser
-        go get -v -t -d ./...
-        if [ -f Gopkg.toml ]; then
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-            dep ensure
-        fi
-
-    - name: Build Parser
-      run: |
-        cd ./parser
-        go build -o parser -v ./cmd
-
-  test:
-    name: Test
+  testparser:
+    name: Build and test Parser
     runs-on: ubuntu-latest
     # Docker Hub image that `container-job` executes in
     container: golang:1.16
@@ -87,7 +45,106 @@ jobs:
             dep ensure
         fi
 
-    - name: Test Parser
+    - name: Build
+      run: |
+        cd ./parser
+        go build -o parser -v ./cmd
+
+    - name: Test
       run: |
         cd ./parser/tests
+        go test -v ./...
+
+  testuploader:
+    name: Build and test ElasticUploader
+    runs-on: ubuntu-latest
+    # Docker Hub image that `container-job` executes in
+    container: golang:1.16
+
+    # Service containers to run with `build`
+    services:
+      # Label used to access the service container
+      rabbitmq:
+        # Docker Hub image
+        image: rabbitmq:3-management
+        #
+        ports:
+          # Opens tcp port 5672 on the host and service container
+          - 5672:5672
+
+    steps:
+
+    - name: Set up Go 1.x
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.13
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Get dependencies for ElasticUploader
+      run: |
+        cd ./elasticuploader
+        go get -v -t -d ./...
+        if [ -f Gopkg.toml ]; then
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            dep ensure
+        fi
+
+    - name: Build
+      run: |
+        cd ./elasticuploader
+        go build -o elasticuploader -v ./cmd
+
+    - name: Test
+      run: |
+        cd ./elasticuploader
+        go test -v ./...
+
+  testpostprocessor:
+    name: Build and test Postprocessor
+    runs-on: ubuntu-latest
+    # Docker Hub image that `container-job` executes in
+    container: golang:1.16
+
+    # Service containers to run with `build`
+    services:
+      # Label used to access the service container
+      rabbitmq:
+        # Docker Hub image
+        image: rabbitmq:3-management
+        #
+        ports:
+          # Opens tcp port 5672 on the host and service container
+          - 5672:5672
+
+    steps:
+
+    - name: Set up Go 1.x
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.13
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Get dependencies for Postprocessor
+      run: |
+        cd ./postprocessor
+        go get -v -t -d ./...
+        if [ -f Gopkg.toml ]; then
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            dep ensure
+        fi
+
+    - name: Build
+      run: |
+        cd ./postprocessor
+        go build -o postprocessor -v ./cmd
+
+    - name: Test
+      run: |
+        cd ./postprocessor
         go test -v ./...
