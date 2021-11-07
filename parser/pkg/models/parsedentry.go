@@ -10,9 +10,9 @@ import (
 type ParsedLogEntry struct {
 	Timestamp     time.Time
 	Level         string
-	ErrorParams   ErrorParams
-	WarningParams WarningParams
-	InfoParams    InfoParams
+	ErrorParams   *ErrorParams
+	WarningParams *WarningParams
+	InfoParams    *InfoParams
 }
 
 // Serialize serialzes a parsed log enrty.

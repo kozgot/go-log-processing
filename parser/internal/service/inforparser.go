@@ -13,63 +13,63 @@ func parseInfo(line models.LineWithDate) *models.InfoParams {
 
 	routingMessage := parseRoutingTableLine(line.Rest)
 	if routingMessage != nil {
-		infoParams.RoutingMessage = *routingMessage
+		infoParams.RoutingMessage = routingMessage
 		infoParams.EntryType = models.Routing
 		return &infoParams
 	}
 
 	joinMessage := parseSmcJoinLine(line.Rest)
 	if joinMessage != nil {
-		infoParams.JoinMessage = *joinMessage
+		infoParams.JoinMessage = joinMessage
 		infoParams.EntryType = models.SMCJoin
 		return &infoParams
 	}
 
 	statusMessage := parseStatusLine(line.Rest)
 	if statusMessage != nil {
-		infoParams.StatusMessage = *statusMessage
+		infoParams.StatusMessage = statusMessage
 		infoParams.EntryType = models.NetworkStatus
 		return &infoParams
 	}
 
 	dcMessage := parseDCMessage(line.Rest)
 	if dcMessage != nil {
-		infoParams.DCMessage = *dcMessage
+		infoParams.DCMessage = dcMessage
 		infoParams.EntryType = models.DCMessage
 		return &infoParams
 	}
 
 	connectionAttempt := parseConnectionAttempt(line.Rest)
 	if connectionAttempt != nil {
-		infoParams.ConnectionAttempt = *connectionAttempt
+		infoParams.ConnectionAttempt = connectionAttempt
 		infoParams.EntryType = models.ConnectionAttempt
 		return &infoParams
 	}
 
 	configUpdate := parseSmcConfigUpdate(line.Rest)
 	if configUpdate != nil {
-		infoParams.SmcConfigUpdate = *configUpdate
+		infoParams.SmcConfigUpdate = configUpdate
 		infoParams.EntryType = models.SmcConfigUpdate
 		return &infoParams
 	}
 
 	connectionReleased := parseConnectionReleasedEntry(line.Rest)
 	if connectionReleased != nil {
-		infoParams.ConnectionReleased = *connectionReleased
+		infoParams.ConnectionReleased = connectionReleased
 		infoParams.EntryType = models.ConnectionReleased
 		return &infoParams
 	}
 
 	initConnectionParams := parseInitConnectionLogEntry(line.Rest)
 	if initConnectionParams != nil {
-		infoParams.InitConnection = *initConnectionParams
+		infoParams.InitConnection = initConnectionParams
 		infoParams.EntryType = models.InitDLMSConnection
 		return &infoParams
 	}
 
 	internalDiagnosticsEntry := parseSmcInternalDiagnosticsEntry(line.Rest)
 	if internalDiagnosticsEntry != nil {
-		infoParams.InternalDiagnosticsData = *internalDiagnosticsEntry
+		infoParams.InternalDiagnosticsData = internalDiagnosticsEntry
 		infoParams.EntryType = models.InternalDiagnostics
 		return &infoParams
 	}

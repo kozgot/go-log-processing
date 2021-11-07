@@ -13,27 +13,24 @@ func ParseContents(line models.LineWithDate) *models.ParsedLogEntry {
 	switch line.Level {
 	case "ERROR":
 		errorParams := parseError(line)
-		parsedLine.ErrorParams = *errorParams
+		parsedLine.ErrorParams = errorParams
 
 	case "WARN":
 		warning := parseWarn(line)
 		if warning == nil {
 			return nil
 		}
-		parsedLine.WarningParams = *warning
+		parsedLine.WarningParams = warning
 
 	// Log entries with 'WARNING' log level come from a different log file,
 	// and they have a completely different format, so they are handled separately.
 	case "WARNING":
 		warning := parseWarning(line)
-		parsedLine.WarningParams = *warning
+		parsedLine.WarningParams = warning
 
 	case "INFO":
 		info := parseInfo(line)
-		if info == nil {
-			return nil
-		}
-		parsedLine.InfoParams = *info
+		parsedLine.InfoParams = info
 	}
 
 	return &parsedLine
