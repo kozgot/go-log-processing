@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sync"
 
-	"github.com/kozgot/go-log-processing/parser/internal/azure"
-	"github.com/kozgot/go-log-processing/parser/internal/rabbitmq"
-	parser "github.com/kozgot/go-log-processing/parser/internal/service"
+	"github.com/kozgot/go-log-processing/parser/pkg/filedownloader"
+	"github.com/kozgot/go-log-processing/parser/pkg/logparser"
+	"github.com/kozgot/go-log-processing/parser/pkg/rabbitmq"
 )
 
 func main() {
@@ -28,27 +27,32 @@ func main() {
 		log.Fatal("Either the AZURE_STORAGE_ACCOUNT or AZURE_STORAGE_ACCESS_KEY environment variable is not set")
 	}
 
-	// todo: add rabbitmq service with DI
-	channel, conn := rabbitmq.OpenChannelAndConnection(rabbitMqURL)
-	defer rabbitmq.CloseChannelAndConnection(channel, conn)
-
-	azureFileDownloader := azure.SetupDownloader(azureStorageAccountName, azureStorageAccessKey, azureStorageContainer)
-
-	azureFileNames := azureFileDownloader.GetFileNamesFromAzure()
-
-	var wg sync.WaitGroup
-
-	for _, fileName := range azureFileNames {
-		fmt.Println(fileName)
-		readCloser := azureFileDownloader.DownloadFileFromAzure(fileName)
-
-		wg.Add(1)
-		go parser.ParseLogFile(readCloser, fileName, &wg, channel)
+	logEntriesExchangeName := os.Getenv("LOG_ENTRIES_EXCHANGE")
+	fmt.Println("LOG_ENTRIES_EXCHANGE:", logEntriesExchangeName)
+	if len(logEntriesExchangeName) == 0 {
+		log.Fatal("The LOG_ENTRIES_EXCHANGE environment variable is not set")
 	}
 
-	wg.Wait()
+	processEntryRoutingKey := os.Getenv("PROCESS_ENTRY_ROUTING_KEY")
+	fmt.Println("PROCESS_ENTRY_ROUTING_KEY:", processEntryRoutingKey)
+	if len(processEntryRoutingKey) == 0 {
+		log.Fatal("The PROCESS_ENTRY_ROUTING_KEY environment variable is not set")
+	}
 
-	// Send a message indicating that this is the end of the processing
-	rabbitmq.SendStringMessageToPostProcessor("END", channel)
-	log.Printf("  Sent END to Postprocessing service ...")
+	// Initialize rabbitMQ producer.
+	rabbitMqProducer := rabbitmq.NewAmqpProducer(processEntryRoutingKey, logEntriesExchangeName, rabbitMqURL)
+
+	// Open a connection and a channel to send the log entries to.
+	rabbitMqProducer.OpenChannelAndConnection()
+	defer rabbitMqProducer.CloseChannelAndConnection()
+
+	// Initialize file downloader.
+	azureFileDownloader := filedownloader.NewAzureDownloader(
+		azureStorageAccountName,
+		azureStorageAccessKey,
+		azureStorageContainer)
+
+	// Init and run parser.
+	logParser := logparser.NewLogParser(azureFileDownloader, rabbitMqProducer)
+	logParser.ParseLogfiles()
 }

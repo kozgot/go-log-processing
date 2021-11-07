@@ -1,4 +1,4 @@
-package azure
+package filedownloader
 
 import (
 	"context"
@@ -11,22 +11,15 @@ import (
 	"github.com/kozgot/go-log-processing/parser/internal/utils"
 )
 
-// DownloaderData contains data needed to list or dowload blobs from azure.
-type DownloaderData struct {
+// AzureDownloader contains data needed to list or dowload blobs from azure.
+type AzureDownloader struct {
 	Credential        *azblob.SharedKeyCredential
 	StorageAccountURL *url.URL
 	ContainerURL      azblob.ContainerURL
 }
 
-// DownloaderInterface encapsulates the methods used to list and downloads blobs from azure.
-type DownloaderInterface interface {
-	SetupDownloader(accountName string, accountKey string, containerName string) *DownloaderData
-	GetFileNamesFromAzure() []string
-	DownloadFileFromAzure(fileName string) io.ReadCloser
-}
-
-// SetupDownloader creates and returns data a DownloaderData.
-func SetupDownloader(accountName string, accountKey string, containerName string) *DownloaderData {
+// NewAzureDownloader creates and returns data a DownloaderData.
+func NewAzureDownloader(accountName string, accountKey string, containerName string) *AzureDownloader {
 	// Create a default request pipeline using your storage account name and account key.
 	credential, err := azblob.NewSharedKeyCredential(accountName, accountKey)
 	utils.FailOnError(err, "Invalid credentials for azure")
@@ -39,7 +32,7 @@ func SetupDownloader(accountName string, accountKey string, containerName string
 
 	containerURL := azblob.NewContainerURL(*storageAccountURL, pipeline)
 
-	downloader := DownloaderData{
+	downloader := AzureDownloader{
 		Credential:        credential,
 		ContainerURL:      containerURL,
 		StorageAccountURL: storageAccountURL,
@@ -48,8 +41,8 @@ func SetupDownloader(accountName string, accountKey string, containerName string
 	return &downloader
 }
 
-// GetFileNamesFromAzure lists the blobs in the azure container.
-func (downloader *DownloaderData) GetFileNamesFromAzure() []string {
+// ListFileNames lists the blobs in the azure container.
+func (downloader *AzureDownloader) ListFileNames() []string {
 	fileNames := []string{}
 	ctx := context.Background()
 
@@ -78,8 +71,8 @@ func (downloader *DownloaderData) GetFileNamesFromAzure() []string {
 	return fileNames
 }
 
-// DownloadFileFromAzure downloads the blob with the given name from azure.
-func (downloader *DownloaderData) DownloadFileFromAzure(fileName string) io.ReadCloser {
+// DownloadFile downloads the blob with the given name from azure.
+func (downloader *AzureDownloader) DownloadFile(fileName string) io.ReadCloser {
 	blobURL := downloader.ContainerURL.NewBlockBlobURL(fileName)
 	ctx := context.Background()
 

@@ -3,39 +3,45 @@ package processing
 import (
 	"github.com/kozgot/go-log-processing/postprocessor/internal/rabbitmq"
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
-	"github.com/streadway/amqp"
 )
 
-func ProcessConsumptionAndIndexValues(
+// ConsumptionProcessor encapsulates consumption processsing data and logic.
+type ConsumptionProcessor struct {
+	consumptionValues    []models.ConsumtionValue
+	indexValues          []models.IndexValue
+	messageProducer      rabbitmq.MessageProducer
+	consumptionIndexName string
+}
+
+// NewConsumptionProcessor creates a new consmptionprocessor instance.
+func NewConsumptionProcessor(
 	consumptionValues []models.ConsumtionValue,
 	indexValues []models.IndexValue,
-	channel *amqp.Channel,
-	esIndexName string) {
-	consumptionsBySmcUID := make(map[string][]models.ConsumtionValue)
-	for _, cons := range consumptionValues {
-		smcUID := findRelatedSmc(cons, indexValues)
+	messageProducer rabbitmq.MessageProducer,
+	consumptionIndexName string) *ConsumptionProcessor {
+	consumptionProcessor := ConsumptionProcessor{
+		consumptionValues:    consumptionValues,
+		indexValues:          indexValues,
+		messageProducer:      messageProducer,
+		consumptionIndexName: consumptionIndexName,
+	}
+
+	return &consumptionProcessor
+}
+
+// ProcessConsumptionAndIndexValues performs further processing on to retrieve consumption values for SMCs.
+func (consumptionProcessor *ConsumptionProcessor) ProcessConsumptionAndIndexValues() {
+	for _, cons := range consumptionProcessor.consumptionValues {
+		smcUID := consumptionProcessor.findRelatedSmc(cons)
 		if smcUID != "" {
-			initConsumptionArrayIfNeeded(consumptionsBySmcUID, smcUID)
 			cons.SmcUID = smcUID
-			consumptionsBySmcUID[smcUID] = append(consumptionsBySmcUID[smcUID], cons)
-			saveConsumptionToDB(cons, channel, esIndexName)
+			consumptionProcessor.messageProducer.PublishConsumption(cons, consumptionProcessor.consumptionIndexName)
 		}
 	}
 }
 
-func saveConsumptionToDB(cons models.ConsumtionValue, channel *amqp.Channel, esIndexName string) {
-	rabbitmq.SendConsumptionToElasticUploader(cons, channel, esIndexName)
-}
-
-func initConsumptionArrayIfNeeded(consumptionsBySmcUID map[string][]models.ConsumtionValue, uid string) {
-	_, ok := consumptionsBySmcUID[uid]
-	if !ok {
-		consumptionsBySmcUID[uid] = []models.ConsumtionValue{}
-	}
-}
-
-func findRelatedSmc(cons models.ConsumtionValue, indexValues []models.IndexValue) string {
-	for _, index := range indexValues {
+func (consumptionProcessor *ConsumptionProcessor) findRelatedSmc(cons models.ConsumtionValue) string {
+	for _, index := range consumptionProcessor.indexValues {
 		if index.ServiceLevel == cons.ServiceLevel &&
 			index.ReceiveTime == cons.ReceiveTime &&
 			index.PreviousTime == cons.StartTime {

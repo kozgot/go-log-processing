@@ -1,147 +1,90 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
-	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
 	"github.com/kozgot/go-log-processing/postprocessor/internal/processing"
 	"github.com/kozgot/go-log-processing/postprocessor/internal/rabbitmq"
-	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
-	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
-	"github.com/streadway/amqp"
 )
-
-const logEntriesExchangeName = "logentries_direct_durable"
-
-const consumptionIndexName = "consumption"
-const smcIndexName = "smc"
 
 func main() {
 	log.Println("PostProcessor service starting...")
 	rabbitMqURL := os.Getenv("RABBIT_URL")
 	fmt.Println("RABBIT_URL:", rabbitMqURL)
+	if len(rabbitMqURL) == 0 {
+		log.Fatal("The RABBIT_URL environment variable is not set")
+	}
 
-	conn, err := amqp.Dial(rabbitMqURL)
-	utils.FailOnError(err, "Failed to connect to RabbitMQ")
-	defer conn.Close()
+	saveDataExchangeName := os.Getenv("PROCESSED_DATA_EXCHANGE")
+	fmt.Println("PROCESSED_DATA_EXCHANGE:", saveDataExchangeName)
+	if len(saveDataExchangeName) == 0 {
+		log.Fatal("The PROCESSED_DATA_EXCHANGE environment variable is not set")
+	}
 
-	ch, err := conn.Channel()
-	utils.FailOnError(err, "Failed to open a channel")
-	defer ch.Close()
+	saveDataRoutingKey := os.Getenv("SAVE_DATA_ROUTING_KEY")
+	fmt.Println("SAVE_DATA_ROUTING_KEY:", saveDataRoutingKey)
+	if len(saveDataRoutingKey) == 0 {
+		log.Fatal("The SAVE_DATA_ROUTING_KEY environment variable is not set")
+	}
 
-	err = ch.ExchangeDeclare(
-		logEntriesExchangeName, // name
-		"direct",               // type
-		true,                   // durable
-		false,                  // auto-deleted
-		false,                  // internal
-		false,                  // no-wait
-		nil,                    // arguments
-	)
-	utils.FailOnError(err, "Failed to declare an exchange")
+	processEntriesExchangeName := os.Getenv("LOG_ENTRIES_EXCHANGE")
+	fmt.Println("LOG_ENTRIES_EXCHANGE:", processEntriesExchangeName)
+	if len(processEntriesExchangeName) == 0 {
+		log.Fatal("The LOG_ENTRIES_EXCHANGE environment variable is not set")
+	}
 
-	q, err := ch.QueueDeclare(
-		"processing_queue_durable", // name
-		true,                       // durable
-		false,                      // delete when unused
-		true,                       // exclusive
-		false,                      // no-wait
-		nil,                        // arguments
-	)
+	processingQueueName := os.Getenv("PROCESSING_QUEUE")
+	fmt.Println("PROCESSING_QUEUE:", processingQueueName)
+	if len(processingQueueName) == 0 {
+		log.Fatal("The PROCESSING_QUEUE environment variable is not set")
+	}
 
-	utils.FailOnError(err, "Failed to declare a queue")
+	processEntryRoutingKey := os.Getenv("PROCESS_ENTRY_ROUTING_KEY")
+	fmt.Println("PROCESS_ENTRY_ROUTING_KEY:", processEntryRoutingKey)
+	if len(processEntryRoutingKey) == 0 {
+		log.Fatal("The PROCESS_ENTRY_ROUTING_KEY environment variable is not set")
+	}
 
-	// TODO: extract routing key to a single place, eg.: env variables
-	err = ch.QueueBind(
-		q.Name,                 // queue name
-		"process-entry",        // routing key
-		logEntriesExchangeName, // exchange
-		false,
-		nil,
-	)
+	consumptionIndexName := os.Getenv("CONSUMPTION_INDEX_NAME")
+	fmt.Println("CONSUMPTION_INDEX_NAME:", consumptionIndexName)
+	if len(consumptionIndexName) == 0 {
+		log.Fatal("The CONSUMPTION_INDEX_NAME environment variable is not set")
+	}
 
-	utils.FailOnError(err, "Failed to bind a queue")
+	eventsIndexName := os.Getenv("EVENTS_INDEX_NAME")
+	fmt.Println("EVENTS_INDEX_NAME:", eventsIndexName)
+	if len(eventsIndexName) == 0 {
+		log.Fatal("The EVENTS_INDEX_NAME environment variable is not set")
+	}
 
-	msgs, err := ch.Consume(
-		q.Name, // queue
-		"",     // consumer
-		false,  // auto-ack
-		false,  // exclusive
-		false,  // no-local
-		false,  // no-wait
-		nil,    // args
-	)
+	// Init message consumer.
+	rabbitMQConsumer := rabbitmq.NewAmqpConsumer(
+		rabbitMqURL,
+		processEntryRoutingKey,
+		processEntriesExchangeName,
+		processingQueueName)
 
-	utils.FailOnError(err, "Failed to register a consumer")
+	// Open consumer channel and connection.
+	rabbitMQConsumer.Connect()
+	defer rabbitMQConsumer.CloseConnectionAndChannel()
+
+	// Init message producer.
+	rabbitMqProducer := rabbitmq.NewAmqpProducer(
+		rabbitMqURL,
+		saveDataExchangeName,
+		saveDataRoutingKey)
+
+	// Open producer channel and connection.
+	rabbitMqProducer.Connect(rabbitMqURL)
+	defer rabbitMqProducer.CloseChannelAndConnection()
 
 	forever := make(chan bool)
 
-	channelToSendTo, connectionToSendTo := rabbitmq.OpenChannelAndConnection(rabbitMqURL)
-	defer rabbitmq.CloseChannelAndConnection(channelToSendTo, connectionToSendTo)
+	processor := processing.NewEntryProcessor(rabbitMqProducer, rabbitMQConsumer, eventsIndexName, consumptionIndexName)
+	processor.HandleEntries()
 
-	// Create indices in ES.
-	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+smcIndexName, channelToSendTo)
-	rabbitmq.SendStringMessageToElastic("CREATEINDEX|"+consumptionIndexName, channelToSendTo)
-
-	eventsBySmcUID := make(map[string][]models.SmcEvent)
-	smcDataBySmcUID := make(map[string]models.SmcData)
-	smcUIDsByURL := make(map[string]string)
-	podUIDToSmcUID := make(map[string]string)
-	consumptionValues := []models.ConsumtionValue{}
-	indexValues := []models.IndexValue{}
-
-	go func() {
-		for d := range msgs {
-			if strings.Contains(string(d.Body), "END") {
-				fmt.Println("End of entries...")
-
-				// Further processing to get consumption and index info.
-				processing.ProcessConsumptionAndIndexValues(consumptionValues, indexValues, channelToSendTo, consumptionIndexName)
-
-				rabbitmq.SendStringMessageToElastic("DONE", channelToSendTo)
-
-				// Acknowledge the message after it has been processed.
-				err := d.Ack(false)
-				utils.FailOnError(err, "Could not acknowledge END message")
-				continue
-			}
-
-			entry := deserializeMessage(d.Body)
-			consumption, index := processing.Process(
-				entry,
-				channelToSendTo,
-				eventsBySmcUID,
-				smcDataBySmcUID,
-				smcUIDsByURL,
-				podUIDToSmcUID,
-				smcIndexName)
-
-			if index != nil {
-				indexValues = append(indexValues, *index)
-			}
-			if consumption != nil {
-				consumptionValues = append(consumptionValues, *consumption)
-			}
-
-			// Acknowledge the message after it has been processed.
-			err := d.Ack(false)
-			utils.FailOnError(err,
-				"Could not acknowledge message with timestamp: "+entry.Timestamp.Format("2 Jan 2006 15:04:05"))
-		}
-	}()
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
 	<-forever
-}
-
-func deserializeMessage(message []byte) parsermodels.ParsedLogEntry {
-	var data parsermodels.ParsedLogEntry
-	if err := json.Unmarshal(message, &data); err != nil {
-		fmt.Println("Failed to unmarshal: ", err)
-	}
-
-	return data
 }

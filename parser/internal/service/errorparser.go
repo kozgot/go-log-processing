@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/kozgot/go-log-processing/parser/pkg/formats"
+	"github.com/kozgot/go-log-processing/parser/internal/formats"
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
 

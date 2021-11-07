@@ -1,25 +1,108 @@
 package processing
 
 import (
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
 	"github.com/kozgot/go-log-processing/postprocessor/internal/rabbitmq"
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
-	"github.com/streadway/amqp"
+	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
 )
 
-// Process processes the log entry received as a parameter.
-func Process(logEntry parsermodels.ParsedLogEntry,
-	channel *amqp.Channel,
-	eventsBySmcUID map[string][]models.SmcEvent,
-	smcDataBySmcUID map[string]models.SmcData,
-	smcUIDsByURL map[string]string,
-	podUIDToSmcUID map[string]string,
-	esIndexName string) (*models.ConsumtionValue, *models.IndexValue) {
+type EntryProcessor struct {
+	eventsBySmcUID    map[string][]models.SmcEvent
+	smcDataBySmcUID   map[string]models.SmcData
+	smcUIDsByURL      map[string]string
+	podUIDToSmcUID    map[string]string
+	consumptionValues []models.ConsumtionValue
+	indexValues       []models.IndexValue
+
+	messageProducer rabbitmq.MessageProducer
+	messageConsumer rabbitmq.MessageConsumer
+
+	eventIndexName       string
+	consumptionIndexName string
+}
+
+func NewEntryProcessor(
+	uploader rabbitmq.MessageProducer,
+	messageConsumer rabbitmq.MessageConsumer,
+	eventIndexName string,
+	consumptionIndexName string) *EntryProcessor {
+	eventsBySmcUID := make(map[string][]models.SmcEvent)
+	smcDataBySmcUID := make(map[string]models.SmcData)
+	smcUIDsByURL := make(map[string]string)
+	podUIDToSmcUID := make(map[string]string)
+	consumptionValues := []models.ConsumtionValue{}
+	indexValues := []models.IndexValue{}
+
+	result := EntryProcessor{
+		eventsBySmcUID:       eventsBySmcUID,
+		smcDataBySmcUID:      smcDataBySmcUID,
+		smcUIDsByURL:         smcUIDsByURL,
+		podUIDToSmcUID:       podUIDToSmcUID,
+		consumptionValues:    consumptionValues,
+		indexValues:          indexValues,
+		messageProducer:      uploader,
+		messageConsumer:      messageConsumer,
+		eventIndexName:       eventIndexName,
+		consumptionIndexName: consumptionIndexName,
+	}
+
+	return &result
+}
+
+// HandleEntries consumes entries from the provided MessageConsumer,
+// and uploads them to ES using the provided ESUploader.
+func (processor *EntryProcessor) HandleEntries() {
+	// Create indices in ES.
+	processor.messageProducer.PublishCreateIndexMessage(processor.eventIndexName)
+	processor.messageProducer.PublishCreateIndexMessage(processor.consumptionIndexName)
+
+	msgs, err := processor.messageConsumer.ConsumeMessages()
+	utils.FailOnError(err, "Failed to register a consumer")
+
+	go func() {
+		for d := range msgs {
+			if strings.Contains(string(d.Body), "END") {
+				fmt.Println("End of entries...")
+
+				// Further processing to get consumption and index info.
+				consumptionProcessor := NewConsumptionProcessor(
+					processor.consumptionValues,
+					processor.indexValues,
+					processor.messageProducer,
+					processor.consumptionIndexName)
+				consumptionProcessor.ProcessConsumptionAndIndexValues()
+
+				// Acknowledge the message after it has been processed.
+				err := d.Ack(false)
+				utils.FailOnError(err, "Could not acknowledge END message")
+				continue
+			}
+
+			entry := deserializeParsedLogEntry(d.Body)
+			processor.processEntry(entry)
+
+			// Acknowledge the message after it has been processed.
+			err := d.Ack(false)
+			utils.FailOnError(err,
+				"Could not acknowledge message with timestamp: "+entry.Timestamp.Format("2 Jan 2006 15:04:05"))
+		}
+	}()
+}
+
+// processEntry processes the log entry received as a parameter.
+func (processor *EntryProcessor) processEntry(logEntry parsermodels.ParsedLogEntry) {
+	var data *models.SmcData
+	var event *models.SmcEvent
+	var consumption *models.ConsumtionValue
+	var index *models.IndexValue
 	switch logEntry.Level {
 	case "INFO":
-		data, event, consumption, index := ProcessInfoEntry(logEntry, podUIDToSmcUID)
+		data, event, consumption, index = ProcessInfoEntry(logEntry, processor.podUIDToSmcUID)
 
 		if event != nil && event.EventType == models.ConnectionAttempt {
 			// This is the only entry where the URL and SMC UID parameters are given at the same time.
@@ -27,41 +110,34 @@ func Process(logEntry parsermodels.ParsedLogEntry,
 			UID := data.SmcUID
 
 			// Save it in the dictionary so we can use it later in the processing logic.
-			_, ok := smcUIDsByURL[URL]
+			_, ok := processor.smcUIDsByURL[URL]
 			if !ok {
-				smcUIDsByURL[URL] = UID
+				processor.smcUIDsByURL[URL] = UID
 			}
 		}
 
-		registerEvent(eventsBySmcUID, smcUIDsByURL, event, data, channel, esIndexName)
-		updateSmcData(smcDataBySmcUID, smcUIDsByURL, data)
-
-		return consumption, index
+		if index != nil {
+			processor.indexValues = append(processor.indexValues, *index)
+		}
+		if consumption != nil {
+			processor.consumptionValues = append(processor.consumptionValues, *consumption)
+		}
 
 	case "WARN":
-		data, event := ProcessWarn(logEntry)
-		registerEvent(eventsBySmcUID, smcUIDsByURL, event, data, channel, esIndexName)
-		updateSmcData(smcDataBySmcUID, smcUIDsByURL, data)
+		data, event = ProcessWarn(logEntry)
 
 	case "WARNING":
-		data, event := ProcessWarning(logEntry)
-		registerEvent(eventsBySmcUID, smcUIDsByURL, event, data, channel, esIndexName)
-		updateSmcData(smcDataBySmcUID, smcUIDsByURL, data)
+		data, event = ProcessWarning(logEntry)
 
 	case "ERROR":
-		data, event := ProcessError(logEntry)
-		registerEvent(eventsBySmcUID, smcUIDsByURL, event, data, channel, esIndexName)
-		updateSmcData(smcDataBySmcUID, smcUIDsByURL, data)
+		data, event = ProcessError(logEntry)
 
 	default:
 		fmt.Printf("Unknown log level %s", logEntry.Level)
 	}
 
-	return nil, nil
-}
-
-func saveToDb(event models.SmcEvent, channel *amqp.Channel, esIndexName string) {
-	rabbitmq.SendEventToElasticUploader(event, channel, esIndexName)
+	processor.registerEvent(event, data)
+	processor.updateSmcData(data)
 }
 
 func initArrayIfNeeded(eventsBySmcUID map[string][]models.SmcEvent, uid string) {
@@ -71,13 +147,7 @@ func initArrayIfNeeded(eventsBySmcUID map[string][]models.SmcEvent, uid string) 
 	}
 }
 
-func registerEvent(eventsBySmcUID map[string][]models.SmcEvent,
-	smcUIDsByURL map[string]string,
-	event *models.SmcEvent,
-	data *models.SmcData,
-	channel *amqp.Channel,
-	esIndexName string) {
-	// todo
+func (processor *EntryProcessor) registerEvent(event *models.SmcEvent, data *models.SmcData) {
 	if data == nil {
 		return
 	}
@@ -90,7 +160,7 @@ func registerEvent(eventsBySmcUID map[string][]models.SmcEvent,
 
 	// If only a URL is provided, use that to get the SMC UID.
 	if smcUID == "" && data.Address.URL != "" {
-		smcUID = smcUIDsByURL[data.Address.URL]
+		smcUID = processor.smcUIDsByURL[data.Address.URL]
 	}
 
 	if event.SmcUID == "" {
@@ -98,44 +168,44 @@ func registerEvent(eventsBySmcUID map[string][]models.SmcEvent,
 	}
 
 	// Append the event to the corresponding array.
-	initArrayIfNeeded(eventsBySmcUID, smcUID)
-	eventsBySmcUID[smcUID] = append(eventsBySmcUID[smcUID], *event)
+	initArrayIfNeeded(processor.eventsBySmcUID, smcUID)
+	processor.eventsBySmcUID[smcUID] = append(processor.eventsBySmcUID[smcUID], *event)
 
 	// send to ES
-	saveToDb(*event, channel, esIndexName)
+	processor.messageProducer.PublishEvent(*event, processor.eventIndexName)
 }
 
-func updateSmcData(smcDataBySmcUID map[string]models.SmcData, smcUIDsByURL map[string]string, data *models.SmcData) {
+func (processor *EntryProcessor) updateSmcData(data *models.SmcData) {
 	if data == nil {
 		return
 	}
 
 	// We have to find the smc by URL, UID is not provided.
 	if data.SmcUID == "" && data.Address.URL != "" {
-		smcUID := smcUIDsByURL[data.Address.URL]
-		smcData, ok := smcDataBySmcUID[smcUID]
+		smcUID := processor.smcUIDsByURL[data.Address.URL]
+		smcData, ok := processor.smcDataBySmcUID[smcUID]
 		if !ok {
 			// add new value
-			smcDataBySmcUID[smcUID] = *data
+			processor.smcDataBySmcUID[smcUID] = *data
 		} else {
 			newSmcData := updateChangedProperties(smcData, *data)
 
 			// replace existing value
-			smcDataBySmcUID[smcUID] = newSmcData
+			processor.smcDataBySmcUID[smcUID] = newSmcData
 		}
 	}
 
 	// UID is provided.
 	if data.SmcUID != "" {
-		smcData, ok := smcDataBySmcUID[data.SmcUID]
+		smcData, ok := processor.smcDataBySmcUID[data.SmcUID]
 		if !ok {
 			// add new value
-			smcDataBySmcUID[data.SmcUID] = *data
+			processor.smcDataBySmcUID[data.SmcUID] = *data
 		} else {
 			newSmcData := updateChangedProperties(smcData, *data)
 
 			// replace existing value
-			smcDataBySmcUID[data.SmcUID] = newSmcData
+			processor.smcDataBySmcUID[data.SmcUID] = newSmcData
 		}
 	}
 }
@@ -212,4 +282,11 @@ func containsPod(pod models.Pod, list []models.Pod) bool {
 		}
 	}
 	return false
+}
+
+func deserializeParsedLogEntry(bytes []byte) parsermodels.ParsedLogEntry {
+	var parsedEntry parsermodels.ParsedLogEntry
+	err := json.Unmarshal(bytes, &parsedEntry)
+	utils.FailOnError(err, "Failed to unmarshal log entry")
+	return parsedEntry
 }
