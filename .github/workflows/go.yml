@@ -11,6 +11,18 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+
+    # Service containers to run with `build`
+    services:
+      # Label used to access the service container
+      rabbitmq:
+        # Docker Hub image
+        image: rabbitmq:3-management
+        #
+        ports:
+          # Opens tcp port 5672 on the host and service container
+          - 5672:5672
+
     steps:
 
     - name: Set up Go 1.x
@@ -57,5 +69,5 @@ jobs:
 
     - name: Test Parser
       run: |
-        cd ./parser
-        go test -v ./cmd
+        cd ./parser/tests
+        go test -v ./...
