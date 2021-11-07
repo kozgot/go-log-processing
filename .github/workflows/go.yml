@@ -18,6 +18,10 @@ jobs:
       rabbitmq:
         # Docker Hub image
         image: rabbitmq:3-management
+        #
+        ports:
+          # Opens tcp port 5672 on the host and service container
+          - 5672:5672
 
     steps:
 

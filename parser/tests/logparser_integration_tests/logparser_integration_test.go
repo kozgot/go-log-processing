@@ -18,7 +18,7 @@ import (
 // with a mock file downloader that passes a dc main test file and a real rabbitmq producer,
 // checking for valid messages.
 func TestLogParser(t *testing.T) {
-	rabbitMqURL := "amqp://guest:guest@rabbitmq:5672/"
+	rabbitMqURL := "amqp://guest:guest@localhost:5672/"
 	testRoutingKey := "test-routing-key"
 	testExchangeName := "test_exchange"
 	testQueueName := "test_queue"
