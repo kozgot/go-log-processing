@@ -14,8 +14,8 @@ const LongNumberBetweenBracketsRegex = "\\[" + LongNumberRegex + "\\]"
 // AnyLettersBetweenBrackets matches strings containing any lowercase or uppercase letters between square brackets.
 const AnyLettersBetweenBrackets = "\\[(.*?)\\]"
 
-// NumberBetweenBrackets matches strings containing a single number between square brackets.
-const NumberBetweenBrackets = "\\[[0-9]\\]"
+// SingleNumberBetweenBrackets matches strings containing a single number between square brackets.
+const SingleNumberBetweenBrackets = "\\[[0-9]\\]"
 
 // FileNameRegex matches the (...) field.
 const FileNameRegex = "\\(" + anyCharsExceptOpeningParentheses + "::" + LongNumberRegex + "\\)"

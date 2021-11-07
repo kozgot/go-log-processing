@@ -17,17 +17,17 @@ func ParseSingleFile(readCloser io.ReadCloser, logFileName string,
 	scanner := bufio.NewScanner(readCloser)
 	for scanner.Scan() {
 		line := scanner.Text()
-		relevantLine, success := Filter(line)
+		relevantLine, success := ParseLogLevelAndFilter(line)
 		if !success {
 			continue
 		}
 
-		parsedLine, ok := ParseDate(*relevantLine)
+		lineWithTimestamp, ok := ParseTimestamp(*relevantLine)
 		if !ok {
 			continue
 		}
 
-		finalParsedLine := ParseContents(*parsedLine)
+		finalParsedLine := ParseContents(*lineWithTimestamp)
 		if finalParsedLine != nil {
 			rabbitMQProducer.PublishEntry(*finalParsedLine)
 		}

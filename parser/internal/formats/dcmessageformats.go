@@ -30,7 +30,7 @@ const ValueRegex = "value" + LongNumberBetweenBracketsRegex
 
 // ServiceLevelIDRegex matches the service level id field of a dc message,
 // formatted like: service_level_id[9].
-const ServiceLevelIDRegex = "service_level_id" + NumberBetweenBrackets
+const ServiceLevelIDRegex = "service_level_id" + SingleNumberBetweenBrackets
 
 // TimeRangeFromRegex is used to identify the start fo the time range of the dc message.
 // eg.: from[Wed Jun 10 09:18:33 2020].
@@ -49,7 +49,7 @@ const TimeRangeStartTicksRegex = "start" + LongNumberBetweenBracketsRegex
 const TimeRangeEndTicksRegex = "end" + LongNumberBetweenBracketsRegex
 
 // ConnectOrDisconnectTypeRegex matches the type field of a log entry.
-const ConnectOrDisconnectTypeRegex = "type" + NumberBetweenBrackets
+const ConnectOrDisconnectTypeRegex = "type" + SingleNumberBetweenBrackets
 
 // ClientIDRegex matches the client ID field of a log entry.
 // eg.: client_id[dc18] url[tcp://172.30.31.20:9062] topic[dc.config.dc18] timeout[10000] connected[0].
@@ -65,7 +65,7 @@ const TopicRegex = "topic" + AnythingBetweenBracketsRegex
 const TimeoutRegex = "timeout" + LongNumberBetweenBracketsRegex
 
 // ConnectedRegex matches the connected field of a log entry.
-const ConnectedRegex = "connected" + NumberBetweenBrackets
+const ConnectedRegex = "connected" + SingleNumberBetweenBrackets
 
 // DateTimeFieldRegex matches the time field of a dc message, formatted like: time[Wed Jun 10 10:02:35 2020].
 const DateTimeFieldRegex = "time\\[" + anyCharsExceptOpeningParentheses + "\\]"
@@ -92,7 +92,7 @@ const CurrentRegex = "current" + AnythingBetweenBracketsRegex
 const TotalRegex = "total" + AnythingBetweenBracketsRegex
 
 // MeterModeRegex matches the meter mode field of a service_level message, formatted like: meter_mode[2].
-const MeterModeRegex = "meter_mode" + NumberBetweenBrackets
+const MeterModeRegex = "meter_mode" + SingleNumberBetweenBrackets
 
 // StartHourDailyCycleRegex matches the start hour daily cycle field of a service_level message,
 // eg.: start_hour_daily_cycle[20h].
@@ -111,7 +111,7 @@ const LocalSheddingDailyEnergyBudgetRegex = "local_shedding_daily_energy_budget"
 const MaxActivePowerRegex = "max_active_power" + LongNumberBetweenBracketsRegex
 
 // InServiceRegex matches the in service field of a service_level message, formatted like: in_service[1].
-const InServiceRegex = "in_service" + NumberBetweenBrackets
+const InServiceRegex = "in_service" + SingleNumberBetweenBrackets
 
 // NameRegex matches the name field of a service_level message, formatted like: name[1. Suspension].
 const NameRegex = "name" + AnythingBetweenBracketsRegex
@@ -152,7 +152,7 @@ const LastSuccessfulRespDateRegex = "last_successful_dlms_response_date \\[" + a
 const NextHopRegex = "next_hop" + LongNumberBetweenBracketsRegex
 
 // PhaseRegex matches the phase field of a dc message, formatted like: phase[2].
-const PhaseRegex = "phase" + NumberBetweenBrackets
+const PhaseRegex = "phase" + SingleNumberBetweenBrackets
 
 // PositionInSmcRegex matches the position in smc field of a dc message, formatted like: position_in_smc[1].
 const PositionInSmcRegex = "position_in_smc" + LongNumberBetweenBracketsRegex

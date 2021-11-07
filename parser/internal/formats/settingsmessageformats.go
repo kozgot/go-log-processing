@@ -42,8 +42,8 @@ const LastDcStartTimeRegex = "last_dc_start_time" + LongNumberBetweenBracketsReg
 const DcDistroTargetFirmwareVersionRegex = "dc_distro_target_firmware_version" + AnythingBetweenBracketsRegex
 
 // FrequencyBandChangedRegex matches the frequency band changed field of a dc message, eg.: frequency_band_changed[0].
-const FrequencyBandChangedRegex = "frequency_band_changed" + NumberBetweenBrackets
+const FrequencyBandChangedRegex = "frequency_band_changed" + SingleNumberBetweenBrackets
 
 // FrequencyBandRollbackDoneRegex matches the frequency band rollback done field of a dc message.
 // eg.: frequency_band_rollback_done[0].
-const FrequencyBandRollbackDoneRegex = "frequency_band_rollback_done" + NumberBetweenBrackets
+const FrequencyBandRollbackDoneRegex = "frequency_band_rollback_done" + SingleNumberBetweenBrackets

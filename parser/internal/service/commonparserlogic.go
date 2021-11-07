@@ -15,7 +15,6 @@ func parseFieldInBracketsAsString(line string, regexString string) string {
 	textualField := regex.FindString(line)
 
 	if textualField == "" {
-		// log.Println("Could not parse textual field from line: ", line, regex)
 		return ""
 	}
 
@@ -128,7 +127,7 @@ func parseDateTime(timeString string) time.Time {
 
 	dateString := dateRegex.FindString(timeString)
 	if dateString != "" {
-		date, err := time.Parse(formats.DateLayoutString, dateString)
+		date, err := time.ParseInLocation(formats.DateLayoutString, dateString, time.UTC)
 		if err != nil {
 			// Do not die here, log instead
 			panic(err)
@@ -144,7 +143,16 @@ func parseTimeFieldFromSeconds(line string, timeStampRegex string) time.Time {
 	seconds := tryParseInt64FromString(parseFieldInBracketsAsString(line, timeStampRegex))
 	if seconds != 0 {
 		dateTimeFromsSecs := time.Unix(seconds, 0)
-		return dateTimeFromsSecs
+		utcDatTime := time.Date(
+			dateTimeFromsSecs.Year(),
+			dateTimeFromsSecs.Month(),
+			dateTimeFromsSecs.Day(),
+			dateTimeFromsSecs.Hour(),
+			dateTimeFromsSecs.Minute(),
+			dateTimeFromsSecs.Second(),
+			dateTimeFromsSecs.Nanosecond(),
+			time.UTC)
+		return utcDatTime
 	}
 
 	return time.Time{}
@@ -154,7 +162,16 @@ func parseTimeFieldFromMilliSeconds(line string, timeStampRegex string) time.Tim
 	milliseconds := tryParseInt64FromString(parseFieldInBracketsAsString(line, timeStampRegex))
 	if milliseconds != 0 {
 		dateTimeFromsSecs := time.Unix(0, convertMillisecondsToSeconds(milliseconds))
-		return dateTimeFromsSecs
+		utcDatTime := time.Date(
+			dateTimeFromsSecs.Year(),
+			dateTimeFromsSecs.Month(),
+			dateTimeFromsSecs.Day(),
+			dateTimeFromsSecs.Hour(),
+			dateTimeFromsSecs.Minute(),
+			dateTimeFromsSecs.Second(),
+			dateTimeFromsSecs.Nanosecond(),
+			time.UTC)
+		return utcDatTime
 	}
 
 	return time.Time{}
