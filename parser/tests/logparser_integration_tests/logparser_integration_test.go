@@ -13,6 +13,7 @@ import (
 	"github.com/kozgot/go-log-processing/parser/pkg/rabbitmq"
 	"github.com/kozgot/go-log-processing/parser/tests/testmodels"
 	"github.com/kozgot/go-log-processing/parser/tests/testutils"
+	"github.com/streadway/amqp"
 )
 
 // TestLogParserDCMain calls logparser.ParseLogfiles()
@@ -24,56 +25,35 @@ func TestLogParserDCMain(t *testing.T) {
 	testExchangeName := "test_exchange"
 	testQueueName := "test_queue"
 
-	// Initialize rabbitMQ producer.
-	rabbitMqProducer := rabbitmq.NewAmqpProducer(
+	rabbitProducer, testConsumer, mockDownloader := setupDependencies(
+		rabbitMqURL,
 		testRoutingKey,
 		testExchangeName,
-		rabbitMqURL)
-
-	// Open a connection and a channel to send the log entries to.
-	rabbitMqProducer.OpenChannelAndConnection()
-	defer rabbitMqProducer.CloseChannelAndConnection()
-
-	// Init test consumer.
-	testConsumer := testutils.NewTestRabbitConsumer(rabbitMqURL, testRoutingKey, testExchangeName, testQueueName)
-	testConsumer.Connect()
-	defer testConsumer.CloseConnectionAndChannel()
+		testQueueName,
+		"./resources/test_dc_main.log")
+	defer tearDownDependecies(rabbitProducer, testConsumer)
 
 	// Register test consumer.
 	msgs, err := testConsumer.ConsumeMessages()
 	utils.FailOnError(err, "Could not register test consumer")
 
-	// Create mock filedownloader.
-	mockFileDownloader := mocks.MockFileDownloader{FileNameToDownload: "./resources/test_dc_main.log"}
-
 	// Parse
-	logParser := logparser.NewLogParser(&mockFileDownloader, rabbitMqProducer)
+	logParser := logparser.NewLogParser(mockDownloader, rabbitProducer)
 	logParser.ParseLogfiles()
 
-	entries := []models.ParsedLogEntry{}
-
-	for d := range msgs {
-		if strings.Contains(string(d.Body), "END") {
-			log.Println("End of entries...")
-
-			// Acknowledge the message after it has been processed.
-			err := d.Ack(false)
-			utils.FailOnError(err, "Could not acknowledge END message")
-			break
-		}
-		entry := models.ParsedLogEntry{}
-		entry.FromJSON(d.Body)
-		entries = append(entries, entry)
-		err := d.Ack(false)
-		utils.FailOnError(err, "Could not acknowledge")
-	}
+	// Get entries sent to RabbitMq.
+	entries := getSentParsedEntries(msgs)
 
 	log.Printf("Got %d entries.\n", len(entries))
+
 	testParsedLogFile := testmodels.TestParsedLogFile{Lines: entries}
 	actualBytes := testParsedLogFile.ToJSON()
+
+	// Read expected outcome from resource file.
 	expectedBytes, err := ioutil.ReadFile("./resources/expected_parsed_log.json")
 	utils.FailOnError(err, "Could not read test json file.")
 
+	// Assert
 	if string(actualBytes) != string(expectedBytes) {
 		t.Fatal("Expected json does not match actual json value of created partsed entries.")
 	}
@@ -91,35 +71,83 @@ func TestLogParserPLCManager(t *testing.T) {
 	testExchangeName := "test_exchange"
 	testQueueName := "test_queue"
 
+	rabbitProducer, testConsumer, mockDownloader := setupDependencies(
+		rabbitMqURL,
+		testRoutingKey,
+		testExchangeName,
+		testQueueName,
+		"./resources/test_plc_manager.log")
+	defer tearDownDependecies(rabbitProducer, testConsumer)
+
+	// Register test consumer.
+	msgs, err := testConsumer.ConsumeMessages()
+	utils.FailOnError(err, "Could not register test consumer")
+
+	// Parse
+	logParser := logparser.NewLogParser(mockDownloader, rabbitProducer)
+	logParser.ParseLogfiles()
+
+	// Get entries sent to RabbitMq.
+	entries := getSentParsedEntries(msgs)
+
+	log.Printf("Got %d entries.\n", len(entries))
+	testParsedLogFile := testmodels.TestParsedLogFile{Lines: entries}
+	actualBytes := testParsedLogFile.ToJSON()
+
+	// Read expected outcome from resource file.
+	expectedBytes, err := ioutil.ReadFile("./resources/expected_plc_manager.json")
+	utils.FailOnError(err, "Could not read test json file.")
+
+	// Assert
+	if string(actualBytes) != string(expectedBytes) {
+		t.Fatal("Expected json does not match actual json value of created partsed entries.")
+	}
+	if len(entries) != 50 {
+		t.Fatalf("Expected 50 entries, got %d entries.", len(entries))
+	}
+}
+
+func setupDependencies(
+	rabbitMqURL string,
+	testRoutingKey string,
+	testExchangeName string,
+	testQueueName string,
+	testLogfileName string,
+) (
+	*rabbitmq.AmqpProducer,
+	*testutils.TestRabbitConsumer,
+	*mocks.MockFileDownloader,
+) {
 	// Initialize rabbitMQ producer.
 	rabbitMqProducer := rabbitmq.NewAmqpProducer(
 		testRoutingKey,
 		testExchangeName,
 		rabbitMqURL)
 
-	// Open a connection and a channel to send the log entries to.
-	rabbitMqProducer.OpenChannelAndConnection()
-	defer rabbitMqProducer.CloseChannelAndConnection()
-
 	// Init test consumer.
 	testConsumer := testutils.NewTestRabbitConsumer(rabbitMqURL, testRoutingKey, testExchangeName, testQueueName)
 	testConsumer.Connect()
-	defer testConsumer.CloseConnectionAndChannel()
 
-	// Register test consumer.
-	msgs, err := testConsumer.ConsumeMessages()
-	utils.FailOnError(err, "Could not register test consumer")
+	// Open a connection and a channel to send the log entries to.
+	rabbitMqProducer.OpenChannelAndConnection()
 
 	// Create mock filedownloader.
-	mockFileDownloader := mocks.MockFileDownloader{FileNameToDownload: "./resources/test_plc_manager.log"}
+	mockFileDownloader := mocks.MockFileDownloader{FileNameToDownload: testLogfileName}
+	return rabbitMqProducer, testConsumer, &mockFileDownloader
+}
 
-	// Parse
-	logParser := logparser.NewLogParser(&mockFileDownloader, rabbitMqProducer)
-	logParser.ParseLogfiles()
+func tearDownDependecies(
+	rabbitMqProducer *rabbitmq.AmqpProducer,
+	testConsumer *testutils.TestRabbitConsumer,
+) {
+	testConsumer.CloseConnectionAndChannel()
+	rabbitMqProducer.CloseChannelAndConnection()
+}
 
+func getSentParsedEntries(deliveries <-chan amqp.Delivery) []models.ParsedLogEntry {
 	entries := []models.ParsedLogEntry{}
 
-	for d := range msgs {
+	for d := range deliveries {
 		if strings.Contains(string(d.Body), "END") {
 			log.Println("End of entries...")
 
@@ -135,16 +163,5 @@ func TestLogParserPLCManager(t *testing.T) {
 		utils.FailOnError(err, "Could not acknowledge")
 	}
 
-	log.Printf("Got %d entries.\n", len(entries))
-	testParsedLogFile := testmodels.TestParsedLogFile{Lines: entries}
-	actualBytes := testParsedLogFile.ToJSON()
-	expectedBytes, err := ioutil.ReadFile("./resources/expected_plc_manager.json")
-	utils.FailOnError(err, "Could not read test json file.")
-
-	if string(actualBytes) != string(expectedBytes) {
-		t.Fatal("Expected json does not match actual json value of created partsed entries.")
-	}
-	if len(entries) != 50 {
-		t.Fatalf("Expected 50 entries, got %d entries.", len(entries))
-	}
+	return entries
 }

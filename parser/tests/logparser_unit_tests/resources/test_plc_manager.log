@@ -1,0 +1,50 @@
+[ 2020-06-10-09:18:38 ]INFO: Management socket = 9
+[ 2020-06-10-09:18:38 ]INFO: plc_mngmt_init: Initialize PLC management socket address [127.0.0.1] - port [20000]
+[ 2020-06-10-09:18:38 ]INFO: Start Time[Wed Jun 10 09:18:38 2020]
+[ 2020-06-10-09:20:15 ]INFO: plc_join_meter join status returned [SUCCESS]
+[ 2020-06-10-09:20:15 ]INFO: SMC Join OK [Confirmed] <-- [join_type[LBD] smc_uid[dc18-smc32] physical_address[EEBEDDFFFE6210AD] logical_address[FE80::4021:FF:FE00:000a:61616] short_address[10] last_joining_date[Wed Jun 10 09:20:14 2020]]--(PLC)
+[ 2020-06-10-09:21:38 ]INFO: plc_join_meter join status returned [SUCCESS]
+[ 2020-06-10-09:21:38 ]INFO: SMC Join OK [Confirmed] <-- [join_type[LBD] smc_uid[dc18-smc30] physical_address[EEBEDDFFFE621095] logical_address[FE80::4021:FF:FE00:0014:61616] short_address[20] last_joining_date[Wed Jun 10 09:21:37 2020]]--(PLC)
+[ 2020-06-10-09:23:03 ]INFO: Routing Table: Addr[0x0014] NextHopAddr[0x0014] RouteCost[11] HopCount[0] WeakLink[1] ValidTime[240] (min)
+[ 2020-06-10-09:23:03 ]INFO: indication[TMAP_RX]<--[Network status]--(PLC)
+[ 2020-06-10-09:23:07 ]INFO: plc_join_meter join status returned [SUCCESS]
+[ 2020-06-10-09:23:07 ]INFO: SMC Join OK [Confirmed] <-- [join_type[LBA] smc_uid[dc18-smc21] physical_address[EEBEDDFFFE621154] logical_address[FE80::4021:FF:FE00:0006:61616] short_address[6] last_joining_date[Wed Jun 10 09:23:04 2020]]--(PLC)
+[ 2020-06-10-09:24:13 ]INFO: plc_join_meter join status returned [SUCCESS]
+[ 2020-06-10-09:24:13 ]INFO: SMC Join OK [Confirmed] <-- [join_type[LBD] smc_uid[dc18-smc31] physical_address[EEBEDDFFFE6210AB] logical_address[FE80::4021:FF:FE00:0019:61616] short_address[25] last_joining_date[Wed Jun 10 09:24:12 2020]]--(PLC)
+[ 2020-06-10-09:24:18 ]INFO: plc_join_meter join status returned [SUCCESS]
+[ 2020-06-10-09:24:18 ]INFO: SMC Join OK [Confirmed] <-- [join_type[LBD] smc_uid[dc18-smc24] physical_address[EEBEDDFFFE62106D] logical_address[FE80::4021:FF:FE00:001f:61616] short_address[31] last_joining_date[Wed Jun 10 09:24:16 2020]]--(PLC)
+[ 2020-06-10-09:25:43 ]INFO: indication[TMAP_TX]<--[Network status]--(PLC)
+[ 2020-06-10-09:25:44 ]INFO: plc_join_meter join status returned [SUCCESS]
+[ 2020-06-10-09:25:44 ]INFO: SMC Join OK [Confirmed] <-- [join_type[LBD] smc_uid[dc18-smc27] physical_address[EEBEDDFFFE621099] logical_address[FE80::4021:FF:FE00:0021:61616] short_address[33] last_joining_date[Wed Jun 10 09:25:43 2020]]--(PLC)
+[ 2020-06-10-09:26:42 ]INFO: plc_join_meter join status returned [SUCCESS]
+[ 2020-06-10-09:26:42 ]INFO: SMC Join OK [Confirmed] <-- [join_type[LBD] smc_uid[dc18-smc37] physical_address[EEBEDDFFFE62114D] logical_address[FE80::4021:FF:FE00:0003:61616] short_address[3] last_joining_date[Wed Jun 10 09:26:41 2020]]--(PLC)
+[ 2020-06-10-09:26:42 ]INFO: indication[TMAP_TX]<--[Network status]--(PLC)
+[ 2020-06-10-09:26:53 ]INFO: indication[TMAP_TX]<--[Network status]--(PLC)
+[ 2020-06-10-09:26:53 ]WARNING: SMC Join NOT OK [Rejected] <-- [join_type[LBD] smc_uid[dc18-smc36] physical_address[EEBEDDFFFE621128] logical_address[FE80::4021:FF:FE00:0008:61616] short_address[8] last_joining_date[Wed Jun 10 09:26:43 2020]]--(PLC) Reason[UNKNOWN_STATUS]
+[ 2020-06-10-09:27:04 ]WARNING: SMC Join NOT OK [Rejected] <-- [join_type[LBD] smc_uid[dc18-smc20] physical_address[EEBEDDFFFE621120] logical_address[FE80::4021:FF:FE00:001b:61616] short_address[27] last_joining_date[Wed Jun 10 09:26:54 2020]]--(PLC) Reason[UNKNOWN_STATUS]
+[ 2020-06-10-09:27:30 ]INFO: indication[TMAP_TX]<--[Network status]--(PLC)
+[ 2020-06-10-09:27:39 ]WARNING: SMC Join NOT OK [Rejected] <-- [join_type[LBD] smc_uid[dc18-smc22] physical_address[EEBEDDFFFE62106B] logical_address[FE80::4021:FF:FE00:001d:61616] short_address[29] last_joining_date[Wed Jun 10 09:27:29 2020]]--(PLC) Reason[UNKNOWN_STATUS]
+[ 2020-06-10-09:27:50 ]WARNING: SMC Join NOT OK [Rejected] <-- [join_type[LBD] smc_uid[dc18-smc10] physical_address[EEBEDDFFFE621148] logical_address[FE80::4021:FF:FE00:0023:61616] short_address[35] last_joining_date[Wed Jun 10 09:27:40 2020]]--(PLC) Reason[UNKNOWN_STATUS]
+[ 2020-06-10-09:27:54 ]INFO: Routing Table: Addr[0x0008] NextHopAddr[0x0003] RouteCost[14] HopCount[0] WeakLink[2] ValidTime[240] (min)
+[ 2020-06-10-09:28:50 ]INFO: plc_join_meter join status returned [SUCCESS]
+[ 2020-06-10-09:28:50 ]INFO: SMC Join OK [Confirmed] <-- [join_type[LBA] smc_uid[dc18-smc17] physical_address[EEBEDDFFFE6210A9] logical_address[FE80::4021:FF:FE00:0004:61616] short_address[4] last_joining_date[Wed Jun 10 09:28:49 2020]]--(PLC)
+[ 2020-06-10-09:28:54 ]INFO: plc_join_meter join status returned [SUCCESS]
+[ 2020-06-10-09:28:54 ]INFO: SMC Join OK [Confirmed] <-- [join_type[LBA] smc_uid[dc18-smc8] physical_address[EEBEDDFFFE621127] logical_address[FE80::4021:FF:FE00:000c:61616] short_address[12] last_joining_date[Wed Jun 10 09:28:51 2020]]--(PLC)
+[ 2020-06-10-09:29:02 ]INFO: plc_join_meter join status returned [SUCCESS]
+[ 2020-06-10-09:29:02 ]INFO: SMC Join OK [Confirmed] <-- [join_type[LBD] smc_uid[dc18-smc2] physical_address[EEBEDDFFFE62111B] logical_address[FE80::4021:FF:FE00:000b:61616] short_address[11] last_joining_date[Wed Jun 10 09:29:00 2020]]--(PLC)
+[ 2020-06-10-09:30:09 ]INFO: plc_join_meter join status returned [SUCCESS]
+[ 2020-06-10-09:30:09 ]INFO: SMC Join OK [Confirmed] <-- [join_type[LBD] smc_uid[dc18-smc38] physical_address[EEBEDDFFFE621155] logical_address[FE80::4021:FF:FE00:000d:61616] short_address[13] last_joining_date[Wed Jun 10 09:30:08 2020]]--(PLC)
+[ 2020-06-10-09:30:42 ]INFO: indication[TMAP_RX]<--[Network status]--(PLC)
+[ 2020-06-10-09:30:46 ]INFO: Routing Table: Addr[0x0006] NextHopAddr[0x0003] RouteCost[14] HopCount[0] WeakLink[2] ValidTime[240] (min)
+[ 2020-06-10-09:30:47 ]INFO: Routing Table: Addr[0x001B] NextHopAddr[0x0003] RouteCost[24] HopCount[0] WeakLink[3] ValidTime[240] (min)
+[ 2020-06-10-09:30:47 ]INFO: Routing Table: Addr[0x0003] NextHopAddr[0x0003] RouteCost[11] HopCount[0] WeakLink[1] ValidTime[240] (min)
+[ 2020-06-10-09:31:20 ]INFO: plc_join_meter join status returned [SUCCESS]
+[ 2020-06-10-09:31:20 ]INFO: SMC Join OK [Confirmed] <-- [join_type[LBA] smc_uid[dc18-smc25] physical_address[EEBEDDFFFE621097] logical_address[FE80::4021:FF:FE00:0011:61616] short_address[17] last_joining_date[Wed Jun 10 09:31:19 2020]]--(PLC)
+[ 2020-06-10-09:31:32 ]WARNING: SMC Join NOT OK [Rejected] <-- [join_type[LBA] smc_uid[dc18-smc35] physical_address[EEBEDDFFFE621125] logical_address[FE80::4021:FF:FE00:000f:61616] short_address[15] last_joining_date[Wed Jun 10 09:31:21 2020]]--(PLC) Reason[UNKNOWN_STATUS]
+[ 2020-06-10-09:31:42 ]INFO: plc_join_meter join status returned [SUCCESS]
+[ 2020-06-10-09:31:42 ]INFO: SMC Join OK [Confirmed] <-- [join_type[LBD] smc_uid[dc18-smc5] physical_address[EEBEDDFFFE621151] logical_address[FE80::4021:FF:FE00:0013:61616] short_address[19] last_joining_date[Wed Jun 10 09:31:40 2020]]--(PLC)
+[ 2020-06-10-09:32:19 ]INFO: indication[TMAP_RX]<--[Network status]--(PLC)
+[ 2020-06-10-09:32:53 ]INFO: plc_join_meter join status returned [SUCCESS]
+[ 2020-06-10-09:32:53 ]INFO: SMC Join OK [Confirmed] <-- [join_type[LBA] smc_uid[dc18-smc9] physical_address[EEBEDDFFFE621129] logical_address[FE80::4021:FF:FE00:0016:61616] short_address[22] last_joining_date[Wed Jun 10 09:32:53 2020]]--(PLC)
+[ 2020-06-10-09:32:54 ]INFO: indication[TMAP_RX]<--[Network status]--(PLC)
+[ 2020-06-10-09:33:03 ]INFO: Routing Table: Addr[0x0023] NextHopAddr[0x0000] RouteCost[0] HopCount[0] WeakLink[0] ValidTime[0] (min)
