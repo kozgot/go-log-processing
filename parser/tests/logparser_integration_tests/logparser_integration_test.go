@@ -43,7 +43,7 @@ func TestLogParser(t *testing.T) {
 	utils.FailOnError(err, "Could not register test consumer")
 
 	// Create mock filedownloader.
-	mockFileDownloader := mocks.MockFileDownloader{FileNameToDownload: "../resources/test_dc_main.log"}
+	mockFileDownloader := mocks.MockFileDownloader{FileNameToDownload: "./resources/test_dc_main.log"}
 
 	// Parse
 	logParser := logparser.NewLogParser(&mockFileDownloader, rabbitMqProducer)
