@@ -53,6 +53,8 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    # Docker Hub image that `container-job` executes in
+    container: golang:1.16
 
     # Service containers to run with `build`
     services:
