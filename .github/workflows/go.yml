@@ -11,18 +11,6 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-
-    # Service containers to run with `build`
-    services:
-      # Label used to access the service container
-      rabbitmq:
-        # Docker Hub image
-        image: rabbitmq:3-management
-        #
-        ports:
-          # Opens tcp port 5672 on the host and service container
-          - 5672:5672
-
     steps:
 
     - name: Set up Go 1.x
@@ -48,11 +36,6 @@ jobs:
         cd ./elasticuploader
         go build -o elasticuploader -v ./cmd
 
-    - name: Test Elastic Uploader
-      run: |
-        cd ./elasticuploader
-        go test -v ./cmd
-
     - name: Get dependencies for Parser
       run: |
         cd ./parser
@@ -66,6 +49,41 @@ jobs:
       run: |
         cd ./parser
         go build -o parser -v ./cmd
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    # Service containers to run with `build`
+    services:
+      # Label used to access the service container
+      rabbitmq:
+        # Docker Hub image
+        image: rabbitmq:3-management
+        #
+        ports:
+          # Opens tcp port 5672 on the host and service container
+          - 5672:5672
+
+    steps:
+
+    - name: Set up Go 1.x
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.13
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Get dependencies for Parser
+      run: |
+        cd ./parser
+        go get -v -t -d ./...
+        if [ -f Gopkg.toml ]; then
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            dep ensure
+        fi
 
     - name: Test Parser
       run: |
