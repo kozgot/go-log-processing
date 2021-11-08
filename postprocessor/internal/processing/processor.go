@@ -2,7 +2,7 @@ package processing
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"strings"
 
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
@@ -66,7 +66,7 @@ func (processor *EntryProcessor) HandleEntries() {
 	go func() {
 		for d := range msgs {
 			if strings.Contains(string(d.Body), "END") {
-				fmt.Println("End of entries...")
+				log.Println("  [PROCESSOR] End of entries...")
 
 				// Further processing to get consumption and index info.
 				consumptionProcessor := NewConsumptionProcessor(
@@ -135,7 +135,7 @@ func (processor *EntryProcessor) ProcessEntry(logEntry parsermodels.ParsedLogEnt
 		data, event = ProcessError(logEntry)
 
 	default:
-		fmt.Printf("Unknown log level %s", logEntry.Level)
+		log.Printf("  [PROCESSOR] Unknown log level %s", logEntry.Level)
 	}
 
 	processor.registerEvent(event, data)

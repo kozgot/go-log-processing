@@ -1,7 +1,7 @@
 package rabbitmq
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
 	"github.com/streadway/amqp"
@@ -33,18 +33,18 @@ func NewAmqpConsumer(hostURL string, routingKey string, exchangeName string, que
 func (c *AmqpConsumer) Connect() {
 	var err error
 	c.connection, err = amqp.Dial(c.hostURL)
-	utils.FailOnError(err, "Failed to connect to RabbitMQ server.")
+	utils.FailOnError(err, "  [AMQP CONSUMER] Failed to connect to RabbitMQ server.")
 
 	c.channel, err = c.connection.Channel()
-	utils.FailOnError(err, "Failed to open a channel.")
+	utils.FailOnError(err, "  [AMQP CONSUMER] Failed to open a channel.")
 }
 
 // CloseConnection closes the connection.
 func (c *AmqpConsumer) CloseConnectionAndChannel() {
 	c.connection.Close()
-	fmt.Println("Closed consumer connection")
+	log.Println("  [AMQP CONSUMER] Closed consumer connection")
 	c.channel.Close()
-	fmt.Println("Closed consumer channel")
+	log.Println("  [AMQP CONSUMER] Closed consumer channel")
 }
 
 // ConsumeMessages consumes messages from rabbitmq, returns the deliveries.
@@ -60,7 +60,7 @@ func (c *AmqpConsumer) ConsumeMessages() <-chan amqp.Delivery {
 		false,          // no-wait
 		nil,            // arguments
 	)
-	utils.FailOnError(err, "Failed to declare an exchange")
+	utils.FailOnError(err, "  [AMQP CONSUMER] Failed to declare an exchange")
 
 	c.queue, err = c.channel.QueueDeclare(
 		c.queueName, // name
@@ -70,7 +70,7 @@ func (c *AmqpConsumer) ConsumeMessages() <-chan amqp.Delivery {
 		false,       // no-wait
 		nil,         // arguments
 	)
-	utils.FailOnError(err, "Failed to declare a queue")
+	utils.FailOnError(err, "  [AMQP CONSUMER] Failed to declare a queue")
 
 	err = c.channel.QueueBind(
 		c.queue.Name,   // queue name
@@ -79,7 +79,7 @@ func (c *AmqpConsumer) ConsumeMessages() <-chan amqp.Delivery {
 		false,
 		nil,
 	)
-	utils.FailOnError(err, "Failed to bind a queue")
+	utils.FailOnError(err, "  [AMQP CONSUMER] Failed to bind a queue")
 
 	msgs, err = c.channel.Consume(
 		c.queue.Name, // queue
@@ -90,7 +90,7 @@ func (c *AmqpConsumer) ConsumeMessages() <-chan amqp.Delivery {
 		false,        // no-wait
 		nil,          // args
 	)
-	utils.FailOnError(err, "Failed to register a consumer")
+	utils.FailOnError(err, "  [AMQP CONSUMER] Failed to register a consumer")
 
 	return msgs
 }

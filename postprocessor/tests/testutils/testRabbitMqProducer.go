@@ -1,8 +1,6 @@
 package testutils
 
 import (
-	"log"
-
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
 	"github.com/streadway/amqp"
@@ -34,13 +32,11 @@ func NewTestProducer(
 func (producer *TestRabbitMqProducer) Connect() {
 	var err error
 	producer.connection, err = amqp.Dial(producer.rabbitMqURL)
-	utils.FailOnError(err, "Failed to connect to RabbitMQ")
-	log.Println("  [RABBITMQ PRODUCER] Created connection")
+	utils.FailOnError(err, "  [TEST PRODUCER] Failed to connect to RabbitMQ")
 
 	// create the channel
 	producer.channel, err = producer.connection.Channel()
-	utils.FailOnError(err, "Failed to open a channel")
-	log.Println("  [RABBITMQ PRODUCER] Created channel")
+	utils.FailOnError(err, "  [TEST PRODUCER] Failed to open a channel")
 
 	err = producer.channel.ExchangeDeclare(
 		producer.exchangeName, // name
@@ -51,15 +47,13 @@ func (producer *TestRabbitMqProducer) Connect() {
 		false,                 // no-wait
 		nil,                   // arguments
 	)
-	utils.FailOnError(err, "Failed to declare an exchange")
+	utils.FailOnError(err, "  [TEST PRODUCER] Failed to declare an exchange")
 }
 
 // CloseChannelAndConnection closes the channel and connection received in params.
 func (producer *TestRabbitMqProducer) CloseChannelAndConnection() {
 	producer.connection.Close()
-	log.Println("  [RABBITMQ PRODUCER] Closed connection")
 	producer.channel.Close()
-	log.Println("  [RABBITMQ PRODUCER] Closed channel")
 }
 
 // PublishStringMessage sends a string message to the message queue.
@@ -86,5 +80,5 @@ func (producer *TestRabbitMqProducer) sendDataToPostprocessor(data []byte) {
 			ContentType:  "application/json",
 			Body:         body,
 		})
-	utils.FailOnError(err, "Failed to publish a message")
+	utils.FailOnError(err, "  [TEST PRODUCER] Failed to publish a message")
 }

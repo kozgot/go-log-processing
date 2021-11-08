@@ -1,8 +1,6 @@
 package testutils
 
 import (
-	"log"
-
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
 	"github.com/streadway/amqp"
 )
@@ -36,18 +34,16 @@ func NewTestRabbitConsumer(
 func (c *TestRabbitConsumer) Connect() {
 	var err error
 	c.connection, err = amqp.Dial(c.hostURL)
-	utils.FailOnError(err, "Failed to connect to RabbitMQ server.")
+	utils.FailOnError(err, "  [TEST CONSUMER] Failed to connect to RabbitMQ server.")
 
 	c.channel, err = c.connection.Channel()
-	utils.FailOnError(err, "Failed to open a channel.")
+	utils.FailOnError(err, "  [TEST CONSUMER] Failed to open a channel.")
 }
 
 // CloseConnection closes the connection.
 func (c *TestRabbitConsumer) CloseConnectionAndChannel() {
 	c.connection.Close()
-	log.Println("  [TEST CONSUMER] Closed test consumer connection")
 	c.channel.Close()
-	log.Println("  [TEST CONSUMER] Closed test consumer channel")
 }
 
 // ConsumeMessages consumes messages from rabbitmq, returns the deliveries.
@@ -63,7 +59,7 @@ func (c *TestRabbitConsumer) ConsumeMessages() <-chan amqp.Delivery {
 		false,          // no-wait
 		nil,            // arguments
 	)
-	utils.FailOnError(err, "Failed to declare an exchange")
+	utils.FailOnError(err, "  [TEST CONSUMER] Failed to declare an exchange")
 
 	c.queue, err = c.channel.QueueDeclare(
 		c.queueName, // name
@@ -73,7 +69,7 @@ func (c *TestRabbitConsumer) ConsumeMessages() <-chan amqp.Delivery {
 		false,       // no-wait
 		nil,         // arguments
 	)
-	utils.FailOnError(err, "Failed to declare a queue")
+	utils.FailOnError(err, "  [TEST CONSUMER] Failed to declare a queue")
 
 	err = c.channel.QueueBind(
 		c.queue.Name,   // queue name
@@ -82,7 +78,7 @@ func (c *TestRabbitConsumer) ConsumeMessages() <-chan amqp.Delivery {
 		false,
 		nil,
 	)
-	utils.FailOnError(err, "Failed to bind a queue")
+	utils.FailOnError(err, "  [TEST CONSUMER] Failed to bind a queue")
 
 	msgs, err = c.channel.Consume(
 		c.queue.Name, // queue
@@ -93,7 +89,7 @@ func (c *TestRabbitConsumer) ConsumeMessages() <-chan amqp.Delivery {
 		false,        // no-wait
 		nil,          // args
 	)
-	utils.FailOnError(err, "Failed to register a test consumer")
+	utils.FailOnError(err, "  [TEST CONSUMER] Failed to register a test consumer")
 
 	return msgs
 }
