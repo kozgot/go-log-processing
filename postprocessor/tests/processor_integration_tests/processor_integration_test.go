@@ -1,8 +1,6 @@
 package processorintegrationtests
 
 import (
-	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"strings"
 	"testing"
@@ -60,7 +58,6 @@ func TestLogParserDCMain(t *testing.T) {
 		testConsumptionIdxName)
 	processor.HandleEntries()
 
-	// todo produce input messages
 	// Read expected outcome from resource file.
 	parsedInputBytes, err := ioutil.ReadFile("./resources/parsed_test_dc_main.json")
 	utils.FailOnError(err, "Could not open test input ./resources/parsed_test_dc_main.json")
@@ -84,8 +81,6 @@ func TestLogParserDCMain(t *testing.T) {
 	if string(actualProcessedDataBytes) != string(expectedBytes) {
 		t.Fatal("Expected json does not match actual json value of processed data.")
 	}
-
-	// todo more assertions
 }
 
 func setupDependencies(
@@ -169,20 +164,19 @@ func getSentProcessedData(
 		case "CREATEINDEX":
 			indexName := strings.Split(string(delivery.Body), "|")[1]
 			testdata.IndexNames = append(testdata.IndexNames, indexName)
-			// service.esClient.CreateEsIndex(indexName)
 		default:
-			data := DeserializeDataUnit(delivery.Body)
-			switch data.IndexName {
+			dataUnit := models.DataUnit{}
+			dataUnit.Deserialize(delivery.Body)
+			switch dataUnit.IndexName {
 			case testEventIdxName:
 				smcEvent := models.SmcEvent{}
-				smcEvent.Deserialize(data.Data)
+				smcEvent.Deserialize(dataUnit.Data)
 				testdata.Events = append(testdata.Events, smcEvent)
 			case testConsumptionIdxName:
 				consumption := models.ConsumtionValue{}
-				consumption.Deserialize(data.Data)
+				consumption.Deserialize(dataUnit.Data)
 				testdata.Consumptions = append(testdata.Consumptions, consumption)
 			}
-			// uploadBuffer.AppendAndUploadIfNeeded(models.Message{Content: data.Data}, data.IndexName, uploadTicker)
 		}
 
 		// Acknowledge message
@@ -197,16 +191,6 @@ func updateResourcesIfEnabled(resourceFileName string, newData []byte) {
 	if updateResourcesEnabled {
 		_ = ioutil.WriteFile(resourceFileName, newData, 0600)
 	}
-}
-
-// DeserializeDataUnit deserializes a received data unit.
-func DeserializeDataUnit(dataBytes []byte) models.DataUnit {
-	var data models.DataUnit
-	if err := json.Unmarshal(dataBytes, &data); err != nil {
-		fmt.Println("Failed to unmarshal:", err)
-	}
-
-	return data
 }
 
 func sendTestInput(
