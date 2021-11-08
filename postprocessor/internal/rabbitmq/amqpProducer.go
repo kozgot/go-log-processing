@@ -44,9 +44,9 @@ func (uploader *AmqpProducer) PublishConsumption(cons models.ConsumtionValue, co
 }
 
 // Connect opens a channel and a connection.
-func (uploader *AmqpProducer) Connect(rabbitMqURL string) {
+func (uploader *AmqpProducer) Connect() {
 	var err error
-	uploader.connection, err = amqp.Dial(rabbitMqURL)
+	uploader.connection, err = amqp.Dial(uploader.rabbitMqURL)
 	utils.FailOnError(err, "Failed to connect to RabbitMQ")
 	fmt.Println("Created connection")
 
@@ -78,6 +78,12 @@ func (uploader *AmqpProducer) CloseChannelAndConnection() {
 // PublishCreateIndexMessage sends a string message to the message queue.
 func (uploader *AmqpProducer) PublishCreateIndexMessage(indexName string) {
 	bytes := []byte("CREATEINDEX|" + indexName)
+	uploader.sendData(bytes)
+}
+
+// PublishDoneMessage sends a string message to the message queue.
+func (uploader *AmqpProducer) PublishDoneMessage() {
+	bytes := []byte("DONE")
 	uploader.sendData(bytes)
 }
 

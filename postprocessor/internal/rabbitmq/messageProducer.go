@@ -6,7 +6,8 @@ import "github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 type MessageProducer interface {
 	PublishEvent(event models.SmcEvent, eventIndexName string)
 	PublishConsumption(cons models.ConsumtionValue, consumptionIndexName string)
-	Connect(rabbitMqURL string)
+	Connect()
 	CloseChannelAndConnection()
 	PublishCreateIndexMessage(indexName string)
+	PublishDoneMessage()
 }

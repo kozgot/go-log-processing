@@ -61,8 +61,7 @@ func (processor *EntryProcessor) HandleEntries() {
 	processor.messageProducer.PublishCreateIndexMessage(processor.eventIndexName)
 	processor.messageProducer.PublishCreateIndexMessage(processor.consumptionIndexName)
 
-	msgs, err := processor.messageConsumer.ConsumeMessages()
-	utils.FailOnError(err, "Failed to register a consumer")
+	msgs := processor.messageConsumer.ConsumeMessages()
 
 	go func() {
 		for d := range msgs {
@@ -77,6 +76,9 @@ func (processor *EntryProcessor) HandleEntries() {
 					processor.consumptionIndexName)
 				consumptionProcessor.ProcessConsumptionAndIndexValues()
 
+				// Tell ES uploader that we reached the end of the log entries.
+				processor.messageProducer.PublishDoneMessage()
+
 				// Acknowledge the message after it has been processed.
 				err := d.Ack(false)
 				utils.FailOnError(err, "Could not acknowledge END message")
@@ -84,7 +86,7 @@ func (processor *EntryProcessor) HandleEntries() {
 			}
 
 			entry := deserializeParsedLogEntry(d.Body)
-			processor.processEntry(entry)
+			processor.ProcessEntry(entry)
 
 			// Acknowledge the message after it has been processed.
 			err := d.Ack(false)
@@ -94,8 +96,8 @@ func (processor *EntryProcessor) HandleEntries() {
 	}()
 }
 
-// processEntry processes the log entry received as a parameter.
-func (processor *EntryProcessor) processEntry(logEntry parsermodels.ParsedLogEntry) {
+// ProcessEntry processes the log entry received as a parameter.
+func (processor *EntryProcessor) ProcessEntry(logEntry parsermodels.ParsedLogEntry) {
 	var data *models.SmcData
 	var event *models.SmcEvent
 	var consumption *models.ConsumtionValue

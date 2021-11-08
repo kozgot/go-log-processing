@@ -1,14 +1,13 @@
-package rabbitmq
+package testutils
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
 	"github.com/streadway/amqp"
 )
 
-// AmqpConsumer encapsulates data related to consuming messages from rabbitmq.
-type AmqpConsumer struct {
+type TestRabbitConsumer struct {
 	hostURL      string
 	channel      *amqp.Channel
 	queue        amqp.Queue
@@ -18,9 +17,13 @@ type AmqpConsumer struct {
 	routingKey   string
 }
 
-// Creates a new AmqpConsumer.
-func NewAmqpConsumer(hostURL string, routingKey string, exchangeName string, queueName string) *AmqpConsumer {
-	rabbitMQConsumer := AmqpConsumer{
+// Creates a new TestRabbitConsumer.
+func NewTestRabbitConsumer(
+	hostURL string,
+	routingKey string,
+	exchangeName string,
+	queueName string) *TestRabbitConsumer {
+	rabbitMQConsumer := TestRabbitConsumer{
 		hostURL:      hostURL,
 		routingKey:   routingKey,
 		exchangeName: exchangeName,
@@ -30,7 +33,7 @@ func NewAmqpConsumer(hostURL string, routingKey string, exchangeName string, que
 }
 
 // Connect initializes a connection.
-func (c *AmqpConsumer) Connect() {
+func (c *TestRabbitConsumer) Connect() {
 	var err error
 	c.connection, err = amqp.Dial(c.hostURL)
 	utils.FailOnError(err, "Failed to connect to RabbitMQ server.")
@@ -40,15 +43,15 @@ func (c *AmqpConsumer) Connect() {
 }
 
 // CloseConnection closes the connection.
-func (c *AmqpConsumer) CloseConnectionAndChannel() {
+func (c *TestRabbitConsumer) CloseConnectionAndChannel() {
 	c.connection.Close()
-	fmt.Println("Closed consumer connection")
+	log.Println("  [TEST CONSUMER] Closed test consumer connection")
 	c.channel.Close()
-	fmt.Println("Closed consumer channel")
+	log.Println("  [TEST CONSUMER] Closed test consumer channel")
 }
 
 // ConsumeMessages consumes messages from rabbitmq, returns the deliveries.
-func (c *AmqpConsumer) ConsumeMessages() <-chan amqp.Delivery {
+func (c *TestRabbitConsumer) ConsumeMessages() <-chan amqp.Delivery {
 	var err error
 	var msgs <-chan amqp.Delivery
 	err = c.channel.ExchangeDeclare(
@@ -90,7 +93,7 @@ func (c *AmqpConsumer) ConsumeMessages() <-chan amqp.Delivery {
 		false,        // no-wait
 		nil,          // args
 	)
-	utils.FailOnError(err, "Failed to register a consumer")
+	utils.FailOnError(err, "Failed to register a test consumer")
 
 	return msgs
 }

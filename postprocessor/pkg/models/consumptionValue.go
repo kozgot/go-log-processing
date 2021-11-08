@@ -2,8 +2,9 @@ package models
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
+
+	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
 )
 
 // ConsumtionValue contains cunsumption data in a given time range.
@@ -17,11 +18,14 @@ type ConsumtionValue struct {
 }
 
 // Serialize serlializes a consumption value to JSON format and returns a byte array.
-func (c ConsumtionValue) Serialize() []byte {
+func (c *ConsumtionValue) Serialize() []byte {
 	bytes, err := json.Marshal(c)
-	if err != nil {
-		fmt.Println("Can't serialize consumption ", c)
-	}
-
+	utils.FailOnError(err, "Can't serialize consumption value.")
 	return bytes
+}
+
+// Deserialize deserializes a consumption value.
+func (c *ConsumtionValue) Deserialize(bytes []byte) {
+	err := json.Unmarshal(bytes, c)
+	utils.FailOnError(err, "Cannot deserialize consumption value.")
 }
