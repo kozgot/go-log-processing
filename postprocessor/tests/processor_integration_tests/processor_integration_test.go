@@ -74,9 +74,9 @@ func TestProcessDCMain(t *testing.T) {
 	}
 }
 
-// TestLogProcessPLCManager calls processor.HandleEntries()
+// TestProcessPLCManager calls processor.HandleEntries()
 // with a real rabbitM message consumer that consumes parsed log entries from a plc-manager.log file.
-func TestLogProcessPLCManager(t *testing.T) {
+func TestProcessPLCManager(t *testing.T) {
 	testEventIdxName := "smctest"
 	testConsumptionIdxName := "consumptiontest"
 

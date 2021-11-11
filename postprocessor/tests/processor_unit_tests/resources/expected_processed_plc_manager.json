@@ -1,0 +1,389 @@
+{
+ "IndexNames": [
+  "smctest",
+  "consumptiontest"
+ ],
+ "Events": [
+  {
+   "Time": "2020-06-10T09:20:15Z",
+   "EventType": 3,
+   "EventTypeString": "SmcJoined",
+   "Label": "Smc dc18-smc32 has joined",
+   "SmcUID": "dc18-smc32",
+   "DataPayload": {
+    "SmcUID": "dc18-smc32",
+    "Address": {
+     "ShortAddress": 10,
+     "PhysicalAddress": "EEBEDDFFFE6210AD",
+     "LogicalAddress": "FE80::4021:FF:FE00:000a:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "2020-06-10T09:20:14Z"
+   }
+  },
+  {
+   "Time": "2020-06-10T09:21:38Z",
+   "EventType": 3,
+   "EventTypeString": "SmcJoined",
+   "Label": "Smc dc18-smc30 has joined",
+   "SmcUID": "dc18-smc30",
+   "DataPayload": {
+    "SmcUID": "dc18-smc30",
+    "Address": {
+     "ShortAddress": 20,
+     "PhysicalAddress": "EEBEDDFFFE621095",
+     "LogicalAddress": "FE80::4021:FF:FE00:0014:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "2020-06-10T09:21:37Z"
+   }
+  },
+  {
+   "Time": "2020-06-10T09:23:07Z",
+   "EventType": 3,
+   "EventTypeString": "SmcJoined",
+   "Label": "Smc dc18-smc21 has joined",
+   "SmcUID": "dc18-smc21",
+   "DataPayload": {
+    "SmcUID": "dc18-smc21",
+    "Address": {
+     "ShortAddress": 6,
+     "PhysicalAddress": "EEBEDDFFFE621154",
+     "LogicalAddress": "FE80::4021:FF:FE00:0006:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "2020-06-10T09:23:04Z"
+   }
+  },
+  {
+   "Time": "2020-06-10T09:24:13Z",
+   "EventType": 3,
+   "EventTypeString": "SmcJoined",
+   "Label": "Smc dc18-smc31 has joined",
+   "SmcUID": "dc18-smc31",
+   "DataPayload": {
+    "SmcUID": "dc18-smc31",
+    "Address": {
+     "ShortAddress": 25,
+     "PhysicalAddress": "EEBEDDFFFE6210AB",
+     "LogicalAddress": "FE80::4021:FF:FE00:0019:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "2020-06-10T09:24:12Z"
+   }
+  },
+  {
+   "Time": "2020-06-10T09:24:18Z",
+   "EventType": 3,
+   "EventTypeString": "SmcJoined",
+   "Label": "Smc dc18-smc24 has joined",
+   "SmcUID": "dc18-smc24",
+   "DataPayload": {
+    "SmcUID": "dc18-smc24",
+    "Address": {
+     "ShortAddress": 31,
+     "PhysicalAddress": "EEBEDDFFFE62106D",
+     "LogicalAddress": "FE80::4021:FF:FE00:001f:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "2020-06-10T09:24:16Z"
+   }
+  },
+  {
+   "Time": "2020-06-10T09:25:44Z",
+   "EventType": 3,
+   "EventTypeString": "SmcJoined",
+   "Label": "Smc dc18-smc27 has joined",
+   "SmcUID": "dc18-smc27",
+   "DataPayload": {
+    "SmcUID": "dc18-smc27",
+    "Address": {
+     "ShortAddress": 33,
+     "PhysicalAddress": "EEBEDDFFFE621099",
+     "LogicalAddress": "FE80::4021:FF:FE00:0021:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "2020-06-10T09:25:43Z"
+   }
+  },
+  {
+   "Time": "2020-06-10T09:26:42Z",
+   "EventType": 3,
+   "EventTypeString": "SmcJoined",
+   "Label": "Smc dc18-smc37 has joined",
+   "SmcUID": "dc18-smc37",
+   "DataPayload": {
+    "SmcUID": "dc18-smc37",
+    "Address": {
+     "ShortAddress": 3,
+     "PhysicalAddress": "EEBEDDFFFE62114D",
+     "LogicalAddress": "FE80::4021:FF:FE00:0003:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "2020-06-10T09:26:41Z"
+   }
+  },
+  {
+   "Time": "2020-06-10T09:26:53Z",
+   "EventType": 9,
+   "EventTypeString": "JoinRejectedWarning",
+   "Label": "SMC join rejected for dc18-smc36",
+   "SmcUID": "dc18-smc36",
+   "DataPayload": {
+    "SmcUID": "dc18-smc36",
+    "Address": {
+     "ShortAddress": 8,
+     "PhysicalAddress": "EEBEDDFFFE621128",
+     "LogicalAddress": "FE80::4021:FF:FE00:0008:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "0001-01-01T00:00:00Z"
+   }
+  },
+  {
+   "Time": "2020-06-10T09:27:04Z",
+   "EventType": 9,
+   "EventTypeString": "JoinRejectedWarning",
+   "Label": "SMC join rejected for dc18-smc20",
+   "SmcUID": "dc18-smc20",
+   "DataPayload": {
+    "SmcUID": "dc18-smc20",
+    "Address": {
+     "ShortAddress": 27,
+     "PhysicalAddress": "EEBEDDFFFE621120",
+     "LogicalAddress": "FE80::4021:FF:FE00:001b:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "0001-01-01T00:00:00Z"
+   }
+  },
+  {
+   "Time": "2020-06-10T09:27:39Z",
+   "EventType": 9,
+   "EventTypeString": "JoinRejectedWarning",
+   "Label": "SMC join rejected for dc18-smc22",
+   "SmcUID": "dc18-smc22",
+   "DataPayload": {
+    "SmcUID": "dc18-smc22",
+    "Address": {
+     "ShortAddress": 29,
+     "PhysicalAddress": "EEBEDDFFFE62106B",
+     "LogicalAddress": "FE80::4021:FF:FE00:001d:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "0001-01-01T00:00:00Z"
+   }
+  },
+  {
+   "Time": "2020-06-10T09:27:50Z",
+   "EventType": 9,
+   "EventTypeString": "JoinRejectedWarning",
+   "Label": "SMC join rejected for dc18-smc10",
+   "SmcUID": "dc18-smc10",
+   "DataPayload": {
+    "SmcUID": "dc18-smc10",
+    "Address": {
+     "ShortAddress": 35,
+     "PhysicalAddress": "EEBEDDFFFE621148",
+     "LogicalAddress": "FE80::4021:FF:FE00:0023:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "0001-01-01T00:00:00Z"
+   }
+  },
+  {
+   "Time": "2020-06-10T09:28:50Z",
+   "EventType": 3,
+   "EventTypeString": "SmcJoined",
+   "Label": "Smc dc18-smc17 has joined",
+   "SmcUID": "dc18-smc17",
+   "DataPayload": {
+    "SmcUID": "dc18-smc17",
+    "Address": {
+     "ShortAddress": 4,
+     "PhysicalAddress": "EEBEDDFFFE6210A9",
+     "LogicalAddress": "FE80::4021:FF:FE00:0004:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "2020-06-10T09:28:49Z"
+   }
+  },
+  {
+   "Time": "2020-06-10T09:28:54Z",
+   "EventType": 3,
+   "EventTypeString": "SmcJoined",
+   "Label": "Smc dc18-smc8 has joined",
+   "SmcUID": "dc18-smc8",
+   "DataPayload": {
+    "SmcUID": "dc18-smc8",
+    "Address": {
+     "ShortAddress": 12,
+     "PhysicalAddress": "EEBEDDFFFE621127",
+     "LogicalAddress": "FE80::4021:FF:FE00:000c:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "2020-06-10T09:28:51Z"
+   }
+  },
+  {
+   "Time": "2020-06-10T09:29:02Z",
+   "EventType": 3,
+   "EventTypeString": "SmcJoined",
+   "Label": "Smc dc18-smc2 has joined",
+   "SmcUID": "dc18-smc2",
+   "DataPayload": {
+    "SmcUID": "dc18-smc2",
+    "Address": {
+     "ShortAddress": 11,
+     "PhysicalAddress": "EEBEDDFFFE62111B",
+     "LogicalAddress": "FE80::4021:FF:FE00:000b:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "2020-06-10T09:29:00Z"
+   }
+  },
+  {
+   "Time": "2020-06-10T09:30:09Z",
+   "EventType": 3,
+   "EventTypeString": "SmcJoined",
+   "Label": "Smc dc18-smc38 has joined",
+   "SmcUID": "dc18-smc38",
+   "DataPayload": {
+    "SmcUID": "dc18-smc38",
+    "Address": {
+     "ShortAddress": 13,
+     "PhysicalAddress": "EEBEDDFFFE621155",
+     "LogicalAddress": "FE80::4021:FF:FE00:000d:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "2020-06-10T09:30:08Z"
+   }
+  },
+  {
+   "Time": "2020-06-10T09:31:20Z",
+   "EventType": 3,
+   "EventTypeString": "SmcJoined",
+   "Label": "Smc dc18-smc25 has joined",
+   "SmcUID": "dc18-smc25",
+   "DataPayload": {
+    "SmcUID": "dc18-smc25",
+    "Address": {
+     "ShortAddress": 17,
+     "PhysicalAddress": "EEBEDDFFFE621097",
+     "LogicalAddress": "FE80::4021:FF:FE00:0011:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "2020-06-10T09:31:19Z"
+   }
+  },
+  {
+   "Time": "2020-06-10T09:31:32Z",
+   "EventType": 9,
+   "EventTypeString": "JoinRejectedWarning",
+   "Label": "SMC join rejected for dc18-smc35",
+   "SmcUID": "dc18-smc35",
+   "DataPayload": {
+    "SmcUID": "dc18-smc35",
+    "Address": {
+     "ShortAddress": 15,
+     "PhysicalAddress": "EEBEDDFFFE621125",
+     "LogicalAddress": "FE80::4021:FF:FE00:000f:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "0001-01-01T00:00:00Z"
+   }
+  },
+  {
+   "Time": "2020-06-10T09:31:42Z",
+   "EventType": 3,
+   "EventTypeString": "SmcJoined",
+   "Label": "Smc dc18-smc5 has joined",
+   "SmcUID": "dc18-smc5",
+   "DataPayload": {
+    "SmcUID": "dc18-smc5",
+    "Address": {
+     "ShortAddress": 19,
+     "PhysicalAddress": "EEBEDDFFFE621151",
+     "LogicalAddress": "FE80::4021:FF:FE00:0013:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "2020-06-10T09:31:40Z"
+   }
+  },
+  {
+   "Time": "2020-06-10T09:32:53Z",
+   "EventType": 3,
+   "EventTypeString": "SmcJoined",
+   "Label": "Smc dc18-smc9 has joined",
+   "SmcUID": "dc18-smc9",
+   "DataPayload": {
+    "SmcUID": "dc18-smc9",
+    "Address": {
+     "ShortAddress": 22,
+     "PhysicalAddress": "EEBEDDFFFE621129",
+     "LogicalAddress": "FE80::4021:FF:FE00:0016:61616",
+     "URL": ""
+    },
+    "CustomerSerialNumber": "",
+    "Pods": null,
+    "LastSuccesfulDlmsResponse": "0001-01-01T00:00:00Z",
+    "LastJoiningDate": "2020-06-10T09:32:53Z"
+   }
+  }
+ ],
+ "Consumptions": []
+}
