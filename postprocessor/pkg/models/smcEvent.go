@@ -32,7 +32,7 @@ func (e *SmcEvent) Deserialize(bytes []byte) {
 }
 
 // Equals check equality.
-func (e *SmcEvent) Equals(other *SmcEvent) bool {
+func (e *SmcEvent) Equals(other SmcEvent) bool {
 	if e.Time != other.Time ||
 		e.EventType != other.EventType ||
 		e.EventTypeString != other.EventTypeString ||

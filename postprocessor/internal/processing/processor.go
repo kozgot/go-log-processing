@@ -104,7 +104,10 @@ func (processor *EntryProcessor) ProcessEntry(logEntry parsermodels.ParsedLogEnt
 	var index *models.IndexValue
 	switch logEntry.Level {
 	case "INFO":
-		data, event, consumption, index = ProcessInfoEntry(logEntry, processor.podUIDToSmcUID)
+		infoProcessor := InfoEntryProcessor{
+			PodUIDToSmcUID: processor.podUIDToSmcUID,
+		}
+		data, event, consumption, index = infoProcessor.ProcessInfoEntry(logEntry)
 
 		if event != nil && event.EventType == models.ConnectionAttempt {
 			// This is the only entry where the URL and SMC UID parameters are given at the same time.

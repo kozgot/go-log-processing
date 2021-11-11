@@ -14,3 +14,16 @@ type IndexValue struct {
 	SerialNumber  int
 	SmcUID        string
 }
+
+// Equals checks equality.
+func (i *IndexValue) Equals(other IndexValue) bool {
+	return i.ReceiveTime == other.ReceiveTime &&
+		i.PreviousTime == other.PreviousTime &&
+		i.Time == other.Time &&
+		i.PreviousValue == other.PreviousValue &&
+		i.Value == other.Value &&
+		i.ServiceLevel == other.ServiceLevel &&
+		i.PodUID == other.PodUID &&
+		i.SerialNumber == other.SerialNumber &&
+		i.SmcUID == other.SmcUID
+}

@@ -5,9 +5,13 @@ import (
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 )
 
+type InfoEntryProcessor struct {
+	PodUIDToSmcUID map[string]string
+}
+
 // ProcessInfoEntry processes a log entry with INFO log level.
-func ProcessInfoEntry(logEntry parsermodels.ParsedLogEntry,
-	podUIDToSmcUID map[string]string) (*models.SmcData,
+func (i *InfoEntryProcessor) ProcessInfoEntry(logEntry parsermodels.ParsedLogEntry) (
+	*models.SmcData,
 	*models.SmcEvent,
 	*models.ConsumtionValue,
 	*models.IndexValue) {
@@ -28,7 +32,7 @@ func ProcessInfoEntry(logEntry parsermodels.ParsedLogEntry,
 		return smcData, event, nil, nil
 
 	case parsermodels.DCMessage:
-		result := processDCMessageEntry(logEntry, podUIDToSmcUID)
+		result := processDCMessageEntry(logEntry, i.PodUIDToSmcUID)
 
 		event := result.SmcEvent
 		data := result.SmcData
@@ -42,9 +46,9 @@ func ProcessInfoEntry(logEntry parsermodels.ParsedLogEntry,
 			UID := data.SmcUID
 
 			// Put it in the dictionary
-			_, ok := podUIDToSmcUID[podUID]
+			_, ok := i.PodUIDToSmcUID[podUID]
 			if !ok {
-				podUIDToSmcUID[podUID] = UID
+				i.PodUIDToSmcUID[podUID] = UID
 			}
 		}
 
