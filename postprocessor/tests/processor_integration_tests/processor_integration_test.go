@@ -14,33 +14,19 @@ import (
 	"github.com/streadway/amqp"
 )
 
-const updateResourcesEnabled = false
+// If set to true, running the tests automatically updates the expeted resource files.
+const updateResourcesEnabled = true
 
-// TestLogParserDCMain calls logparser.ParseLogfiles()
-// with a mock file downloader that passes a dc main test file and a real rabbitmq producer,
-// checking for valid messages.
-func TestLogParserDCMain(t *testing.T) {
-	rabbitMqURL := "amqp://guest:guest@rabbitmq:5672/"
-	testInputRoutingKey := "test-input-routing-key"
-	testInputExchangeName := "test_input_exchange"
-	testInputQueueName := "test_input_queue"
-
-	testOutputRoutingKey := "test-output-routing-key"
-	testOutputExchangeName := "test_output_exchange"
-	testOutputQueueName := "test_output_queue"
-
+// TestProcessDCMain calls processor.HandleEntries()
+// with a real rabbitM message consumer that consumes parsed log entries from a dc_main.log file.
+func TestProcessDCMain(t *testing.T) {
 	testEventIdxName := "smctest"
 	testConsumptionIdxName := "consumptiontest"
 
-	rabbitMqOutputProducer, rabbitMqInputConsumer, testOutputConsumer, testInputProducer := setupDependencies(
-		rabbitMqURL,
-		testInputRoutingKey,
-		testInputExchangeName,
-		testInputQueueName,
-		testOutputRoutingKey,
-		testOutputExchangeName,
-		testOutputQueueName,
-	)
+	testInputFileName := "./resources/parsed_test_dc_main.json"
+	expectedDataFileName := "./resources/expected_processed_dc_main.json"
+
+	rabbitMqOutputProducer, rabbitMqInputConsumer, testOutputConsumer, testInputProducer := setupDependencies()
 
 	defer tearDownDependecies(
 		rabbitMqOutputProducer,
@@ -49,6 +35,7 @@ func TestLogParserDCMain(t *testing.T) {
 		testInputProducer,
 	)
 
+	// Register a consumer for the output of the processing.
 	msgs := testOutputConsumer.ConsumeMessages()
 
 	processor := processing.NewEntryProcessor(
@@ -58,24 +45,28 @@ func TestLogParserDCMain(t *testing.T) {
 		testConsumptionIdxName)
 	processor.HandleEntries()
 
-	// Read expected outcome from resource file.
-	parsedInputBytes, err := ioutil.ReadFile("./resources/parsed_test_dc_main.json")
-	utils.FailOnError(err, "Could not open test input ./resources/parsed_test_dc_main.json")
+	// Read test input from resource file.
+	parsedInputBytes, err := ioutil.ReadFile(testInputFileName)
+	utils.FailOnError(err, "Could not open test input "+testInputFileName)
+
 	testparsedFile := testmodels.TestParsedLogFile{}
 	testparsedFile.FromJSON(parsedInputBytes)
+
+	// Create test input for the processor.
 	sendTestInput(testInputProducer, testparsedFile)
 
+	// Handle output created by the processor.
 	processedData := getSentProcessedData(msgs, testEventIdxName, testConsumptionIdxName)
 	if len(processedData.IndexNames) != 2 {
 		t.Fatal("Expected to create 2 indices")
 	}
 
 	actualProcessedDataBytes := processedData.ToJSON()
-	updateResourcesIfEnabled("./resources/expected_processed_dc_main.json", actualProcessedDataBytes)
+	updateResourcesIfEnabled(expectedDataFileName, actualProcessedDataBytes)
 
 	// Read expected outcome from resource file.
-	expectedBytes, err := ioutil.ReadFile("./resources/expected_processed_dc_main.json")
-	utils.FailOnError(err, "Could not read expected json file.")
+	expectedBytes, err := ioutil.ReadFile(expectedDataFileName)
+	utils.FailOnError(err, "Could not read file "+expectedDataFileName)
 
 	// Assert
 	if string(actualProcessedDataBytes) != string(expectedBytes) {
@@ -83,20 +74,78 @@ func TestLogParserDCMain(t *testing.T) {
 	}
 }
 
-func setupDependencies(
-	rabbitMqURL string,
-	testInputRoutingKey string,
-	testInputExchangeName string,
-	testInputQueueName string,
-	testOutputRoutingKey string,
-	testOutputExchangeName string,
-	testOutputQueueName string,
-) (
+// TestLogProcessPLCManager calls processor.HandleEntries()
+// with a real rabbitM message consumer that consumes parsed log entries from a plc-manager.log file.
+func TestLogProcessPLCManager(t *testing.T) {
+	testEventIdxName := "smctest"
+	testConsumptionIdxName := "consumptiontest"
+
+	testInputFileName := "./resources/parsed_test_plc_manager.json"
+	expectedDataFileName := "./resources/expected_processed_plc_manager.json"
+
+	rabbitMqOutputProducer, rabbitMqInputConsumer, testOutputConsumer, testInputProducer := setupDependencies()
+
+	defer tearDownDependecies(
+		rabbitMqOutputProducer,
+		rabbitMqInputConsumer,
+		testOutputConsumer,
+		testInputProducer,
+	)
+
+	// Register a consumer for the output of the processing.
+	msgs := testOutputConsumer.ConsumeMessages()
+
+	processor := processing.NewEntryProcessor(
+		rabbitMqOutputProducer,
+		rabbitMqInputConsumer,
+		testEventIdxName,
+		testConsumptionIdxName)
+	processor.HandleEntries()
+
+	// Read test input from resource file.
+	parsedInputBytes, err := ioutil.ReadFile(testInputFileName)
+	utils.FailOnError(err, "Could not open test input "+testInputFileName)
+
+	testparsedFile := testmodels.TestParsedLogFile{}
+	testparsedFile.FromJSON(parsedInputBytes)
+
+	// Create test input for the processor.
+	sendTestInput(testInputProducer, testparsedFile)
+
+	// Handle output created by the processor.
+	processedData := getSentProcessedData(msgs, testEventIdxName, testConsumptionIdxName)
+	if len(processedData.IndexNames) != 2 {
+		t.Fatalf("Expected to create 2 indices, got %d", len(processedData.IndexNames))
+	}
+
+	actualProcessedDataBytes := processedData.ToJSON()
+	updateResourcesIfEnabled(expectedDataFileName, actualProcessedDataBytes)
+
+	// Read expected outcome from resource file.
+	expectedBytes, err := ioutil.ReadFile(expectedDataFileName)
+	utils.FailOnError(err, "Could not read file "+expectedDataFileName)
+
+	// Assert
+	if string(actualProcessedDataBytes) != string(expectedBytes) {
+		t.Fatal("Expected json does not match actual json value of processed data.")
+	}
+}
+
+func setupDependencies() (
 	*rabbitmq.AmqpProducer,
 	*rabbitmq.AmqpConsumer,
 	*testutils.TestRabbitConsumer,
 	*testutils.TestRabbitMqProducer,
 ) {
+	rabbitMqURL := "amqp://guest:guest@rabbitmq:5672/"
+	testInputRoutingKey := "test-input-routing-key"
+	testInputExchangeName := "test_input_exchange"
+	testInputQueueName := "test_input_queue"
+
+	testOutputRoutingKey := "test-output-routing-key"
+	testOutputExchangeName := "test_output_exchange"
+	testOutputQueueName := "test_output_queue"
+
 	// Initialize rabbitMQ producer. This will be passed to the processor as a parameter to send processed data to.
 	rabbitMqOutputProducer := rabbitmq.NewAmqpProducer(
 		rabbitMqURL,
@@ -146,6 +195,7 @@ func tearDownDependecies(
 	testInputProducer.CloseChannelAndConnection()
 }
 
+// getSentProcessedData reads and returns the processed data sent to a rabbitMQ exchange by the postprocessor.
 func getSentProcessedData(
 	deliveries <-chan amqp.Delivery,
 	testEventIdxName string,
@@ -187,12 +237,7 @@ func getSentProcessedData(
 	return testdata
 }
 
-func updateResourcesIfEnabled(resourceFileName string, newData []byte) {
-	if updateResourcesEnabled {
-		_ = ioutil.WriteFile(resourceFileName, newData, 0600)
-	}
-}
-
+// sendTestInput publishes test parsed log entries to a rabbitMQ exchange for the processor to consume.
 func sendTestInput(
 	testInputProducer *testutils.TestRabbitMqProducer,
 	testparsedFile testmodels.TestParsedLogFile) {
@@ -200,6 +245,12 @@ func sendTestInput(
 		testInputProducer.PublishEntry(parsedEntry)
 	}
 
-	// Send a message indicating that this is the end of the processing
+	// Send a message indicating that this is the end of the entries.
 	testInputProducer.PublishStringMessage("END")
+}
+
+func updateResourcesIfEnabled(resourceFileName string, newData []byte) {
+	if updateResourcesEnabled {
+		_ = ioutil.WriteFile(resourceFileName, newData, 0600)
+	}
 }
