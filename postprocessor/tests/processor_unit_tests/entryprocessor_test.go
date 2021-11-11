@@ -1,7 +1,6 @@
 package processorunittests
 
 import (
-	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -14,60 +13,69 @@ import (
 
 const updateResourcesEnabled = false
 
+type postProcessorTest struct {
+	inputDataFile    string
+	expectedDataFile string
+}
+
 func TestLogParserPLCManager(t *testing.T) {
 	smcEventIndexName := "testSmcEvents"
 	consumtionIndexName := "testConsumptions"
 
-	testInputFileName := "./resources/parsed_test_dc_main.json"
-	expectedDataFileName := "./resources/expected_processed_dc_main.json"
-
-	done := make(chan string)
-
-	// Init a mock message producer.
-	mockMessageProducer := mocks.MockMessageProducer{
-		Data: testmodels.TestProcessedData{
-			Events:       []models.SmcEvent{},
-			Consumptions: []models.ConsumtionValue{},
-			IndexNames:   []string{},
+	postProcessorTests := []postProcessorTest{
+		{
+			inputDataFile:    "./resources/parsed_test_dc_main.json",
+			expectedDataFile: "./resources/expected_processed_dc_main.json",
 		},
-		Done: done,
+		{
+			inputDataFile:    "./resources/parsed_test_plc_manager.json",
+			expectedDataFile: "./resources/expected_processed_plc_manager.json",
+		},
 	}
 
-	// Read test input from resource file.
-	parsedInputBytes, err := ioutil.ReadFile(testInputFileName)
-	utils.FailOnError(err, "Could not open test input "+testInputFileName)
+	for _, test := range postProcessorTests {
+		done := make(chan string)
 
-	testData := testmodels.TestParsedLogFile{}
-	testData.FromJSON(parsedInputBytes)
-	mockMessageConsumer := mocks.MockMessageConsumer{TestParsedLogFile: testData}
+		// Init a mock message producer.
+		mockMessageProducer := mocks.MockMessageProducer{
+			Data: testmodels.TestProcessedData{
+				Events:       []models.SmcEvent{},
+				Consumptions: []models.ConsumtionValue{},
+				IndexNames:   []string{},
+			},
+			Done: done,
+		}
 
-	// Run processor
-	processor := processing.NewEntryProcessor(
-		&mockMessageProducer,
-		&mockMessageConsumer,
-		smcEventIndexName,
-		consumtionIndexName,
-	)
-	processor.HandleEntries()
+		// Read test input from resource file.
+		parsedInputBytes, err := ioutil.ReadFile(test.inputDataFile)
+		utils.FailOnError(err, "Could not open test input "+test.inputDataFile)
 
-	doneMessage := <-done
-	fmt.Println(doneMessage)
+		testData := testmodels.TestParsedLogFile{}
+		testData.FromJSON(parsedInputBytes)
+		mockMessageConsumer := mocks.MockMessageConsumer{TestParsedLogFile: testData}
 
-	actualProcessedDataBytes := mockMessageProducer.Data.ToJSON()
-	updateResourcesIfEnabled(expectedDataFileName, actualProcessedDataBytes)
+		// Run processor
+		processor := processing.NewEntryProcessor(
+			&mockMessageProducer,
+			&mockMessageConsumer,
+			smcEventIndexName,
+			consumtionIndexName,
+		)
+		processor.HandleEntries()
 
-	// Read expected outcome from resource file.
-	expectedBytes, err := ioutil.ReadFile(expectedDataFileName)
-	utils.FailOnError(err, "Could not read file "+expectedDataFileName)
+		<-done
 
-	/*
-		expectedData := testmodels.TestProcessedData{}
-		expectedData.FromJSON(expectedBytes)
-	*/
+		actualProcessedDataBytes := mockMessageProducer.Data.ToJSON()
+		updateResourcesIfEnabled(test.expectedDataFile, actualProcessedDataBytes)
 
-	// Assert
-	if string(actualProcessedDataBytes) != string(expectedBytes) {
-		t.Fatal("Expected json does not match actual json value of processed data.")
+		// Read expected outcome from resource file.
+		expectedBytes, err := ioutil.ReadFile(test.expectedDataFile)
+		utils.FailOnError(err, "Could not read file "+test.expectedDataFile)
+
+		// Assert
+		if string(actualProcessedDataBytes) != string(expectedBytes) {
+			t.Fatal("Expected json does not match actual json value of processed data.")
+		}
 	}
 }
 
