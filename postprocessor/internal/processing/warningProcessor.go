@@ -5,8 +5,12 @@ import (
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 )
 
+// WarningProcessor encapsulates logic used to process warn and warning level entries.
+type WarningProcessor struct {
+}
+
 // ProcessWarn processes a log entry with WARN log level.
-func ProcessWarn(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+func (w *WarningProcessor) ProcessWarn(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
 	if logEntry.WarningParams == nil {
 		return nil, nil
 	}
@@ -40,7 +44,7 @@ func ProcessWarn(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models
 }
 
 // ProcessWarning processes a log entry with WARNING log level.
-func ProcessWarning(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+func (w *WarningProcessor) ProcessWarning(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
 	if logEntry.WarningParams == nil {
 		return nil, nil
 	}

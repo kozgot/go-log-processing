@@ -129,13 +129,16 @@ func (processor *EntryProcessor) ProcessEntry(logEntry parsermodels.ParsedLogEnt
 		}
 
 	case "WARN":
-		data, event = ProcessWarn(logEntry)
+		warningProcessor := WarningProcessor{}
+		data, event = warningProcessor.ProcessWarn(logEntry)
 
 	case "WARNING":
-		data, event = ProcessWarning(logEntry)
+		warningProcessor := WarningProcessor{}
+		data, event = warningProcessor.ProcessWarning(logEntry)
 
 	case "ERROR":
-		data, event = ProcessError(logEntry)
+		errorProcessor := ErrorProcessor{}
+		data, event = errorProcessor.ProcessError(logEntry)
 
 	default:
 		log.Printf("  [PROCESSOR] Unknown log level %s", logEntry.Level)

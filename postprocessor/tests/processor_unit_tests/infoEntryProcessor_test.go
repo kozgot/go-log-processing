@@ -8,6 +8,7 @@ import (
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
 	"github.com/kozgot/go-log-processing/postprocessor/internal/processing"
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
+	"github.com/kozgot/go-log-processing/postprocessor/tests/testutils"
 )
 
 type infoProcessorTest struct {
@@ -159,47 +160,11 @@ func TestProcessInfoEntry(t *testing.T) {
 
 		smcData, event, consumption, index := infoProcessor.ProcessInfoEntry(test.inputEntry)
 
-		assertEqualSmcData(smcData, test.expectedSmcData, t, i)
-		assertEqualSmcEvent(event, test.expectedSmcEvent, t, i)
-		assertEqualConsumption(consumption, test.expectedConsumption, t, i)
-		assertEqualIndex(index, test.expectedIndex, t, i)
+		testutils.AssertEqualSmcData(smcData, test.expectedSmcData, t, i)
+		testutils.AssertEqualSmcEvent(event, test.expectedSmcEvent, t, i)
+		testutils.AssertEqualConsumption(consumption, test.expectedConsumption, t, i)
+		testutils.AssertEqualIndex(index, test.expectedIndex, t, i)
 	}
 
 	log.Printf("Successfully run %d test cases.", len(infoProcessorTests))
-}
-
-func assertEqualSmcData(actual *models.SmcData, expected *models.SmcData, t *testing.T, testIndex int) {
-	if actual == nil && expected != nil ||
-		actual != nil && expected == nil ||
-		actual != nil && !actual.Equals(*expected) {
-		t.Fatalf("Expected SMC Data does not match actual SMC Data in test no. %d.", testIndex+1)
-	}
-}
-
-func assertEqualSmcEvent(actual *models.SmcEvent, expected *models.SmcEvent, t *testing.T, testIndex int) {
-	if actual == nil && expected != nil ||
-		actual != nil && expected == nil ||
-		actual != nil && !actual.Equals(*expected) {
-		t.Fatalf("Expected SMC Event does not match actual SMC Event in test no. %d.", testIndex+1)
-	}
-}
-
-func assertEqualConsumption(
-	actual *models.ConsumtionValue,
-	expected *models.ConsumtionValue,
-	t *testing.T,
-	testIndex int) {
-	if actual == nil && expected != nil ||
-		actual != nil && expected == nil ||
-		actual != nil && !actual.Equals(*expected) {
-		t.Fatalf("Expected Consumtion Value does not match actual Consumtion Value in test no. %d.", testIndex+1)
-	}
-}
-
-func assertEqualIndex(actual *models.IndexValue, expected *models.IndexValue, t *testing.T, testIndex int) {
-	if actual == nil && expected != nil ||
-		actual != nil && expected == nil ||
-		actual != nil && !actual.Equals(*expected) {
-		t.Fatalf("Expected Index Value does not match actual Index Value in test no. %d.", testIndex+1)
-	}
 }
