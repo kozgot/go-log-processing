@@ -12,20 +12,39 @@ type SmcData struct {
 	LastJoiningDate           time.Time
 }
 
-// Pod stores data related to a pod.
-type Pod struct {
-	UID            string
-	SmcUID         string
-	SerialNumber   int
-	Phase          int
-	ServiceLevelID int
-	PositionInSmc  int
+// Equals check equality.
+func (s *SmcData) Equals(other SmcData) bool {
+	if s.SmcUID != other.SmcUID ||
+		s.CustomerSerialNumber != other.CustomerSerialNumber ||
+		s.LastSuccesfulDlmsResponse != other.LastSuccesfulDlmsResponse ||
+		s.LastJoiningDate != other.LastJoiningDate {
+		return false
+	}
+
+	return s.Address.Equals(other.Address) && s.EqualPodLists(other)
 }
 
-// AddressDetails contains data related to an SMC's address.
-type AddressDetails struct {
-	ShortAddress    int
-	PhysicalAddress string
-	LogicalAddress  string
-	URL             string
+// ContainsPod checks if the smc data contains the given pod.
+func (s *SmcData) ContainsPod(pod Pod) bool {
+	for _, p := range s.Pods {
+		if p.UID == pod.UID {
+			return true
+		}
+	}
+	return false
+}
+
+// EqualPodLists checks if the pod lists are equal in two smc data obbjects.
+func (s *SmcData) EqualPodLists(other SmcData) bool {
+	if len(s.Pods) != len(other.Pods) {
+		return false
+	}
+
+	for _, p := range s.Pods {
+		if !other.ContainsPod(p) {
+			return false
+		}
+	}
+
+	return true
 }

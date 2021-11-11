@@ -2,7 +2,7 @@ package processing
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"strings"
 
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
@@ -61,13 +61,12 @@ func (processor *EntryProcessor) HandleEntries() {
 	processor.messageProducer.PublishCreateIndexMessage(processor.eventIndexName)
 	processor.messageProducer.PublishCreateIndexMessage(processor.consumptionIndexName)
 
-	msgs, err := processor.messageConsumer.ConsumeMessages()
-	utils.FailOnError(err, "Failed to register a consumer")
+	msgs := processor.messageConsumer.ConsumeMessages()
 
 	go func() {
 		for d := range msgs {
 			if strings.Contains(string(d.Body), "END") {
-				fmt.Println("End of entries...")
+				log.Println("  [PROCESSOR] End of entries...")
 
 				// Further processing to get consumption and index info.
 				consumptionProcessor := NewConsumptionProcessor(
@@ -77,6 +76,9 @@ func (processor *EntryProcessor) HandleEntries() {
 					processor.consumptionIndexName)
 				consumptionProcessor.ProcessConsumptionAndIndexValues()
 
+				// Tell ES uploader that we reached the end of the log entries.
+				processor.messageProducer.PublishDoneMessage()
+
 				// Acknowledge the message after it has been processed.
 				err := d.Ack(false)
 				utils.FailOnError(err, "Could not acknowledge END message")
@@ -84,7 +86,7 @@ func (processor *EntryProcessor) HandleEntries() {
 			}
 
 			entry := deserializeParsedLogEntry(d.Body)
-			processor.processEntry(entry)
+			processor.ProcessEntry(entry)
 
 			// Acknowledge the message after it has been processed.
 			err := d.Ack(false)
@@ -94,15 +96,18 @@ func (processor *EntryProcessor) HandleEntries() {
 	}()
 }
 
-// processEntry processes the log entry received as a parameter.
-func (processor *EntryProcessor) processEntry(logEntry parsermodels.ParsedLogEntry) {
+// ProcessEntry processes the log entry received as a parameter.
+func (processor *EntryProcessor) ProcessEntry(logEntry parsermodels.ParsedLogEntry) {
 	var data *models.SmcData
 	var event *models.SmcEvent
 	var consumption *models.ConsumtionValue
 	var index *models.IndexValue
 	switch logEntry.Level {
 	case "INFO":
-		data, event, consumption, index = ProcessInfoEntry(logEntry, processor.podUIDToSmcUID)
+		infoProcessor := InfoEntryProcessor{
+			PodUIDToSmcUID: processor.podUIDToSmcUID,
+		}
+		data, event, consumption, index = infoProcessor.ProcessInfoEntry(logEntry)
 
 		if event != nil && event.EventType == models.ConnectionAttempt {
 			// This is the only entry where the URL and SMC UID parameters are given at the same time.
@@ -124,16 +129,19 @@ func (processor *EntryProcessor) processEntry(logEntry parsermodels.ParsedLogEnt
 		}
 
 	case "WARN":
-		data, event = ProcessWarn(logEntry)
+		warningProcessor := WarningProcessor{}
+		data, event = warningProcessor.ProcessWarn(logEntry)
 
 	case "WARNING":
-		data, event = ProcessWarning(logEntry)
+		warningProcessor := WarningProcessor{}
+		data, event = warningProcessor.ProcessWarning(logEntry)
 
 	case "ERROR":
-		data, event = ProcessError(logEntry)
+		errorProcessor := ErrorProcessor{}
+		data, event = errorProcessor.ProcessError(logEntry)
 
 	default:
-		fmt.Printf("Unknown log level %s", logEntry.Level)
+		log.Printf("  [PROCESSOR] Unknown log level %s", logEntry.Level)
 	}
 
 	processor.registerEvent(event, data)
@@ -220,7 +228,7 @@ func updateChangedProperties(existingSmcData models.SmcData, newSmcData models.S
 	if len(result.Pods) < len(newSmcData.Pods) {
 		for i := 0; i < len(newSmcData.Pods); i++ {
 			pod := newSmcData.Pods[i]
-			if !containsPod(pod, result.Pods) {
+			if !result.ContainsPod(pod) {
 				result.Pods = append(result.Pods, pod)
 			}
 		}
@@ -273,15 +281,6 @@ func updateAddresIfNeeded(oldAddress models.AddressDetails, newAddress models.Ad
 	}
 
 	return result
-}
-
-func containsPod(pod models.Pod, list []models.Pod) bool {
-	for _, p := range list {
-		if p.UID == pod.UID {
-			return true
-		}
-	}
-	return false
 }
 
 func deserializeParsedLogEntry(bytes []byte) parsermodels.ParsedLogEntry {

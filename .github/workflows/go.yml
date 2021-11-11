@@ -149,5 +149,5 @@ jobs:
 
     - name: Test
       run: |
-        cd ./postprocessor
+        cd ./postprocessor/tests
         go test -v ./...

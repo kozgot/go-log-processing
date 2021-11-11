@@ -1,6 +1,7 @@
 package service
 
 import (
+	"log"
 	"strings"
 	"time"
 
@@ -46,6 +47,8 @@ func (service *UploaderService) HandleMessages() {
 			msgParts := strings.Split(string(delivery.Body), "|")
 			msgPrefix := msgParts[0]
 			switch msgPrefix {
+			case "DONE":
+				log.Println("Received DONE from Postprocessor")
 			case "CREATEINDEX":
 				indexName := strings.Split(string(delivery.Body), "|")[1]
 				service.esClient.CreateEsIndex(indexName)

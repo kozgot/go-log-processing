@@ -1,31 +1,5 @@
 package models
 
-import (
-	"encoding/json"
-	"fmt"
-	"time"
-)
-
-// SmcEvent is an event happening to a specific smc at a specific time.
-type SmcEvent struct {
-	Time            time.Time
-	EventType       EventType
-	EventTypeString string
-	Label           string
-	SmcUID          string
-	DataPayload     SmcData
-}
-
-// Serialize serializes an smc event and returns a byte array.
-func (e SmcEvent) Serialize() []byte {
-	bytes, err := json.Marshal(e)
-	if err != nil {
-		fmt.Println("Can't serialize event ", e)
-	}
-
-	return bytes
-}
-
 // EventType represents the type of the event happening in this moment.
 type EventType int64
 

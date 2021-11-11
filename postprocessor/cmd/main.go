@@ -77,7 +77,7 @@ func main() {
 		saveDataRoutingKey)
 
 	// Open producer channel and connection.
-	rabbitMqProducer.Connect(rabbitMqURL)
+	rabbitMqProducer.Connect()
 	defer rabbitMqProducer.CloseChannelAndConnection()
 
 	forever := make(chan bool)

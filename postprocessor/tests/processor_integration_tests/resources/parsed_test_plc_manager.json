@@ -1,0 +1,1373 @@
+{
+ "Lines": [
+  {
+   "Timestamp": "2020-06-10T09:18:38Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 0,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:18:38Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 0,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:18:38Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 0,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:20:15Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 0,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:20:15Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 3,
+    "RoutingMessage": null,
+    "JoinMessage": {
+     "Ok": true,
+     "Response": "Confirmed",
+     "JoinType": "LBD",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc32",
+      "PhysicalAddress": "EEBEDDFFFE6210AD",
+      "LogicalAddress": "FE80::4021:FF:FE00:000a:61616",
+      "ShortAddress": 10,
+      "LastJoiningDate": "2020-06-10T09:20:14Z"
+     }
+    },
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:21:38Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 0,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:21:38Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 3,
+    "RoutingMessage": null,
+    "JoinMessage": {
+     "Ok": true,
+     "Response": "Confirmed",
+     "JoinType": "LBD",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc30",
+      "PhysicalAddress": "EEBEDDFFFE621095",
+      "LogicalAddress": "FE80::4021:FF:FE00:0014:61616",
+      "ShortAddress": 20,
+      "LastJoiningDate": "2020-06-10T09:21:37Z"
+     }
+    },
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:23:03Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 1,
+    "RoutingMessage": {
+     "Address": "0x0014",
+     "NextHopAddress": "0x0014",
+     "RouteCost": 11,
+     "HopCount": 0,
+     "WeakLink": 1,
+     "ValidTimeMins": 240
+    },
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:23:03Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 6,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": {
+     "IsInComing": true,
+     "SourceOrDestName": "PLC",
+     "MessageType": 0,
+     "Payload": {
+      "SmcUID": "",
+      "PodUID": "",
+      "ServiceLevelID": 0,
+      "Value": 0,
+      "Time": "0001-01-01T00:00:00Z",
+      "TimeRange": null,
+      "ConnectOrDisconnectPayload": null,
+      "DLMSLogPayload": null,
+      "IndexPayload": null,
+      "GenericIndexProfilePayload": null,
+      "MessagePayload": null,
+      "SettingsPayload": null,
+      "ServiceLevelPayload": null,
+      "SmcAddressPayload": null,
+      "SmcConfigPayload": null,
+      "PodConfigPayload": null,
+      "ConnectToPLCPayload": null,
+      "StatisticsEntryPayload": null,
+      "ReadIndexLowProfilesEntryPayload": null,
+      "ReadIndexProfilesEntryPayload": null
+     }
+    },
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:23:07Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 0,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:23:07Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 3,
+    "RoutingMessage": null,
+    "JoinMessage": {
+     "Ok": true,
+     "Response": "Confirmed",
+     "JoinType": "LBA",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc21",
+      "PhysicalAddress": "EEBEDDFFFE621154",
+      "LogicalAddress": "FE80::4021:FF:FE00:0006:61616",
+      "ShortAddress": 6,
+      "LastJoiningDate": "2020-06-10T09:23:04Z"
+     }
+    },
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:24:13Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 0,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:24:13Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 3,
+    "RoutingMessage": null,
+    "JoinMessage": {
+     "Ok": true,
+     "Response": "Confirmed",
+     "JoinType": "LBD",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc31",
+      "PhysicalAddress": "EEBEDDFFFE6210AB",
+      "LogicalAddress": "FE80::4021:FF:FE00:0019:61616",
+      "ShortAddress": 25,
+      "LastJoiningDate": "2020-06-10T09:24:12Z"
+     }
+    },
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:24:18Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 0,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:24:18Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 3,
+    "RoutingMessage": null,
+    "JoinMessage": {
+     "Ok": true,
+     "Response": "Confirmed",
+     "JoinType": "LBD",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc24",
+      "PhysicalAddress": "EEBEDDFFFE62106D",
+      "LogicalAddress": "FE80::4021:FF:FE00:001f:61616",
+      "ShortAddress": 31,
+      "LastJoiningDate": "2020-06-10T09:24:16Z"
+     }
+    },
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:25:43Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 6,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": {
+     "IsInComing": true,
+     "SourceOrDestName": "PLC",
+     "MessageType": 0,
+     "Payload": {
+      "SmcUID": "",
+      "PodUID": "",
+      "ServiceLevelID": 0,
+      "Value": 0,
+      "Time": "0001-01-01T00:00:00Z",
+      "TimeRange": null,
+      "ConnectOrDisconnectPayload": null,
+      "DLMSLogPayload": null,
+      "IndexPayload": null,
+      "GenericIndexProfilePayload": null,
+      "MessagePayload": null,
+      "SettingsPayload": null,
+      "ServiceLevelPayload": null,
+      "SmcAddressPayload": null,
+      "SmcConfigPayload": null,
+      "PodConfigPayload": null,
+      "ConnectToPLCPayload": null,
+      "StatisticsEntryPayload": null,
+      "ReadIndexLowProfilesEntryPayload": null,
+      "ReadIndexProfilesEntryPayload": null
+     }
+    },
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:25:44Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 0,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:25:44Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 3,
+    "RoutingMessage": null,
+    "JoinMessage": {
+     "Ok": true,
+     "Response": "Confirmed",
+     "JoinType": "LBD",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc27",
+      "PhysicalAddress": "EEBEDDFFFE621099",
+      "LogicalAddress": "FE80::4021:FF:FE00:0021:61616",
+      "ShortAddress": 33,
+      "LastJoiningDate": "2020-06-10T09:25:43Z"
+     }
+    },
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:26:42Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 0,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:26:42Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 3,
+    "RoutingMessage": null,
+    "JoinMessage": {
+     "Ok": true,
+     "Response": "Confirmed",
+     "JoinType": "LBD",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc37",
+      "PhysicalAddress": "EEBEDDFFFE62114D",
+      "LogicalAddress": "FE80::4021:FF:FE00:0003:61616",
+      "ShortAddress": 3,
+      "LastJoiningDate": "2020-06-10T09:26:41Z"
+     }
+    },
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:26:42Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 6,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": {
+     "IsInComing": true,
+     "SourceOrDestName": "PLC",
+     "MessageType": 0,
+     "Payload": {
+      "SmcUID": "",
+      "PodUID": "",
+      "ServiceLevelID": 0,
+      "Value": 0,
+      "Time": "0001-01-01T00:00:00Z",
+      "TimeRange": null,
+      "ConnectOrDisconnectPayload": null,
+      "DLMSLogPayload": null,
+      "IndexPayload": null,
+      "GenericIndexProfilePayload": null,
+      "MessagePayload": null,
+      "SettingsPayload": null,
+      "ServiceLevelPayload": null,
+      "SmcAddressPayload": null,
+      "SmcConfigPayload": null,
+      "PodConfigPayload": null,
+      "ConnectToPLCPayload": null,
+      "StatisticsEntryPayload": null,
+      "ReadIndexLowProfilesEntryPayload": null,
+      "ReadIndexProfilesEntryPayload": null
+     }
+    },
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:26:53Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 6,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": {
+     "IsInComing": true,
+     "SourceOrDestName": "PLC",
+     "MessageType": 0,
+     "Payload": {
+      "SmcUID": "",
+      "PodUID": "",
+      "ServiceLevelID": 0,
+      "Value": 0,
+      "Time": "0001-01-01T00:00:00Z",
+      "TimeRange": null,
+      "ConnectOrDisconnectPayload": null,
+      "DLMSLogPayload": null,
+      "IndexPayload": null,
+      "GenericIndexProfilePayload": null,
+      "MessagePayload": null,
+      "SettingsPayload": null,
+      "ServiceLevelPayload": null,
+      "SmcAddressPayload": null,
+      "SmcConfigPayload": null,
+      "PodConfigPayload": null,
+      "ConnectToPLCPayload": null,
+      "StatisticsEntryPayload": null,
+      "ReadIndexLowProfilesEntryPayload": null,
+      "ReadIndexProfilesEntryPayload": null
+     }
+    },
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:26:53Z",
+   "Level": "WARNING",
+   "ErrorParams": null,
+   "WarningParams": {
+    "Name": "",
+    "SmcUID": "",
+    "UID": 0,
+    "Priority": 0,
+    "Retry": 0,
+    "FileName": "",
+    "Creation": "0001-01-01T00:00:00Z",
+    "MinLaunchTime": "0001-01-01T00:00:00Z",
+    "Details": null,
+    "JoinMessageParams": {
+     "Ok": false,
+     "Response": "Rejected",
+     "JoinType": "LBD",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc36",
+      "PhysicalAddress": "EEBEDDFFFE621128",
+      "LogicalAddress": "FE80::4021:FF:FE00:0008:61616",
+      "ShortAddress": 8,
+      "LastJoiningDate": "2020-06-10T09:26:43Z"
+     }
+    },
+    "TimeoutParams": null,
+    "LostConnectionParams": null
+   },
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:27:04Z",
+   "Level": "WARNING",
+   "ErrorParams": null,
+   "WarningParams": {
+    "Name": "",
+    "SmcUID": "",
+    "UID": 0,
+    "Priority": 0,
+    "Retry": 0,
+    "FileName": "",
+    "Creation": "0001-01-01T00:00:00Z",
+    "MinLaunchTime": "0001-01-01T00:00:00Z",
+    "Details": null,
+    "JoinMessageParams": {
+     "Ok": false,
+     "Response": "Rejected",
+     "JoinType": "LBD",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc20",
+      "PhysicalAddress": "EEBEDDFFFE621120",
+      "LogicalAddress": "FE80::4021:FF:FE00:001b:61616",
+      "ShortAddress": 27,
+      "LastJoiningDate": "2020-06-10T09:26:54Z"
+     }
+    },
+    "TimeoutParams": null,
+    "LostConnectionParams": null
+   },
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:27:30Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 6,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": {
+     "IsInComing": true,
+     "SourceOrDestName": "PLC",
+     "MessageType": 0,
+     "Payload": {
+      "SmcUID": "",
+      "PodUID": "",
+      "ServiceLevelID": 0,
+      "Value": 0,
+      "Time": "0001-01-01T00:00:00Z",
+      "TimeRange": null,
+      "ConnectOrDisconnectPayload": null,
+      "DLMSLogPayload": null,
+      "IndexPayload": null,
+      "GenericIndexProfilePayload": null,
+      "MessagePayload": null,
+      "SettingsPayload": null,
+      "ServiceLevelPayload": null,
+      "SmcAddressPayload": null,
+      "SmcConfigPayload": null,
+      "PodConfigPayload": null,
+      "ConnectToPLCPayload": null,
+      "StatisticsEntryPayload": null,
+      "ReadIndexLowProfilesEntryPayload": null,
+      "ReadIndexProfilesEntryPayload": null
+     }
+    },
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:27:39Z",
+   "Level": "WARNING",
+   "ErrorParams": null,
+   "WarningParams": {
+    "Name": "",
+    "SmcUID": "",
+    "UID": 0,
+    "Priority": 0,
+    "Retry": 0,
+    "FileName": "",
+    "Creation": "0001-01-01T00:00:00Z",
+    "MinLaunchTime": "0001-01-01T00:00:00Z",
+    "Details": null,
+    "JoinMessageParams": {
+     "Ok": false,
+     "Response": "Rejected",
+     "JoinType": "LBD",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc22",
+      "PhysicalAddress": "EEBEDDFFFE62106B",
+      "LogicalAddress": "FE80::4021:FF:FE00:001d:61616",
+      "ShortAddress": 29,
+      "LastJoiningDate": "2020-06-10T09:27:29Z"
+     }
+    },
+    "TimeoutParams": null,
+    "LostConnectionParams": null
+   },
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:27:50Z",
+   "Level": "WARNING",
+   "ErrorParams": null,
+   "WarningParams": {
+    "Name": "",
+    "SmcUID": "",
+    "UID": 0,
+    "Priority": 0,
+    "Retry": 0,
+    "FileName": "",
+    "Creation": "0001-01-01T00:00:00Z",
+    "MinLaunchTime": "0001-01-01T00:00:00Z",
+    "Details": null,
+    "JoinMessageParams": {
+     "Ok": false,
+     "Response": "Rejected",
+     "JoinType": "LBD",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc10",
+      "PhysicalAddress": "EEBEDDFFFE621148",
+      "LogicalAddress": "FE80::4021:FF:FE00:0023:61616",
+      "ShortAddress": 35,
+      "LastJoiningDate": "2020-06-10T09:27:40Z"
+     }
+    },
+    "TimeoutParams": null,
+    "LostConnectionParams": null
+   },
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:27:54Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 1,
+    "RoutingMessage": {
+     "Address": "0x0008",
+     "NextHopAddress": "0x0003",
+     "RouteCost": 14,
+     "HopCount": 0,
+     "WeakLink": 2,
+     "ValidTimeMins": 240
+    },
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:28:50Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 0,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:28:50Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 3,
+    "RoutingMessage": null,
+    "JoinMessage": {
+     "Ok": true,
+     "Response": "Confirmed",
+     "JoinType": "LBA",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc17",
+      "PhysicalAddress": "EEBEDDFFFE6210A9",
+      "LogicalAddress": "FE80::4021:FF:FE00:0004:61616",
+      "ShortAddress": 4,
+      "LastJoiningDate": "2020-06-10T09:28:49Z"
+     }
+    },
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:28:54Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 0,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:28:54Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 3,
+    "RoutingMessage": null,
+    "JoinMessage": {
+     "Ok": true,
+     "Response": "Confirmed",
+     "JoinType": "LBA",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc8",
+      "PhysicalAddress": "EEBEDDFFFE621127",
+      "LogicalAddress": "FE80::4021:FF:FE00:000c:61616",
+      "ShortAddress": 12,
+      "LastJoiningDate": "2020-06-10T09:28:51Z"
+     }
+    },
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:29:02Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 0,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:29:02Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 3,
+    "RoutingMessage": null,
+    "JoinMessage": {
+     "Ok": true,
+     "Response": "Confirmed",
+     "JoinType": "LBD",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc2",
+      "PhysicalAddress": "EEBEDDFFFE62111B",
+      "LogicalAddress": "FE80::4021:FF:FE00:000b:61616",
+      "ShortAddress": 11,
+      "LastJoiningDate": "2020-06-10T09:29:00Z"
+     }
+    },
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:30:09Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 0,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:30:09Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 3,
+    "RoutingMessage": null,
+    "JoinMessage": {
+     "Ok": true,
+     "Response": "Confirmed",
+     "JoinType": "LBD",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc38",
+      "PhysicalAddress": "EEBEDDFFFE621155",
+      "LogicalAddress": "FE80::4021:FF:FE00:000d:61616",
+      "ShortAddress": 13,
+      "LastJoiningDate": "2020-06-10T09:30:08Z"
+     }
+    },
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:30:42Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 6,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": {
+     "IsInComing": true,
+     "SourceOrDestName": "PLC",
+     "MessageType": 0,
+     "Payload": {
+      "SmcUID": "",
+      "PodUID": "",
+      "ServiceLevelID": 0,
+      "Value": 0,
+      "Time": "0001-01-01T00:00:00Z",
+      "TimeRange": null,
+      "ConnectOrDisconnectPayload": null,
+      "DLMSLogPayload": null,
+      "IndexPayload": null,
+      "GenericIndexProfilePayload": null,
+      "MessagePayload": null,
+      "SettingsPayload": null,
+      "ServiceLevelPayload": null,
+      "SmcAddressPayload": null,
+      "SmcConfigPayload": null,
+      "PodConfigPayload": null,
+      "ConnectToPLCPayload": null,
+      "StatisticsEntryPayload": null,
+      "ReadIndexLowProfilesEntryPayload": null,
+      "ReadIndexProfilesEntryPayload": null
+     }
+    },
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:30:46Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 1,
+    "RoutingMessage": {
+     "Address": "0x0006",
+     "NextHopAddress": "0x0003",
+     "RouteCost": 14,
+     "HopCount": 0,
+     "WeakLink": 2,
+     "ValidTimeMins": 240
+    },
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:30:47Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 1,
+    "RoutingMessage": {
+     "Address": "0x001B",
+     "NextHopAddress": "0x0003",
+     "RouteCost": 24,
+     "HopCount": 0,
+     "WeakLink": 3,
+     "ValidTimeMins": 240
+    },
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:30:47Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 1,
+    "RoutingMessage": {
+     "Address": "0x0003",
+     "NextHopAddress": "0x0003",
+     "RouteCost": 11,
+     "HopCount": 0,
+     "WeakLink": 1,
+     "ValidTimeMins": 240
+    },
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:31:20Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 0,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:31:20Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 3,
+    "RoutingMessage": null,
+    "JoinMessage": {
+     "Ok": true,
+     "Response": "Confirmed",
+     "JoinType": "LBA",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc25",
+      "PhysicalAddress": "EEBEDDFFFE621097",
+      "LogicalAddress": "FE80::4021:FF:FE00:0011:61616",
+      "ShortAddress": 17,
+      "LastJoiningDate": "2020-06-10T09:31:19Z"
+     }
+    },
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:31:32Z",
+   "Level": "WARNING",
+   "ErrorParams": null,
+   "WarningParams": {
+    "Name": "",
+    "SmcUID": "",
+    "UID": 0,
+    "Priority": 0,
+    "Retry": 0,
+    "FileName": "",
+    "Creation": "0001-01-01T00:00:00Z",
+    "MinLaunchTime": "0001-01-01T00:00:00Z",
+    "Details": null,
+    "JoinMessageParams": {
+     "Ok": false,
+     "Response": "Rejected",
+     "JoinType": "LBA",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc35",
+      "PhysicalAddress": "EEBEDDFFFE621125",
+      "LogicalAddress": "FE80::4021:FF:FE00:000f:61616",
+      "ShortAddress": 15,
+      "LastJoiningDate": "2020-06-10T09:31:21Z"
+     }
+    },
+    "TimeoutParams": null,
+    "LostConnectionParams": null
+   },
+   "InfoParams": null
+  },
+  {
+   "Timestamp": "2020-06-10T09:31:42Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 0,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:31:42Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 3,
+    "RoutingMessage": null,
+    "JoinMessage": {
+     "Ok": true,
+     "Response": "Confirmed",
+     "JoinType": "LBD",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc5",
+      "PhysicalAddress": "EEBEDDFFFE621151",
+      "LogicalAddress": "FE80::4021:FF:FE00:0013:61616",
+      "ShortAddress": 19,
+      "LastJoiningDate": "2020-06-10T09:31:40Z"
+     }
+    },
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:32:19Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 6,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": {
+     "IsInComing": true,
+     "SourceOrDestName": "PLC",
+     "MessageType": 0,
+     "Payload": {
+      "SmcUID": "",
+      "PodUID": "",
+      "ServiceLevelID": 0,
+      "Value": 0,
+      "Time": "0001-01-01T00:00:00Z",
+      "TimeRange": null,
+      "ConnectOrDisconnectPayload": null,
+      "DLMSLogPayload": null,
+      "IndexPayload": null,
+      "GenericIndexProfilePayload": null,
+      "MessagePayload": null,
+      "SettingsPayload": null,
+      "ServiceLevelPayload": null,
+      "SmcAddressPayload": null,
+      "SmcConfigPayload": null,
+      "PodConfigPayload": null,
+      "ConnectToPLCPayload": null,
+      "StatisticsEntryPayload": null,
+      "ReadIndexLowProfilesEntryPayload": null,
+      "ReadIndexProfilesEntryPayload": null
+     }
+    },
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:32:53Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 0,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:32:53Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 3,
+    "RoutingMessage": null,
+    "JoinMessage": {
+     "Ok": true,
+     "Response": "Confirmed",
+     "JoinType": "LBA",
+     "SmcAddress": {
+      "SmcUID": "dc18-smc9",
+      "PhysicalAddress": "EEBEDDFFFE621129",
+      "LogicalAddress": "FE80::4021:FF:FE00:0016:61616",
+      "ShortAddress": 22,
+      "LastJoiningDate": "2020-06-10T09:32:53Z"
+     }
+    },
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:32:54Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 6,
+    "RoutingMessage": null,
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": {
+     "IsInComing": true,
+     "SourceOrDestName": "PLC",
+     "MessageType": 0,
+     "Payload": {
+      "SmcUID": "",
+      "PodUID": "",
+      "ServiceLevelID": 0,
+      "Value": 0,
+      "Time": "0001-01-01T00:00:00Z",
+      "TimeRange": null,
+      "ConnectOrDisconnectPayload": null,
+      "DLMSLogPayload": null,
+      "IndexPayload": null,
+      "GenericIndexProfilePayload": null,
+      "MessagePayload": null,
+      "SettingsPayload": null,
+      "ServiceLevelPayload": null,
+      "SmcAddressPayload": null,
+      "SmcConfigPayload": null,
+      "PodConfigPayload": null,
+      "ConnectToPLCPayload": null,
+      "StatisticsEntryPayload": null,
+      "ReadIndexLowProfilesEntryPayload": null,
+      "ReadIndexProfilesEntryPayload": null
+     }
+    },
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  },
+  {
+   "Timestamp": "2020-06-10T09:33:03Z",
+   "Level": "INFO",
+   "ErrorParams": null,
+   "WarningParams": null,
+   "InfoParams": {
+    "EntryType": 1,
+    "RoutingMessage": {
+     "Address": "0x0023",
+     "NextHopAddress": "0x0000",
+     "RouteCost": 0,
+     "HopCount": 0,
+     "WeakLink": 0,
+     "ValidTimeMins": 0
+    },
+    "JoinMessage": null,
+    "StatusMessage": null,
+    "DCMessage": null,
+    "ConnectionAttempt": null,
+    "SmcConfigUpdate": null,
+    "ConnectionReleased": null,
+    "InitConnection": null,
+    "InternalDiagnosticsData": null
+   }
+  }
+ ]
+}

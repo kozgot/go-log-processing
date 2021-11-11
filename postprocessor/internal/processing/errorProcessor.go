@@ -7,8 +7,11 @@ import (
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 )
 
+type ErrorProcessor struct {
+}
+
 // ProcessError processes a log entry with ERROR log level.
-func ProcessError(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
+func (e *ErrorProcessor) ProcessError(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *models.SmcEvent) {
 	if logEntry.ErrorParams == nil {
 		return nil, nil
 	}
