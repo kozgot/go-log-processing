@@ -222,7 +222,7 @@ func updateChangedProperties(existingSmcData models.SmcData, newSmcData models.S
 	if len(result.Pods) < len(newSmcData.Pods) {
 		for i := 0; i < len(newSmcData.Pods); i++ {
 			pod := newSmcData.Pods[i]
-			if !containsPod(pod, result.Pods) {
+			if !result.ContainsPod(pod) {
 				result.Pods = append(result.Pods, pod)
 			}
 		}
@@ -275,15 +275,6 @@ func updateAddresIfNeeded(oldAddress models.AddressDetails, newAddress models.Ad
 	}
 
 	return result
-}
-
-func containsPod(pod models.Pod, list []models.Pod) bool {
-	for _, p := range list {
-		if p.UID == pod.UID {
-			return true
-		}
-	}
-	return false
 }
 
 func deserializeParsedLogEntry(bytes []byte) parsermodels.ParsedLogEntry {
