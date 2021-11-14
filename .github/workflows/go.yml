@@ -66,22 +66,17 @@ jobs:
     # Service containers to run with `testuploader`
     services:
       # Label used to access the service container
+      elasticsearch:
+        # Docker Hub image
+        image: elasticsearch:7.10.1
+        ports:
+          - 9200:9200
+      # Label used to access the service container
       rabbitmq:
         # Docker Hub image
         image: rabbitmq:3-management
-        #
         ports:
-          # Opens tcp port 5672 on the host and service container
           - 5672:5672
-    
-      # Label used to access the service container
-      elasticsearch1:
-        # Docker Hub image
-        image: elasticsearch:7.10.1
-        #
-        ports:
-          # Opens tcp port 9200 on the host and service container
-          - 9200:9200
 
     steps:
 
@@ -110,7 +105,7 @@ jobs:
 
     - name: Test
       run: |
-        cd ./elasticuploader
+        cd ./elasticuploader/tests
         go test -v ./...
 
   # Test and build Postprocessor service
