@@ -27,7 +27,7 @@ func NewUploaderService(messageConsumer rabbit.MessageConsumer, esClient elastic
 
 // HandleMessages consumes messages from rabbitMQ and uploads them to ES.
 func (service *UploaderService) HandleMessages() {
-	uploadBuffer := NewUploadBuffer(service.esClient)
+	uploadBuffer := NewUploadBuffer(service.esClient, 1000)
 
 	msgs, err := service.rabbitMQConsumer.Consume()
 	utils.FailOnError(err, " [UPLOADER SERVICE] Failed to register a consumer")

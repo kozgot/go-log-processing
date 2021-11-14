@@ -12,19 +12,21 @@ import (
 // UploadBuffer stores data by index name until the datacount reaches a treshold,
 // then uploads the contents, while implementing mutual exclosure.
 type UploadBuffer struct {
-	mutex    sync.Mutex
-	value    map[string][]models.DataUnit
-	esClient elastic.EsClient
-	ticker   *time.Ticker
+	mutex      sync.Mutex
+	value      map[string][]models.DataUnit
+	esClient   elastic.EsClient
+	ticker     *time.Ticker
+	bufferSize int
 }
 
 // NewUploadBuffer initializes the buffer.
-func NewUploadBuffer(esClient elastic.EsClient) *UploadBuffer {
+func NewUploadBuffer(esClient elastic.EsClient, size int) *UploadBuffer {
 	ticker := time.NewTicker(10 * time.Second)
 	uploadBuffer := UploadBuffer{
-		value:    make(map[string][]models.DataUnit),
-		esClient: esClient,
-		ticker:   ticker,
+		value:      make(map[string][]models.DataUnit),
+		esClient:   esClient,
+		ticker:     ticker,
+		bufferSize: size,
 	}
 
 	// Periodically check if we have anything left to upload.
@@ -52,7 +54,7 @@ func (d *UploadBuffer) AppendAndUploadIfNeeded(m models.DataUnit, key string) {
 	d.value[key] = append(d.value[key], m)
 
 	// If we hit the treshold, we upload to ES.
-	if len(d.value[key]) >= 1000 {
+	if len(d.value[key]) >= d.bufferSize {
 		d.ticker.Reset(10 * time.Second)
 
 		// Upload to ES.
