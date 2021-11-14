@@ -74,7 +74,7 @@ jobs:
         env:
           cluster.name: elasticsearch
           discovery.type: single-node
-          "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+
       # Label used to access the service container
       rabbitmq:
         # Docker Hub image
