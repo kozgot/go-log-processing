@@ -54,11 +54,8 @@ func (esuploader *EsClientWrapper) BulkUpload(dataUnits []models.DataUnit, index
 
 	// Create the BulkIndexer.
 	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
-		Index:         indexName,           // The default index name
-		Client:        esuploader.esClient, // The Elasticsearch client
-		NumWorkers:    4,                   // The number of worker goroutines
-		FlushBytes:    1000000,             // The flush threshold in bytes
-		FlushInterval: 30 * time.Second,    // The periodic flush interval
+		Index:  indexName,           // The default index name
+		Client: esuploader.esClient, // The Elasticsearch client
 	})
 	utils.FailOnError(err, " [ESClient] Error creating the indexer")
 
