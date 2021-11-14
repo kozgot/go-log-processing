@@ -2,10 +2,26 @@ package mocks
 
 // MockAcknowledger implements the Acknowledger interface of amqp.
 type MockAcknowledger struct {
+	expectedAckCount int
+	ackCount         int
+	done             chan bool
+}
+
+func NewMockAcknowleder(expectedAckCount int, done chan bool) *MockAcknowledger {
+	mockAcknowledger := MockAcknowledger{
+		expectedAckCount: expectedAckCount,
+		ackCount:         0,
+		done:             done,
+	}
+	return &mockAcknowledger
 }
 
 // Ack is the implementation of the Ack() function of the Acknowledger interface.
 func (m *MockAcknowledger) Ack(tag uint64, multiple bool) error {
+	m.ackCount++
+	if m.expectedAckCount == m.ackCount {
+		m.done <- true
+	}
 	return nil
 }
 

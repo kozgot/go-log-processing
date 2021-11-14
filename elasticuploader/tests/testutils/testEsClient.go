@@ -10,6 +10,7 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/utils"
 )
 
@@ -40,7 +41,7 @@ func NewTestEsClientWrapper() *TestEsClientWrapper {
 	return &clientWrapper
 }
 
-func (testEsClient *TestEsClientWrapper) QueryDocCountInIndex(indexName string) {
+func (testEsClient *TestEsClientWrapper) QueryDocCountInIndex(indexName string) int {
 	var (
 		r map[string]interface{}
 	)
@@ -67,9 +68,7 @@ func (testEsClient *TestEsClientWrapper) QueryDocCountInIndex(indexName string) 
 		testEsClient.esClient.Search.WithContext(context.Background()),
 		testEsClient.esClient.Search.WithIndex(indexName),
 		testEsClient.esClient.Search.WithBody(&buf),
-		testEsClient.esClient.Search.WithSize(10000),
 		testEsClient.esClient.Search.WithTrackTotalHits(true),
-		testEsClient.esClient.Search.WithPretty(),
 	)
 	utils.FailOnError(err, "Error getting response")
 
@@ -89,18 +88,43 @@ func (testEsClient *TestEsClientWrapper) QueryDocCountInIndex(indexName string) 
 	err = json.NewDecoder(res.Body).Decode(&r)
 	utils.FailOnError(err, "Error parsing the response body")
 
+	hits := int(r["hits"].(map[string]interface{})["total"].(map[string]interface{})["value"].(float64))
+
 	// Print the response status, number of results, and request duration.
 	log.Printf(
 		"[%s] %d hits; took: %dms",
 		res.Status(),
-		int(r["hits"].(map[string]interface{})["total"].(map[string]interface{})["value"].(float64)),
+		hits,
 		int(r["took"].(float64)),
 	)
-	// Print the ID and document source for each hit.
-	for _, hit := range r["hits"].(map[string]interface{})["hits"].([]interface{}) {
-		log.Printf(" * ID=%s, %s", hit.(map[string]interface{})["_id"], hit.(map[string]interface{})["_source"])
-	}
+	/*
+
+
+		// Print the ID and document source for each hit.
+		for _, hit := range r["hits"].(map[string]interface{})["hits"].([]interface{}) {
+			log.Printf(" * ID=%s, %s", hit.(map[string]interface{})["_id"], hit.(map[string]interface{})["_source"])
+		}
+	*/
 
 	log.Println(strings.Repeat("=", 37))
+	res.Body.Close()
+	return hits
+}
+
+func (testEsClient *TestEsClientWrapper) DeleteIndex(indexName string) {
+	var (
+		res *esapi.Response
+		err error
+	)
+
+	log.Println(" [TEST ES] Deleting index: ", indexName)
+
+	// Delete the index
+	if res, err = testEsClient.esClient.Indices.Delete(
+		[]string{indexName},
+		testEsClient.esClient.Indices.Delete.WithIgnoreUnavailable(true)); err != nil || res.IsError() {
+		log.Fatalf(" [TEST ES] Failed to delete index: %s", err)
+	}
+
 	res.Body.Close()
 }

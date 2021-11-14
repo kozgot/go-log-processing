@@ -43,7 +43,8 @@ func (service *UploaderService) HandleMessages() {
 				indexName := msgParts[1]
 				service.esClient.RecreateEsIndex(indexName)
 			default:
-				data := models.DeserializeDataUnit(delivery.Body)
+				data := models.ReceivedDataUnit{}
+				data.FromJSON(delivery.Body)
 				uploadBuffer.AppendAndUploadIfNeeded(
 					models.DataUnit{Content: data.Data},
 					data.IndexName,

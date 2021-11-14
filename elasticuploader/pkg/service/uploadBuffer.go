@@ -21,7 +21,7 @@ type UploadBuffer struct {
 
 // NewUploadBuffer initializes the buffer.
 func NewUploadBuffer(esClient elastic.EsClient, size int) *UploadBuffer {
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(5 * time.Second)
 	uploadBuffer := UploadBuffer{
 		value:      make(map[string][]models.DataUnit),
 		esClient:   esClient,
@@ -55,7 +55,7 @@ func (d *UploadBuffer) AppendAndUploadIfNeeded(m models.DataUnit, key string) {
 
 	// If we hit the treshold, we upload to ES.
 	if len(d.value[key]) >= d.bufferSize {
-		d.ticker.Reset(10 * time.Second)
+		d.ticker.Reset(5 * time.Second)
 
 		// Upload to ES.
 		d.esClient.BulkUpload(d.value[key], key)
