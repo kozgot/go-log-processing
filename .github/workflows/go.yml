@@ -75,7 +75,7 @@ jobs:
           - 5672:5672
     
       # Label used to access the service container
-      elasticsearch:
+      elasticsearch1:
         # Docker Hub image
         image: elasticsearch:7.10.1
         #
