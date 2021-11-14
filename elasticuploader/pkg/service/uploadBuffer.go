@@ -15,15 +15,30 @@ type UploadBuffer struct {
 	mutex    sync.Mutex
 	value    map[string][]models.DataUnit
 	esClient elastic.EsClient
+	ticker   *time.Ticker
 }
 
 // NewUploadBuffer initializes the buffer.
 func NewUploadBuffer(esClient elastic.EsClient) *UploadBuffer {
-	return &UploadBuffer{value: make(map[string][]models.DataUnit), esClient: esClient}
+	ticker := time.NewTicker(10 * time.Second)
+	uploadBuffer := UploadBuffer{
+		value:    make(map[string][]models.DataUnit),
+		esClient: esClient,
+		ticker:   ticker,
+	}
+
+	// Periodically check if we have anything left to upload.
+	go func() {
+		for range ticker.C {
+			uploadBuffer.UploadRemaining()
+		}
+	}()
+
+	return &uploadBuffer
 }
 
 // AppendAndUploadIfNeeded appends a message for the given key.
-func (d *UploadBuffer) AppendAndUploadIfNeeded(m models.DataUnit, key string, uploadTicker *time.Ticker) {
+func (d *UploadBuffer) AppendAndUploadIfNeeded(m models.DataUnit, key string) {
 	// Lock so only one goroutine at a time can access the map.
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
@@ -38,7 +53,7 @@ func (d *UploadBuffer) AppendAndUploadIfNeeded(m models.DataUnit, key string, up
 
 	// If we hit the treshold, we upload to ES.
 	if len(d.value[key]) >= 1000 {
-		uploadTicker.Reset(10 * time.Second)
+		d.ticker.Reset(10 * time.Second)
 
 		// Upload to ES.
 		d.esClient.BulkUpload(d.value[key], key)

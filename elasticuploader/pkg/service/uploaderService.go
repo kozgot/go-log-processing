@@ -3,7 +3,6 @@ package service
 import (
 	"log"
 	"strings"
-	"time"
 
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/elastic"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/rabbit"
@@ -33,14 +32,6 @@ func (service *UploaderService) HandleMessages() {
 	msgs, err := service.rabbitMQConsumer.Consume()
 	utils.FailOnError(err, " [UPLOADER SERVICE] Failed to register a consumer")
 
-	uploadTicker := time.NewTicker(10 * time.Second)
-	// Periodically check if we have anything left to upload.
-	go func() {
-		for range uploadTicker.C {
-			uploadBuffer.UploadRemaining()
-		}
-	}()
-
 	go func() {
 		for delivery := range msgs {
 			msgParts := strings.Split(string(delivery.Body), "|")
@@ -56,7 +47,6 @@ func (service *UploaderService) HandleMessages() {
 				uploadBuffer.AppendAndUploadIfNeeded(
 					models.DataUnit{Content: data.Data},
 					data.IndexName,
-					uploadTicker,
 				)
 			}
 

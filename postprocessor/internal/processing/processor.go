@@ -66,7 +66,7 @@ func (processor *EntryProcessor) HandleEntries() {
 	go func() {
 		for d := range msgs {
 			if strings.Contains(string(d.Body), "END") {
-				log.Println("  [PROCESSOR] End of entries...")
+				log.Println(" [PROCESSOR] End of entries...")
 
 				// Further processing to get consumption and index info.
 				consumptionProcessor := NewConsumptionProcessor(
@@ -76,12 +76,14 @@ func (processor *EntryProcessor) HandleEntries() {
 					processor.consumptionIndexName)
 				consumptionProcessor.ProcessConsumptionAndIndexValues()
 
+				log.Println(" [PROCESSOR] Done processing consumption data")
+
 				// Tell ES uploader that we reached the end of the log entries.
 				processor.messageProducer.PublishDoneMessage()
 
 				// Acknowledge the message after it has been processed.
 				err := d.Ack(false)
-				utils.FailOnError(err, "Could not acknowledge END message")
+				utils.FailOnError(err, " [PROCESSOR] Could not acknowledge END message")
 				continue
 			}
 
@@ -91,7 +93,7 @@ func (processor *EntryProcessor) HandleEntries() {
 			// Acknowledge the message after it has been processed.
 			err := d.Ack(false)
 			utils.FailOnError(err,
-				"Could not acknowledge message with timestamp: "+entry.Timestamp.Format("2 Jan 2006 15:04:05"))
+				" [PROCESSOR] Could not acknowledge message with timestamp: "+entry.Timestamp.Format("2 Jan 2006 15:04:05"))
 		}
 	}()
 }
@@ -141,7 +143,7 @@ func (processor *EntryProcessor) ProcessEntry(logEntry parsermodels.ParsedLogEnt
 		data, event = errorProcessor.ProcessError(logEntry)
 
 	default:
-		log.Printf("  [PROCESSOR] Unknown log level %s", logEntry.Level)
+		log.Printf(" [PROCESSOR] Unknown log level %s", logEntry.Level)
 	}
 
 	processor.registerEvent(event, data)
