@@ -17,6 +17,7 @@ import (
 func TestServiceIntegrationWithElasticsearch(t *testing.T) {
 	testIndexName := "test"
 	inputFileName := "./resources/input_data.json"
+	testESURL := "http://elasticsearch:9200"
 
 	// Read test input from resource file.
 	testInput, err := ioutil.ReadFile(inputFileName)
@@ -29,7 +30,7 @@ func TestServiceIntegrationWithElasticsearch(t *testing.T) {
 
 	// Create a mock rabbitMQ consumer and actual ES client as dependencies.
 	mockConsumer := mocks.NewRabbitMQConsumerMock(testInputData, allMessagesAcknowledged, testIndexName)
-	esClient := elastic.NewEsClientWrapper("http://elasticsearch:9200")
+	esClient := elastic.NewEsClientWrapper(testESURL)
 
 	// Start handling messages.
 	uploaderService := service.NewUploaderService(mockConsumer, esClient)
@@ -48,7 +49,7 @@ func TestServiceIntegrationWithElasticsearch(t *testing.T) {
 	fmt.Println("Uploading finished, checking results...")
 
 	// Create a test ES client to query results.
-	testESClient := testutils.NewTestEsClientWrapper()
+	testESClient := testutils.NewTestEsClientWrapper(testESURL)
 	docCount := testESClient.QueryDocCountInIndex(testIndexName)
 	testESClient.DeleteIndex(testIndexName) // Clean up test index.
 
