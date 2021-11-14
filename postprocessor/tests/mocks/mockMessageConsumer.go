@@ -14,10 +14,13 @@ type MockMessageConsumer struct {
 func (m *MockMessageConsumer) ConsumeMessages() <-chan amqp.Delivery {
 	deliveries := make(chan amqp.Delivery, 100)
 
+	startDelivery := NewMockDelivery([]byte("START"), uint64(0))
+	deliveries <- startDelivery
+
 	for i, entry := range m.TestParsedLogFile.Lines {
 		data := entry.Serialize()
 
-		mockDelivery := NewMockDelivery(data, uint64(i))
+		mockDelivery := NewMockDelivery(data, uint64(i+1))
 		deliveries <- mockDelivery
 	}
 

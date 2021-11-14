@@ -57,10 +57,6 @@ func NewEntryProcessor(
 // HandleEntries consumes entries from the provided MessageConsumer,
 // and publishes them to a rabbitmq queue using the provided MessageProducer.
 func (processor *EntryProcessor) HandleEntries() {
-	// Create indices in ES.
-	processor.messageProducer.PublishRecreateIndexMessage(processor.eventIndexName)
-	processor.messageProducer.PublishRecreateIndexMessage(processor.consumptionIndexName)
-
 	msgs := processor.messageConsumer.ConsumeMessages()
 
 	go func() {
@@ -84,6 +80,15 @@ func (processor *EntryProcessor) HandleEntries() {
 				// Acknowledge the message after it has been processed.
 				err := d.Ack(false)
 				utils.FailOnError(err, " [PROCESSOR] Could not acknowledge END message")
+				continue
+			} else if strings.Contains(string(d.Body), "START") {
+				// Recreate indices in ES.
+				processor.messageProducer.PublishRecreateIndexMessage(processor.eventIndexName)
+				processor.messageProducer.PublishRecreateIndexMessage(processor.consumptionIndexName)
+
+				// Acknowledge the message after it has been processed.
+				err := d.Ack(false)
+				utils.FailOnError(err, " [PROCESSOR] Could not acknowledge START message")
 				continue
 			}
 

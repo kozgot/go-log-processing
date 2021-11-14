@@ -58,7 +58,7 @@ func TestProcessDCMain(t *testing.T) {
 	// Handle output created by the processor.
 	processedData := getSentProcessedData(msgs, testEventIdxName, testConsumptionIdxName)
 	if len(processedData.IndexNames) != 2 {
-		t.Fatal("Expected to create 2 indices")
+		t.Fatalf("Expected to create 2 indices, actual: %d", len(processedData.IndexNames))
 	}
 
 	actualProcessedDataBytes := processedData.ToJSON()
@@ -241,6 +241,9 @@ func getSentProcessedData(
 func sendTestInput(
 	testInputProducer *testutils.TestRabbitMqProducer,
 	testparsedFile testmodels.TestParsedLogFile) {
+	// Send a message indicating that this is the start of the entries.
+	testInputProducer.PublishStringMessage("START")
+
 	for _, parsedEntry := range testparsedFile.Lines {
 		testInputProducer.PublishEntry(parsedEntry)
 	}
