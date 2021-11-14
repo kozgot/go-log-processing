@@ -77,7 +77,7 @@ jobs:
       # Label used to access the service container
       elasticsearch:
         # Docker Hub image
-        image: elasticsearch:7.10.0
+        image: elasticsearch
         #
         ports:
           # Opens tcp port 9200 on the host and service container
