@@ -21,6 +21,12 @@ func main() {
 		log.Fatal("The RABBIT_URL environment variable is not set")
 	}
 
+	elasticSearchURL := os.Getenv("ELASTICSEARCH_URL")
+	fmt.Println("ELASTICSEARCH_URL:", elasticSearchURL)
+	if len(elasticSearchURL) == 0 {
+		log.Fatal("The ELASTICSEARCH_URL environment variable is not set")
+	}
+
 	processedDataExchangeName := os.Getenv("PROCESSED_DATA_EXCHANGE")
 	fmt.Println("PROCESSED_DATA_EXCHANGE:", processedDataExchangeName)
 	if len(processedDataExchangeName) == 0 {
@@ -40,7 +46,7 @@ func main() {
 	}
 
 	// Setup ES client.
-	esClient := elastic.NewEsClientWrapper()
+	esClient := elastic.NewEsClientWrapper(elasticSearchURL)
 
 	// Setup rabbitmq consumer.
 	rabbitMQConsumer := rabbit.NewAmqpConsumer(

@@ -29,7 +29,7 @@ func TestServiceIntegrationWithElasticsearch(t *testing.T) {
 
 	// Create a mock rabbitMQ consumer and actual ES client as dependencies.
 	mockConsumer := mocks.NewRabbitMQConsumerMock(testInputData, allMessagesAcknowledged, testIndexName)
-	esClient := elastic.NewEsClientWrapper()
+	esClient := elastic.NewEsClientWrapper("http://elasticsearch:9200")
 
 	// Start handling messages.
 	uploaderService := service.NewUploaderService(mockConsumer, esClient)

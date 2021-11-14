@@ -22,11 +22,13 @@ type EsClientWrapper struct {
 }
 
 // NewEsClientWrapper creates a new EsClientWrapper.
-func NewEsClientWrapper() *EsClientWrapper {
+func NewEsClientWrapper(address string) *EsClientWrapper {
+	addresses := []string{address}
 	// Create the ES client
 	// Use a third-party package for implementing the backoff function
 	retryBackoff := backoff.NewExponentialBackOff()
 	elasticSearchClient, err := elasticsearch.NewClient(elasticsearch.Config{
+		Addresses: addresses,
 		// Retry on 429 TooManyRequests statuses
 		RetryOnStatus: []int{502, 503, 504, 429},
 		RetryBackoff: func(i int) time.Duration {
