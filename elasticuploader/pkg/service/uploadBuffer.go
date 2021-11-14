@@ -81,7 +81,7 @@ func (d *UploadBuffer) UploadRemaining() {
 
 	for indexName := range d.value {
 		if len(d.value[indexName]) > 0 {
-			log.Println("Uploading leftovers after timeout into index " + indexName)
+			log.Println(" [UPLOADER SERVICE] Uploading leftovers after timeout into index " + indexName)
 			d.esClient.BulkUpload(d.value[indexName], indexName)
 
 			// Clear the buffer after uploading the contents.

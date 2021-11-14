@@ -55,7 +55,7 @@ func NewEntryProcessor(
 }
 
 // HandleEntries consumes entries from the provided MessageConsumer,
-// and uploads them to ES using the provided ESUploader.
+// and publishes them to a rabbitmq queue using the provided MessageProducer.
 func (processor *EntryProcessor) HandleEntries() {
 	// Create indices in ES.
 	processor.messageProducer.PublishRecreateIndexMessage(processor.eventIndexName)

@@ -1,13 +1,15 @@
 package serviceintegrationtests
 
 import (
-	"fmt"
 	"io/ioutil"
+	"log"
 	"testing"
 	"time"
 
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/elastic"
+	"github.com/kozgot/go-log-processing/elasticuploader/internal/rabbit"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/utils"
+	"github.com/kozgot/go-log-processing/elasticuploader/pkg/models"
 	"github.com/kozgot/go-log-processing/elasticuploader/pkg/service"
 	"github.com/kozgot/go-log-processing/elasticuploader/tests/mocks"
 	"github.com/kozgot/go-log-processing/elasticuploader/tests/testmodels"
@@ -36,17 +38,18 @@ func TestServiceIntegrationWithElasticsearch(t *testing.T) {
 	uploaderService := service.NewUploaderService(mockConsumer, esClient)
 	uploaderService.HandleMessages()
 
-	fmt.Println("Handling messages...")
+	log.Println(" [TEST] Handling messages...")
 
 	<-allMessagesAcknowledged
 
-	fmt.Println("All messages handled, waiting for uploading to finish...")
+	log.Println(" [TEST] All messages handled, waiting for uploading to finish...")
 
-	// We need to wait, because the uploading period is 5 seconds.
+	// We need to wait, because the upload time period is 5 seconds,
+	// so to be sure everything is finished uploading, we wait 6 seconds.
 	ticker := time.NewTicker(6 * time.Second)
 	<-ticker.C
 
-	fmt.Println("Uploading finished, checking results...")
+	log.Println(" [TEST] Uploading finished, checking results...")
 
 	// Create a test ES client to query results.
 	testESClient := testutils.NewTestEsClientWrapper(testESURL)
@@ -61,5 +64,50 @@ func TestServiceIntegrationWithElasticsearch(t *testing.T) {
 }
 
 func TestServiceIntegrationWithRabbitMQ(t *testing.T) {
+	testIndexName := "test"
+	inputFileName := "./resources/input_data.json"
+	rabbitMQURL := "amqp://guest:guest@rabbitmq:5672/"
+	exchangeName := "test_exchange"
+	routingKey := "test-key"
+	queueName := "test_queue"
 
+	// Read test input from resource file.
+	testInput, err := ioutil.ReadFile(inputFileName)
+	utils.FailOnError(err, "Could not read file "+inputFileName)
+	testInputData := testmodels.TestProcessedData{}
+	testInputData.FromJSON(testInput)
+
+	rabbitMQConsumer := rabbit.NewAmqpConsumer(rabbitMQURL, exchangeName, routingKey, queueName)
+	rabbitMQConsumer.Connect()
+
+	mockESClient := mocks.NewESClientMock(
+		make(map[string][]models.DataUnit),
+		len(testInputData.Consumptions)+len(testInputData.Events))
+
+	uploaderService := service.NewUploaderService(rabbitMQConsumer, mockESClient)
+	uploaderService.HandleMessages()
+
+	// todo: test producer
+	testProducer := testutils.NewTestRabbitMqProducer(rabbitMQURL, exchangeName, routingKey)
+	testProducer.Connect()
+	testProducer.PublishRecreateIndexMessage(testIndexName)
+
+	testProducer.PublishTestInput(testInputData, testIndexName)
+	testProducer.PublishDoneMessage()
+
+	log.Println(" [TEST] Waiting for uploading to finish...")
+	// We need to wait, because the upload time period is 5 seconds,
+	// so to be sure everything is finished uploading, we wait 6 seconds.
+	ticker := time.NewTicker(6 * time.Second)
+	<-ticker.C
+
+	log.Println(" [TEST] Uploading finished, checking results...")
+
+	if len(mockESClient.Indexes) != 1 {
+		t.Fatalf("Expected to create %d indexes, created %d", 1, len(mockESClient.Indexes))
+	}
+
+	// cleanup
+	testProducer.CloseChannelAndConnection()
+	rabbitMQConsumer.CloseChannelAndConnection()
 }

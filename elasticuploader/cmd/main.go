@@ -7,7 +7,6 @@ import (
 
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/elastic"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/rabbit"
-	"github.com/kozgot/go-log-processing/elasticuploader/internal/utils"
 	"github.com/kozgot/go-log-processing/elasticuploader/pkg/service"
 )
 
@@ -55,15 +54,9 @@ func main() {
 		saveDataRoutingKey,
 		saveDataQueueName)
 
-	// Setup rabbitmq connection.
-	err := rabbitMQConsumer.Connect()
-	utils.FailOnError(err, "Could not connect ro RabbitMQ")
-	defer rabbitMQConsumer.CloseConnection()
-
-	// Setup rabbitmq channel.
-	err = rabbitMQConsumer.Channel()
-	utils.FailOnError(err, "Could not open channel")
-	defer rabbitMQConsumer.CloseChannel()
+	// Setup rabbitmq connection and channel.
+	rabbitMQConsumer.Connect()
+	defer rabbitMQConsumer.CloseChannelAndConnection()
 
 	forever := make(chan bool)
 

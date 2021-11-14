@@ -1,8 +1,7 @@
 package rabbit
 
 import (
-	"log"
-
+	"github.com/kozgot/go-log-processing/elasticuploader/internal/utils"
 	"github.com/streadway/amqp"
 )
 
@@ -28,25 +27,16 @@ func NewAmqpConsumer(url string, exchangeName string, routingKey string, queueNa
 	return &consumer
 }
 
-func (c *AmqpConsumer) Connect() error {
+func (c *AmqpConsumer) Connect() {
 	var err error
 	c.connection, err = amqp.Dial(c.rabbitMqURL)
-
-	return err
-}
-
-func (c *AmqpConsumer) CloseConnection() {
-	c.connection.Close()
-}
-
-func (c *AmqpConsumer) Channel() error {
-	var err error
+	utils.FailOnError(err, "Could not connect to rabbitMQ.")
 	c.channel, err = c.connection.Channel()
-
-	return err
+	utils.FailOnError(err, "Could not create a channel.")
 }
 
-func (c *AmqpConsumer) CloseChannel() {
+func (c *AmqpConsumer) CloseChannelAndConnection() {
+	c.connection.Close()
 	c.channel.Close()
 }
 
@@ -62,7 +52,7 @@ func (c *AmqpConsumer) Consume() (<-chan amqp.Delivery, error) {
 		false,          // no-wait
 		nil,            // arguments
 	)
-	failOnError(err, "Failed to declare an exchange")
+	utils.FailOnError(err, "Failed to declare an exchange")
 
 	c.queue, err = c.channel.QueueDeclare(
 		c.queueName, // name
@@ -72,7 +62,7 @@ func (c *AmqpConsumer) Consume() (<-chan amqp.Delivery, error) {
 		false,       // no-wait
 		nil,         // arguments
 	)
-	failOnError(err, "Failed to declare a queue")
+	utils.FailOnError(err, "Failed to declare a queue")
 
 	err = c.channel.QueueBind(
 		c.queue.Name,   // queue name
@@ -81,7 +71,7 @@ func (c *AmqpConsumer) Consume() (<-chan amqp.Delivery, error) {
 		false,
 		nil,
 	)
-	failOnError(err, "Failed to bind a queue")
+	utils.FailOnError(err, "Failed to bind a queue")
 
 	msgs, err = c.channel.Consume(
 		c.queue.Name, // queue
@@ -92,13 +82,7 @@ func (c *AmqpConsumer) Consume() (<-chan amqp.Delivery, error) {
 		false,        // no-wait
 		nil,          // args
 	)
-	failOnError(err, "Failed to register a consumer")
+	utils.FailOnError(err, "Failed to register a consumer")
 
 	return msgs, err
-}
-
-func failOnError(err error, msg string) {
-	if err != nil {
-		log.Fatalf("%s: %s", msg, err)
-	}
 }

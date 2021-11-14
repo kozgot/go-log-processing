@@ -9,7 +9,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// AmqpProducer implements the ESUploader interface.
+// AmqpProducer implements the MessageProducer interface.
 type AmqpProducer struct {
 	rabbitMqURL  string
 	connection   *amqp.Connection
@@ -23,40 +23,40 @@ func NewAmqpProducer(
 	rabbitMqURL string,
 	exchangeName string,
 	routingKey string) *AmqpProducer {
-	esUploader := AmqpProducer{
+	producer := AmqpProducer{
 		rabbitMqURL:  rabbitMqURL,
 		exchangeName: exchangeName,
 		routingKey:   routingKey}
 
-	return &esUploader
+	return &producer
 }
 
 // PublishEvent sends an SMC event to the uploader service.
-func (uploader *AmqpProducer) PublishEvent(event models.SmcEvent, eventIndexName string) {
+func (producer *AmqpProducer) PublishEvent(event models.SmcEvent, eventIndexName string) {
 	dataToSend := models.DataUnit{IndexName: eventIndexName, Data: event.Serialize()}
-	uploader.sendData(dataToSend.Serialize())
+	producer.publishData(dataToSend.Serialize())
 }
 
 // PublishConsumption sends a consumption data item to the uploader service.
-func (uploader *AmqpProducer) PublishConsumption(cons models.ConsumtionValue, consumptionIndexName string) {
+func (producer *AmqpProducer) PublishConsumption(cons models.ConsumtionValue, consumptionIndexName string) {
 	dataToSend := models.DataUnit{IndexName: consumptionIndexName, Data: cons.Serialize()}
-	uploader.sendData(dataToSend.Serialize())
+	producer.publishData(dataToSend.Serialize())
 }
 
 // Connect opens a channel and a connection.
-func (uploader *AmqpProducer) Connect() {
+func (producer *AmqpProducer) Connect() {
 	var err error
-	uploader.connection, err = amqp.Dial(uploader.rabbitMqURL)
+	producer.connection, err = amqp.Dial(producer.rabbitMqURL)
 	utils.FailOnError(err, " [AMQP PRODUCER] Failed to connect to RabbitMQ")
 	log.Println(" [AMQP PRODUCER] Created connection")
 
 	// create the channel
-	uploader.channel, err = uploader.connection.Channel()
+	producer.channel, err = producer.connection.Channel()
 	utils.FailOnError(err, " [AMQP PRODUCER] Failed to open a channel")
 	log.Println(" [AMQP PRODUCER] Created channel")
 
-	err = uploader.channel.ExchangeDeclare(
-		uploader.exchangeName, // name
+	err = producer.channel.ExchangeDeclare(
+		producer.exchangeName, // name
 		"direct",              // type
 		true,                  // durable
 		false,                 // auto-deleted
@@ -68,31 +68,31 @@ func (uploader *AmqpProducer) Connect() {
 }
 
 // CloseChannelAndConnection closes the channel and connection received in parameter.
-func (uploader *AmqpProducer) CloseChannelAndConnection() {
-	uploader.connection.Close()
+func (producer *AmqpProducer) CloseChannelAndConnection() {
+	producer.connection.Close()
 	log.Println(" [AMQP PRODUCER] Closed connection")
-	uploader.channel.Close()
+	producer.channel.Close()
 	log.Println(" [AMQP PRODUCER] Closed channel")
 }
 
 // PublishRecreateIndexMessage sends a string message to the message queue.
-func (uploader *AmqpProducer) PublishRecreateIndexMessage(indexName string) {
+func (producer *AmqpProducer) PublishRecreateIndexMessage(indexName string) {
 	bytes := []byte("RECREATEINDEX|" + indexName)
-	uploader.sendData(bytes)
+	producer.publishData(bytes)
 }
 
 // PublishDoneMessage sends a string message to the message queue.
-func (uploader *AmqpProducer) PublishDoneMessage() {
+func (producer *AmqpProducer) PublishDoneMessage() {
 	bytes := []byte("DONE")
-	uploader.sendData(bytes)
+	producer.publishData(bytes)
 }
 
-func (uploader *AmqpProducer) sendData(data []byte) {
+func (producer *AmqpProducer) publishData(data []byte) {
 	body := data
 
-	err := uploader.channel.Publish(
-		uploader.exchangeName, // exchange
-		uploader.routingKey,   // routing key
+	err := producer.channel.Publish(
+		producer.exchangeName, // exchange
+		producer.routingKey,   // routing key
 		false,                 // mandatory
 		false,                 // immediate
 		amqp.Publishing{
