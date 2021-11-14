@@ -65,7 +65,7 @@ func main() {
 	uploaderService := service.NewUploaderService(rabbitMQConsumer, esClient)
 	uploaderService.HandleMessages()
 
-	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	log.Printf(" [ESUPLOADER] Waiting for messages. To exit press CTRL+C")
 
 	<-forever
 }

@@ -47,13 +47,13 @@ func (uploader *AmqpProducer) PublishConsumption(cons models.ConsumtionValue, co
 func (uploader *AmqpProducer) Connect() {
 	var err error
 	uploader.connection, err = amqp.Dial(uploader.rabbitMqURL)
-	utils.FailOnError(err, "  [AMQP PRODUCER] Failed to connect to RabbitMQ")
-	log.Println("  [AMQP PRODUCER] Created connection")
+	utils.FailOnError(err, " [AMQP PRODUCER] Failed to connect to RabbitMQ")
+	log.Println(" [AMQP PRODUCER] Created connection")
 
 	// create the channel
 	uploader.channel, err = uploader.connection.Channel()
-	utils.FailOnError(err, "  [AMQP PRODUCER] Failed to open a channel")
-	log.Println("  [AMQP PRODUCER] Created channel")
+	utils.FailOnError(err, " [AMQP PRODUCER] Failed to open a channel")
+	log.Println(" [AMQP PRODUCER] Created channel")
 
 	err = uploader.channel.ExchangeDeclare(
 		uploader.exchangeName, // name
@@ -64,20 +64,20 @@ func (uploader *AmqpProducer) Connect() {
 		false,                 // no-wait
 		nil,                   // arguments
 	)
-	utils.FailOnError(err, "  [AMQP PRODUCER] Failed to declare an exchange")
+	utils.FailOnError(err, " [AMQP PRODUCER] Failed to declare an exchange")
 }
 
 // CloseChannelAndConnection closes the channel and connection received in parameter.
 func (uploader *AmqpProducer) CloseChannelAndConnection() {
 	uploader.connection.Close()
-	log.Println("  [AMQP PRODUCER] Closed connection")
+	log.Println(" [AMQP PRODUCER] Closed connection")
 	uploader.channel.Close()
-	log.Println("  [AMQP PRODUCER] Closed channel")
+	log.Println(" [AMQP PRODUCER] Closed channel")
 }
 
-// PublishCreateIndexMessage sends a string message to the message queue.
-func (uploader *AmqpProducer) PublishCreateIndexMessage(indexName string) {
-	bytes := []byte("CREATEINDEX|" + indexName)
+// PublishRecreateIndexMessage sends a string message to the message queue.
+func (uploader *AmqpProducer) PublishRecreateIndexMessage(indexName string) {
+	bytes := []byte("RECREATEINDEX|" + indexName)
 	uploader.sendData(bytes)
 }
 
@@ -101,5 +101,5 @@ func (uploader *AmqpProducer) sendData(data []byte) {
 			Body:         body,
 		})
 
-	utils.FailOnError(err, "  [AMQP PRODUCER] Failed to publish a message")
+	utils.FailOnError(err, " [AMQP PRODUCER] Failed to publish a message")
 }

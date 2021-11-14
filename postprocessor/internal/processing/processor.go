@@ -58,8 +58,8 @@ func NewEntryProcessor(
 // and uploads them to ES using the provided ESUploader.
 func (processor *EntryProcessor) HandleEntries() {
 	// Create indices in ES.
-	processor.messageProducer.PublishCreateIndexMessage(processor.eventIndexName)
-	processor.messageProducer.PublishCreateIndexMessage(processor.consumptionIndexName)
+	processor.messageProducer.PublishRecreateIndexMessage(processor.eventIndexName)
+	processor.messageProducer.PublishRecreateIndexMessage(processor.consumptionIndexName)
 
 	msgs := processor.messageConsumer.ConsumeMessages()
 

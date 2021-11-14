@@ -28,13 +28,12 @@ func NewUploaderService(messageConsumer rabbit.MessageConsumer, esClient elastic
 
 // HandleMessages consumes messages from rabbitMQ and uploads them to ES.
 func (service *UploaderService) HandleMessages() {
-	uploadTicker := time.NewTicker(10 * time.Second)
-
 	uploadBuffer := NewUploadBuffer(service.esClient)
 
 	msgs, err := service.rabbitMQConsumer.Consume()
-	utils.FailOnError(err, "Failed to register a consumer")
+	utils.FailOnError(err, " [UPLOADER SERVICE] Failed to register a consumer")
 
+	uploadTicker := time.NewTicker(10 * time.Second)
 	// Periodically check if we have anything left to upload.
 	go func() {
 		for range uploadTicker.C {
@@ -48,18 +47,22 @@ func (service *UploaderService) HandleMessages() {
 			msgPrefix := msgParts[0]
 			switch msgPrefix {
 			case "DONE":
-				log.Println("Received DONE from Postprocessor")
-			case "CREATEINDEX":
-				indexName := strings.Split(string(delivery.Body), "|")[1]
-				service.esClient.CreateEsIndex(indexName)
+				log.Println(" [UPLOADER SERVICE] Received DONE from Postprocessor")
+			case "RECREATEINDEX":
+				indexName := msgParts[1]
+				service.esClient.RecreateEsIndex(indexName)
 			default:
 				data := models.DeserializeDataUnit(delivery.Body)
-				uploadBuffer.AppendAndUploadIfNeeded(models.Message{Content: data.Data}, data.IndexName, uploadTicker)
+				uploadBuffer.AppendAndUploadIfNeeded(
+					models.DataUnit{Content: data.Data},
+					data.IndexName,
+					uploadTicker,
+				)
 			}
 
 			// Acknowledge message
 			err := delivery.Ack(false)
-			utils.FailOnError(err, "Could not acknowledge message")
+			utils.FailOnError(err, " [UPLOADER SERVICE] Could not acknowledge message")
 		}
 	}()
 }

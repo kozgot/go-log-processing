@@ -40,8 +40,8 @@ func (m *MockMessageProducer) PublishDoneMessage() {
 	m.Done <- "done"
 }
 
-// PublishCreateIndexMessage is the implementation of
-// the PublishCreateIndexMessage(indexName string) function of the MessageProducer interface.
-func (m *MockMessageProducer) PublishCreateIndexMessage(indexName string) {
+// PublishRecreateIndexMessage is the implementation of
+// the PublishRecreateIndexMessage(indexName string) function of the MessageProducer interface.
+func (m *MockMessageProducer) PublishRecreateIndexMessage(indexName string) {
 	m.Data.IndexNames = append(m.Data.IndexNames, indexName)
 }

@@ -8,6 +8,6 @@ type MessageProducer interface {
 	PublishConsumption(cons models.ConsumtionValue, consumptionIndexName string)
 	Connect()
 	CloseChannelAndConnection()
-	PublishCreateIndexMessage(indexName string)
+	PublishRecreateIndexMessage(indexName string)
 	PublishDoneMessage()
 }
