@@ -53,13 +53,6 @@ func (testEsClient *TestEsClientWrapper) QueryDocCountInIndex(indexName string) 
 			"match_all": map[string]interface{}{},
 		},
 	}
-	/*
-			"query": {
-		    "match_phrase": {
-		      "EventType": "12"
-		    }
-		  }
-	*/
 	err := json.NewEncoder(&buf).Encode(query)
 	utils.FailOnError(err, "Error encoding query")
 
@@ -97,14 +90,6 @@ func (testEsClient *TestEsClientWrapper) QueryDocCountInIndex(indexName string) 
 		hits,
 		int(r["took"].(float64)),
 	)
-	/*
-
-
-		// Print the ID and document source for each hit.
-		for _, hit := range r["hits"].(map[string]interface{})["hits"].([]interface{}) {
-			log.Printf(" * ID=%s, %s", hit.(map[string]interface{})["_id"], hit.(map[string]interface{})["_source"])
-		}
-	*/
 
 	log.Println(strings.Repeat("=", 37))
 	res.Body.Close()
