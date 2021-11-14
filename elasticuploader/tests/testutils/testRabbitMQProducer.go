@@ -1,16 +1,17 @@
-package rabbitmq
+package testutils
 
 import (
 	"log"
 
-	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
-	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
-
+	"github.com/kozgot/go-log-processing/elasticuploader/internal/utils"
+	"github.com/kozgot/go-log-processing/elasticuploader/pkg/models"
+	"github.com/kozgot/go-log-processing/elasticuploader/tests/testmodels"
 	"github.com/streadway/amqp"
 )
 
-// AmqpProducer implements the MessageProducer interface.
-type AmqpProducer struct {
+// TestRabbitMQProducer is a rabbitMQ producer used in tests
+// to publish test input messages into a queue.
+type TestRabbitMqProducer struct {
 	rabbitMqURL  string
 	connection   *amqp.Connection
 	channel      *amqp.Channel
@@ -18,12 +19,12 @@ type AmqpProducer struct {
 	exchangeName string
 }
 
-// NewAmqpProducer creates a new message producer that publishes messages to rabbitmq.
-func NewAmqpProducer(
+// NewTestRabbitMqProducer creates a new test producer that publishes messages to rabbitmq.
+func NewTestRabbitMqProducer(
 	rabbitMqURL string,
 	exchangeName string,
-	routingKey string) *AmqpProducer {
-	producer := AmqpProducer{
+	routingKey string) *TestRabbitMqProducer {
+	producer := TestRabbitMqProducer{
 		rabbitMqURL:  rabbitMqURL,
 		exchangeName: exchangeName,
 		routingKey:   routingKey}
@@ -31,20 +32,8 @@ func NewAmqpProducer(
 	return &producer
 }
 
-// PublishEvent sends an SMC event to the uploader service.
-func (producer *AmqpProducer) PublishEvent(event models.SmcEvent, eventIndexName string) {
-	dataToSend := models.DataUnit{IndexName: eventIndexName, Data: event.Serialize()}
-	producer.publishData(dataToSend.Serialize())
-}
-
-// PublishConsumption sends a consumption data item to the uploader service.
-func (producer *AmqpProducer) PublishConsumption(cons models.ConsumtionValue, consumptionIndexName string) {
-	dataToSend := models.DataUnit{IndexName: consumptionIndexName, Data: cons.Serialize()}
-	producer.publishData(dataToSend.Serialize())
-}
-
 // Connect opens a channel and a connection.
-func (producer *AmqpProducer) Connect() {
+func (producer *TestRabbitMqProducer) Connect() {
 	var err error
 	producer.connection, err = amqp.Dial(producer.rabbitMqURL)
 	utils.FailOnError(err, " [AMQP PRODUCER] Failed to connect to RabbitMQ")
@@ -68,26 +57,38 @@ func (producer *AmqpProducer) Connect() {
 }
 
 // CloseChannelAndConnection closes the channel and connection received in parameter.
-func (producer *AmqpProducer) CloseChannelAndConnection() {
+func (producer *TestRabbitMqProducer) CloseChannelAndConnection() {
 	producer.connection.Close()
 	log.Println(" [AMQP PRODUCER] Closed connection")
 	producer.channel.Close()
 	log.Println(" [AMQP PRODUCER] Closed channel")
 }
 
+func (producer *TestRabbitMqProducer) PublishTestInput(testData testmodels.TestProcessedData, testIndexName string) {
+	for _, event := range testData.Events {
+		dataToSend := models.ReceivedDataUnit{IndexName: testIndexName, Data: event.Serialize()}
+		producer.publishData(dataToSend.ToJSON())
+	}
+
+	for _, event := range testData.Consumptions {
+		dataToSend := models.ReceivedDataUnit{IndexName: testIndexName, Data: event.Serialize()}
+		producer.publishData(dataToSend.ToJSON())
+	}
+}
+
 // PublishRecreateIndexMessage sends a string message to the message queue.
-func (producer *AmqpProducer) PublishRecreateIndexMessage(indexName string) {
+func (producer *TestRabbitMqProducer) PublishRecreateIndexMessage(indexName string) {
 	bytes := []byte("RECREATEINDEX|" + indexName)
 	producer.publishData(bytes)
 }
 
 // PublishDoneMessage sends a string message to the message queue.
-func (producer *AmqpProducer) PublishDoneMessage() {
+func (producer *TestRabbitMqProducer) PublishDoneMessage() {
 	bytes := []byte("DONE")
 	producer.publishData(bytes)
 }
 
-func (producer *AmqpProducer) publishData(data []byte) {
+func (producer *TestRabbitMqProducer) publishData(data []byte) {
 	body := data
 
 	err := producer.channel.Publish(

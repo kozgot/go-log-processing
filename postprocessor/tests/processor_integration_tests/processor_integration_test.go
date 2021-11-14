@@ -211,7 +211,7 @@ func getSentProcessedData(
 		switch msgPrefix {
 		case "DONE":
 			return testdata
-		case "CREATEINDEX":
+		case "RECREATEINDEX":
 			indexName := strings.Split(string(delivery.Body), "|")[1]
 			testdata.IndexNames = append(testdata.IndexNames, indexName)
 		default:

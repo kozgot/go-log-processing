@@ -85,6 +85,6 @@ func main() {
 	processor := processing.NewEntryProcessor(rabbitMqProducer, rabbitMQConsumer, eventsIndexName, consumptionIndexName)
 	processor.HandleEntries()
 
-	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	log.Printf(" [POSTPROCESSOR] Waiting for messages. To exit press CTRL+C...")
 	<-forever
 }

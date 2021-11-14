@@ -18,7 +18,7 @@ type postProcessorTest struct {
 	expectedDataFile string
 }
 
-func TestLogParserPLCManager(t *testing.T) {
+func TestProcessEntries(t *testing.T) {
 	smcEventIndexName := "testSmcEvents"
 	consumtionIndexName := "testConsumptions"
 

@@ -55,4 +55,9 @@ func main() {
 	// Init and run parser.
 	logParser := logparser.NewLogParser(azureFileDownloader, rabbitMqProducer)
 	logParser.ParseLogfiles()
+
+	log.Printf("  [PARSER] Press CTRL+C to exit...")
+
+	forever := make(chan bool)
+	<-forever
 }

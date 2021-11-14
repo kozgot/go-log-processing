@@ -6,7 +6,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// TestRabbitMqProducer implements the ESUploader interface.
+// TestRabbitMqProducer implements the MessageProducer interface.
 type TestRabbitMqProducer struct {
 	rabbitMqURL  string
 	connection   *amqp.Connection

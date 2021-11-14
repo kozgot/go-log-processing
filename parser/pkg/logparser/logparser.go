@@ -39,7 +39,9 @@ func (logparser *LogParser) ParseLogfiles() {
 	}
 	wg.Wait()
 
-	// Send a message indicating that this is the end of the processing
+	// Send a message indicating that we have reached the end of the log files.
 	logparser.rabbitMqProducer.PublishStringMessage("END")
 	log.Printf("  [PARSER] Sent END to Postprocessing service ...")
+
+	log.Printf("  [PARSER] Finished parsing all files")
 }

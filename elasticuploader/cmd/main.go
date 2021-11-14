@@ -7,7 +7,6 @@ import (
 
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/elastic"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/rabbit"
-	"github.com/kozgot/go-log-processing/elasticuploader/internal/utils"
 	"github.com/kozgot/go-log-processing/elasticuploader/pkg/service"
 )
 
@@ -19,6 +18,12 @@ func main() {
 	fmt.Println("RABBIT_URL:", rabbitMqURL)
 	if len(rabbitMqURL) == 0 {
 		log.Fatal("The RABBIT_URL environment variable is not set")
+	}
+
+	elasticSearchURL := os.Getenv("ELASTICSEARCH_URL")
+	fmt.Println("ELASTICSEARCH_URL:", elasticSearchURL)
+	if len(elasticSearchURL) == 0 {
+		log.Fatal("The ELASTICSEARCH_URL environment variable is not set")
 	}
 
 	processedDataExchangeName := os.Getenv("PROCESSED_DATA_EXCHANGE")
@@ -40,7 +45,7 @@ func main() {
 	}
 
 	// Setup ES client.
-	esClient := elastic.NewEsClientWrapper()
+	esClient := elastic.NewEsClientWrapper(elasticSearchURL)
 
 	// Setup rabbitmq consumer.
 	rabbitMQConsumer := rabbit.NewAmqpConsumer(
@@ -49,15 +54,9 @@ func main() {
 		saveDataRoutingKey,
 		saveDataQueueName)
 
-	// Setup rabbitmq connection.
-	err := rabbitMQConsumer.Connect()
-	utils.FailOnError(err, "Could not connect ro RabbitMQ")
-	defer rabbitMQConsumer.CloseConnection()
-
-	// Setup rabbitmq channel.
-	err = rabbitMQConsumer.Channel()
-	utils.FailOnError(err, "Could not open channel")
-	defer rabbitMQConsumer.CloseChannel()
+	// Setup rabbitmq connection and channel.
+	rabbitMQConsumer.Connect()
+	defer rabbitMQConsumer.CloseChannelAndConnection()
 
 	forever := make(chan bool)
 
@@ -65,7 +64,7 @@ func main() {
 	uploaderService := service.NewUploaderService(rabbitMQConsumer, esClient)
 	uploaderService.HandleMessages()
 
-	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	log.Printf(" [ESUPLOADER] Waiting for messages. To exit press CTRL+C")
 
 	<-forever
 }
