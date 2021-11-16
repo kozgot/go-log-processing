@@ -29,13 +29,3 @@ func (c *ConsumtionValue) Deserialize(bytes []byte) {
 	err := json.Unmarshal(bytes, c)
 	utils.FailOnError(err, "Cannot deserialize consumption value.")
 }
-
-// Equals checks equality.
-func (c *ConsumtionValue) Equals(other ConsumtionValue) bool {
-	return c.ReceiveTime == other.ReceiveTime &&
-		c.StartTime == other.StartTime &&
-		c.EndTime == other.EndTime &&
-		c.Value == other.Value &&
-		c.ServiceLevel == other.ServiceLevel &&
-		c.SmcUID == other.SmcUID
-}

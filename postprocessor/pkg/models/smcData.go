@@ -12,18 +12,6 @@ type SmcData struct {
 	LastJoiningDate           time.Time
 }
 
-// Equals check equality.
-func (s *SmcData) Equals(other SmcData) bool {
-	if s.SmcUID != other.SmcUID ||
-		s.CustomerSerialNumber != other.CustomerSerialNumber ||
-		s.LastSuccesfulDlmsResponse != other.LastSuccesfulDlmsResponse ||
-		s.LastJoiningDate != other.LastJoiningDate {
-		return false
-	}
-
-	return s.Address.Equals(other.Address) && s.EqualPodLists(other)
-}
-
 // ContainsPod checks if the smc data contains the given pod.
 func (s *SmcData) ContainsPod(pod Pod) bool {
 	for _, p := range s.Pods {

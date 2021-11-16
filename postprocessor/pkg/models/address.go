@@ -7,9 +7,3 @@ type AddressDetails struct {
 	LogicalAddress  string
 	URL             string
 }
-
-// Equals check equality.
-func (a *AddressDetails) Equals(other AddressDetails) bool {
-	return a.ShortAddress == other.ShortAddress && a.PhysicalAddress == other.PhysicalAddress &&
-		a.LogicalAddress == other.LogicalAddress && a.URL == other.URL
-}

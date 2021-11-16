@@ -30,16 +30,3 @@ func (e *SmcEvent) Deserialize(bytes []byte) {
 	err := json.Unmarshal(bytes, e)
 	utils.FailOnError(err, "Cannot deserialize smc event.")
 }
-
-// Equals check equality.
-func (e *SmcEvent) Equals(other SmcEvent) bool {
-	if e.Time != other.Time ||
-		e.EventType != other.EventType ||
-		e.EventTypeString != other.EventTypeString ||
-		e.Label != other.Label ||
-		e.SmcUID != other.SmcUID {
-		return false
-	}
-
-	return e.DataPayload.Equals(other.DataPayload)
-}

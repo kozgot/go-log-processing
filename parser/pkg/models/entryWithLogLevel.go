@@ -5,8 +5,3 @@ type EntryWithLogLevel struct {
 	Level string
 	Rest  string
 }
-
-// Equals checks equality.
-func (e *EntryWithLogLevel) Equals(other EntryWithLogLevel) bool {
-	return e.Level == other.Level && e.Rest == other.Rest
-}

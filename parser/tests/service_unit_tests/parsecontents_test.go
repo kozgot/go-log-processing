@@ -1,6 +1,7 @@
 package serviceunittests
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
@@ -82,15 +83,15 @@ func TestParseContents(t *testing.T) {
 	parsedWarningEntry := service.ParseContents(warningEntry)
 	parsedInfoConsumptionEntry := service.ParseContents(infoConsumptionEntry)
 
-	if !parsedErrorEntry.Equals(expectedErrorEntry) {
+	if !reflect.DeepEqual(parsedErrorEntry, &expectedErrorEntry) {
 		t.Fatal("Got error entry does not match expected error entry")
 	}
 
-	if !parsedWarningEntry.Equals(expectedWarningEntry) {
+	if !reflect.DeepEqual(parsedWarningEntry, &expectedWarningEntry) {
 		t.Fatal("Got warning entry does not match expected warning entry")
 	}
 
-	if !parsedInfoConsumptionEntry.Equals(expectedInfoConsumptionEntry) {
+	if !reflect.DeepEqual(parsedInfoConsumptionEntry, &expectedInfoConsumptionEntry) {
 		t.Fatal("Got info entry does not match expected info entry")
 	}
 }
