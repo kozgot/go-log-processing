@@ -59,7 +59,7 @@ func (downloader *AzureDownloader) ListFileNames() []string {
 
 		// Process the blobs returned in this result segment (if the segment is empty, the loop body won't execute)
 		for _, blobInfo := range listBlob.Segment.BlobItems {
-			log.Print("	 [AZURE DOWNLOADER]  Blob name: " + blobInfo.Name + "\n")
+			log.Println("  [AZURE DOWNLOADER]  Blob name: " + blobInfo.Name)
 			fileNames = append(fileNames, blobInfo.Name)
 		}
 	}
