@@ -5,7 +5,6 @@ import (
 
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
-
 	"github.com/streadway/amqp"
 )
 
