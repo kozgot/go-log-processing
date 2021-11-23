@@ -3,7 +3,7 @@
 
 # Diagnostic log processing and analysis
 
-This repository contains the source code of my independent laboratory project, which is Diagnostic log data processing
+This repository contains the source code of my thesis project, which is Diagnostic log data processing
 
 ## Development
 * For development, the VSCode IDE is used with the Go and the Remote-Containers extension.
@@ -16,5 +16,3 @@ This repository contains the source code of my independent laboratory project, w
    - Press `F5` in all three windows to start a debug session. You need to start the services in a specific order: elasticuploader first, then postprocessor, then parser.
 * Docker Desktop and Docker Compose are also needed for development
 
-## Information about the project
-[project_overview](https://github.com/kozgot/go-log-processing/blob/master/docs/project_overview.md)
