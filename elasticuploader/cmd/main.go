@@ -7,7 +7,7 @@ import (
 
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/elastic"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/rabbit"
-	"github.com/kozgot/go-log-processing/elasticuploader/pkg/service"
+	"github.com/kozgot/go-log-processing/elasticuploader/internal/uploader"
 )
 
 func main() {
@@ -61,7 +61,7 @@ func main() {
 	forever := make(chan bool)
 
 	// Start handling messages.
-	uploaderService := service.NewUploaderService(rabbitMQConsumer, esClient)
+	uploaderService := uploader.NewUploaderService(rabbitMQConsumer, esClient)
 	uploaderService.HandleMessages()
 
 	log.Printf(" [ESUPLOADER] Waiting for messages. To exit press CTRL+C")

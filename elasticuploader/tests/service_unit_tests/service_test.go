@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kozgot/go-log-processing/elasticuploader/internal/uploader"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/utils"
 	"github.com/kozgot/go-log-processing/elasticuploader/pkg/models"
-	"github.com/kozgot/go-log-processing/elasticuploader/pkg/service"
 	"github.com/kozgot/go-log-processing/elasticuploader/tests/mocks"
 	"github.com/kozgot/go-log-processing/elasticuploader/tests/testmodels"
 )
@@ -35,7 +35,7 @@ func TestUploderService(t *testing.T) {
 		make(map[string][]models.DataUnit),
 		expectedDocCount)
 
-	uploaderService := service.NewUploaderService(mockConsumer, mockESClient)
+	uploaderService := uploader.NewUploaderService(mockConsumer, mockESClient)
 	uploaderService.HandleMessages()
 
 	log.Println(" [TEST] Handling messages...")

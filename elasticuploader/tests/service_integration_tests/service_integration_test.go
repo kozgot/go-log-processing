@@ -8,9 +8,9 @@ import (
 
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/elastic"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/rabbit"
+	"github.com/kozgot/go-log-processing/elasticuploader/internal/uploader"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/utils"
 	"github.com/kozgot/go-log-processing/elasticuploader/pkg/models"
-	"github.com/kozgot/go-log-processing/elasticuploader/pkg/service"
 	"github.com/kozgot/go-log-processing/elasticuploader/tests/mocks"
 	"github.com/kozgot/go-log-processing/elasticuploader/tests/testmodels"
 	"github.com/kozgot/go-log-processing/elasticuploader/tests/testutils"
@@ -35,7 +35,7 @@ func TestServiceIntegrationWithElasticsearch(t *testing.T) {
 	esClient := elastic.NewEsClientWrapper(testESURL)
 
 	// Start handling messages.
-	uploaderService := service.NewUploaderService(mockConsumer, esClient)
+	uploaderService := uploader.NewUploaderService(mockConsumer, esClient)
 	uploaderService.HandleMessages()
 
 	log.Println(" [TEST] Handling messages...")
@@ -84,7 +84,7 @@ func TestServiceIntegrationWithRabbitMQ(t *testing.T) {
 		make(map[string][]models.DataUnit),
 		len(testInputData.Consumptions)+len(testInputData.Events))
 
-	uploaderService := service.NewUploaderService(rabbitMQConsumer, mockESClient)
+	uploaderService := uploader.NewUploaderService(rabbitMQConsumer, mockESClient)
 	uploaderService.HandleMessages()
 
 	testProducer := testutils.NewTestRabbitMqProducer(rabbitMQURL, exchangeName, routingKey)
