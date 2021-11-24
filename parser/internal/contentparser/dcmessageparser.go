@@ -1,10 +1,11 @@
-package service
+package contentparser
 
 import (
 	"log"
 	"strings"
 	"time"
 
+	"github.com/kozgot/go-log-processing/parser/internal/common"
 	"github.com/kozgot/go-log-processing/parser/internal/formats"
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
@@ -23,12 +24,12 @@ func parseDCMessage(lin string) *models.DCMessageParams {
 	if source != "" {
 		dcMessageParams.IsInComing = true
 		dcMessageParams.SourceOrDestName = source
-		messageTypeString := parseFieldInBracketsAsString(lin, formats.IncomingMessageTypeRegex)
+		messageTypeString := common.ParseFieldInBracketsAsString(lin, formats.IncomingMessageTypeRegex)
 		dcMessageParams.MessageType = models.ParseDCmessageTypeFromString(messageTypeString)
 	} else if dest != "" {
 		dcMessageParams.IsInComing = false
 		dcMessageParams.SourceOrDestName = dest
-		dcMessageTypeString := parseFieldInBracketsAsString(lin, formats.OutGoingMessageTypeRegex)
+		dcMessageTypeString := common.ParseFieldInBracketsAsString(lin, formats.OutGoingMessageTypeRegex)
 		dcMessageParams.MessageType = models.ParseDCmessageTypeFromString(dcMessageTypeString)
 	}
 
@@ -38,25 +39,24 @@ func parseDCMessage(lin string) *models.DCMessageParams {
 }
 
 func parseDCMessageSource(line string) string {
-	inComingMessageSource := parseFieldInParenthesesAsString(line, formats.IncomingMessageSourceRegex)
+	inComingMessageSource := common.ParseFieldInParenthesesAsString(line, formats.IncomingMessageSourceRegex)
 	return inComingMessageSource
 }
 
 func parseDCMessageDest(line string) string {
-	outGoingMessageSource := parseFieldInParenthesesAsString(line, formats.OutGoingMessageDestRegex)
+	outGoingMessageSource := common.ParseFieldInParenthesesAsString(line, formats.OutGoingMessageDestRegex)
 	return outGoingMessageSource
 }
 
 func parsePayloadTime(line string) time.Time {
 	// Parse the time[] field of the message.
 	// It can be a formatted date or in a date represented by a timestamp in seconds.
-	dateTime := parseDateTimeField(line, formats.DateTimeFieldRegex)
-	if isValidDate(dateTime) {
-		// for some reason, it can parse the long date format to int, so that needs to be handled as well (hence the if-else)
+	dateTime := common.ParseDateTimeField(line, formats.DateTimeFieldRegex)
+	if common.IsValidDate(dateTime) {
 		return dateTime
 	}
-	datefromSeconds := parseTimeFieldFromSeconds(line, formats.TimeTicksRegex)
-	if isValidDate(datefromSeconds) {
+	datefromSeconds := common.ParseTimeFieldFromSeconds(line, formats.TimeTicksRegex)
+	if common.IsValidDate(datefromSeconds) {
 		return datefromSeconds
 	}
 
@@ -66,12 +66,13 @@ func parsePayloadTime(line string) time.Time {
 func parseDCMessagePayload(line string, messageType models.DCMessageType, destination string) *models.DcMessagePayload {
 	payload := models.DcMessagePayload{}
 
-	payload.SmcUID = parseFieldInBracketsAsString(line, formats.SmcUIDRegex)
-	payload.PodUID = parseFieldInBracketsAsString(line, formats.PodUIDRegex)
-	payload.ServiceLevelID = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ServiceLevelIDRegex))
-	payload.Value = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ValueRegex))
+	payload.SmcUID = common.ParseFieldInBracketsAsString(line, formats.SmcUIDRegex)
+	payload.PodUID = common.ParseFieldInBracketsAsString(line, formats.PodUIDRegex)
+	payload.ServiceLevelID = common.TryParseIntFromString(
+		common.ParseFieldInBracketsAsString(line, formats.ServiceLevelIDRegex))
+	payload.Value = common.TryParseIntFromString(common.ParseFieldInBracketsAsString(line, formats.ValueRegex))
 	payload.Time = parsePayloadTime(line)
-	payload.TimeRange = parseTimeRange(line)
+	payload.TimeRange = common.ParseTimeRange(line)
 
 	switch messageType {
 	case models.NewSmc:
@@ -139,18 +140,18 @@ func parseDCMessagePayload(line string, messageType models.DCMessageType, destin
 }
 
 func parseReadIndexLowProfilesEntry(line string) *models.ReadIndexLowProfilesEntryPayload {
-	timeRange := parseTimeRange(line)
+	timeRange := common.ParseTimeRange(line)
 	result := models.ReadIndexLowProfilesEntryPayload{}
 	result.To = timeRange.To
 	result.From = timeRange.From
-	result.SmcUID = parseFieldInBracketsAsString(line, formats.SMCUIDRegex)
+	result.SmcUID = common.ParseFieldInBracketsAsString(line, formats.SMCUIDRegex)
 
 	return &result
 }
 
 func parseReadIndexProfilesEntry(line string) *models.ReadIndexProfilesEntryPayload {
 	result := models.ReadIndexProfilesEntryPayload{}
-	result.SmcUID = parseFieldInBracketsAsString(line, formats.SMCUIDRegex)
+	result.SmcUID = common.ParseFieldInBracketsAsString(line, formats.SMCUIDRegex)
 
 	// Get the count part between the parentheses.
 	// <--[read index profiles]--(SMC) smc_uid[dc18-smc9] (6) (smart_meter_cabinet.cc::190)
@@ -168,7 +169,7 @@ func parseReadIndexProfilesEntry(line string) *models.ReadIndexProfilesEntryPayl
 	countString = strings.Replace(countString, ") ", "", 1)
 
 	// convert to int
-	count := tryParseIntFromString(countString)
+	count := common.TryParseIntFromString(countString)
 	result.Count = count
 
 	return &result
@@ -176,12 +177,12 @@ func parseReadIndexProfilesEntry(line string) *models.ReadIndexProfilesEntryPayl
 
 func parseStatisticsEntry(line string) *models.StatisticsEntryPayload {
 	result := models.StatisticsEntryPayload{}
-	result.Type = parseFieldInBracketsAsString(line, formats.StatisticsTypeRegex)
-	result.SourceID = parseFieldInBracketsAsString(line, formats.StatisticsSourceIDRegex)
-	result.Time = parseTimeFieldFromSeconds(line, formats.TimeTicksRegex)
-	valueString := parseFieldInBracketsAsString(line, formats.StatisticsValueRegex)
+	result.Type = common.ParseFieldInBracketsAsString(line, formats.StatisticsTypeRegex)
+	result.SourceID = common.ParseFieldInBracketsAsString(line, formats.StatisticsSourceIDRegex)
+	result.Time = common.ParseTimeFieldFromSeconds(line, formats.TimeTicksRegex)
+	valueString := common.ParseFieldInBracketsAsString(line, formats.StatisticsValueRegex)
 
-	value := tryParseFloat64FromString(valueString)
+	value := common.TryParseFloat64FromString(valueString)
 	result.Value = value
 
 	return &result
@@ -189,11 +190,11 @@ func parseStatisticsEntry(line string) *models.StatisticsEntryPayload {
 
 func parseGenericIndexProfile(line string) *models.GenericIndexProfilePayload {
 	result := models.GenericIndexProfilePayload{}
-	capturePeriodString := parseFieldInBracketsAsString(line, formats.IndexProfileCapturePeriodRegex)
-	capturePeriod := tryParseIntFromString(capturePeriodString)
+	capturePeriodString := common.ParseFieldInBracketsAsString(line, formats.IndexProfileCapturePeriodRegex)
+	capturePeriod := common.TryParseIntFromString(capturePeriodString)
 
-	captureObjectsString := parseFieldInBracketsAsString(line, formats.IndexProfileCaptureObjectsRegex)
-	captureObjects := tryParseIntFromString(captureObjectsString)
+	captureObjectsString := common.ParseFieldInBracketsAsString(line, formats.IndexProfileCaptureObjectsRegex)
+	captureObjects := common.TryParseIntFromString(captureObjectsString)
 
 	result.CaptureObjects = captureObjects
 	result.CapturePeriod = capturePeriod
@@ -203,8 +204,8 @@ func parseGenericIndexProfile(line string) *models.GenericIndexProfilePayload {
 
 func parseConnectToPLC(line string) *models.ConnectToPLCPayload {
 	result := models.ConnectToPLCPayload{}
-	result.Interface = parseFieldInBracketsAsString(line, formats.ConnectToPLCIfaceRegex)
-	result.DestinationAddress = parseFieldInBracketsAsString(line, formats.ConnectToPLCDestAddressRegex)
+	result.Interface = common.ParseFieldInBracketsAsString(line, formats.ConnectToPLCIfaceRegex)
+	result.DestinationAddress = common.ParseFieldInBracketsAsString(line, formats.ConnectToPLCDestAddressRegex)
 
 	return &result
 }
@@ -233,12 +234,13 @@ func parseNewSmcUID(line string) string {
 }
 
 func parseConnectOrDisconnectPayload(line string) *models.ConnectOrDisconnectPayload {
-	resultType := tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ConnectOrDisconnectTypeRegex))
-	clientID := parseFieldInBracketsAsString(line, formats.ClientIDRegex)
-	URL := parseFieldInBracketsAsString(line, formats.URLRegex)
-	topic := parseFieldInBracketsAsString(line, formats.TopicRegex)
-	timeout := tryParseIntFromString(parseFieldInBracketsAsString(line, formats.TimeoutRegex))
-	connected := tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ConnectedRegex)) == 1
+	resultType := common.TryParseIntFromString(
+		common.ParseFieldInBracketsAsString(line, formats.ConnectOrDisconnectTypeRegex))
+	clientID := common.ParseFieldInBracketsAsString(line, formats.ClientIDRegex)
+	URL := common.ParseFieldInBracketsAsString(line, formats.URLRegex)
+	topic := common.ParseFieldInBracketsAsString(line, formats.TopicRegex)
+	timeout := common.TryParseIntFromString(common.ParseFieldInBracketsAsString(line, formats.TimeoutRegex))
+	connected := common.TryParseIntFromString(common.ParseFieldInBracketsAsString(line, formats.ConnectedRegex)) == 1
 
 	if clientID != "" || resultType != 0 || URL != "" || topic != "" || timeout != 0 {
 		result := models.ConnectOrDisconnectPayload{
@@ -255,9 +257,9 @@ func parseConnectOrDisconnectPayload(line string) *models.ConnectOrDisconnectPay
 }
 
 func parseDLMSLogPayload(line string) *models.DLMSLogPayload {
-	requestTimeFromSeconds := parseTimeFieldFromMilliSeconds(line, formats.DLMSRequestTimeRegex)
-	responseTimeFromSeconds := parseTimeFieldFromMilliSeconds(line, formats.DLMSResponseTimeRegex)
-	DLMSError := parseFieldInBracketsAsString(line, formats.DLMSErrorRegex)
+	requestTimeFromSeconds := common.ParseTimeFieldFromMilliSeconds(line, formats.DLMSRequestTimeRegex)
+	responseTimeFromSeconds := common.ParseTimeFieldFromMilliSeconds(line, formats.DLMSResponseTimeRegex)
+	DLMSError := common.ParseFieldInBracketsAsString(line, formats.DLMSErrorRegex)
 
 	if requestTimeFromSeconds.Year() > 1500 || responseTimeFromSeconds.Year() > 1500 || DLMSError != "" {
 		result := models.DLMSLogPayload{
@@ -271,15 +273,15 @@ func parseDLMSLogPayload(line string) *models.DLMSLogPayload {
 }
 
 func parseIndexPayload(line string) *models.IndexPayload {
-	previousValueString := parseFieldInBracketsAsString(line, formats.PreviousValueRegex)
-	serialNumberString := parseFieldInBracketsAsString(line, formats.SerialNumberRegex)
-	previousTimeFromSeconds := parseTimeFieldFromSeconds(line, formats.PreviousTimeRegex)
+	previousValueString := common.ParseFieldInBracketsAsString(line, formats.PreviousValueRegex)
+	serialNumberString := common.ParseFieldInBracketsAsString(line, formats.SerialNumberRegex)
+	previousTimeFromSeconds := common.ParseTimeFieldFromSeconds(line, formats.PreviousTimeRegex)
 	if previousTimeFromSeconds.Year() < 1000 && serialNumberString == "" && previousValueString == "" {
 		return nil
 	}
 
-	previousValue := tryParseIntFromString(previousValueString)
-	serialNumber := tryParseIntFromString(serialNumberString)
+	previousValue := common.TryParseIntFromString(previousValueString)
+	serialNumber := common.TryParseIntFromString(serialNumberString)
 
 	result := models.IndexPayload{}
 	result.PreviousTime = previousTimeFromSeconds
@@ -290,32 +292,32 @@ func parseIndexPayload(line string) *models.IndexPayload {
 }
 
 func parseMessagePayload(line string) *models.MessagePayload {
-	currentString := parseFieldInBracketsAsString(line, formats.CurrentRegex)
-	totalString := parseFieldInBracketsAsString(line, formats.TotalRegex)
+	currentString := common.ParseFieldInBracketsAsString(line, formats.CurrentRegex)
+	totalString := common.ParseFieldInBracketsAsString(line, formats.TotalRegex)
 	if currentString == "" && totalString == "" {
 		return nil
 	}
 
 	result := models.MessagePayload{}
 
-	result.Current = tryParseFloat64FromString(currentString)
-	result.Total = tryParseFloat64FromString(parseFieldInBracketsAsString(line, formats.TotalRegex))
-	result.URL = parseFieldInBracketsAsString(line, formats.URLRegex)
-	result.Topic = parseFieldInBracketsAsString(line, formats.TopicRegex)
+	result.Current = common.TryParseFloat64FromString(currentString)
+	result.Total = common.TryParseFloat64FromString(common.ParseFieldInBracketsAsString(line, formats.TotalRegex))
+	result.URL = common.ParseFieldInBracketsAsString(line, formats.URLRegex)
+	result.Topic = common.ParseFieldInBracketsAsString(line, formats.TopicRegex)
 
 	return &result
 }
 
 func parseSettingsPayload(line string) *models.SettingsPayload {
-	dcUID := parseFieldInBracketsAsString(line, formats.DcUIDRegex)
+	dcUID := common.ParseFieldInBracketsAsString(line, formats.DcUIDRegex)
 
-	indexCollectionString := parseFieldInBracketsAsString(line, formats.IndexCollectionRegex)
-	dataPublishString := parseFieldInBracketsAsString(line, formats.DataPublishRegex)
-	frequencyBandChangedString := parseFieldInBracketsAsString(line, formats.FrequencyBandChangedRegex)
-	frequencyBandRollBackDonestirng := parseFieldInBracketsAsString(line, formats.FrequencyBandRollbackDoneRegex)
+	indexCollectionString := common.ParseFieldInBracketsAsString(line, formats.IndexCollectionRegex)
+	dataPublishString := common.ParseFieldInBracketsAsString(line, formats.DataPublishRegex)
+	frequencyBandChangedString := common.ParseFieldInBracketsAsString(line, formats.FrequencyBandChangedRegex)
+	frequencyBandRollBackDonestirng := common.ParseFieldInBracketsAsString(line, formats.FrequencyBandRollbackDoneRegex)
 
-	lastServerCommTimeFromSeconds := parseTimeFieldFromSeconds(line, formats.LastServerCommunicationTimeRegex)
-	lastDcStartTimeFromSeconds := parseTimeFieldFromSeconds(line, formats.LastDcStartTimeRegex)
+	lastServerCommTimeFromSeconds := common.ParseTimeFieldFromSeconds(line, formats.LastServerCommunicationTimeRegex)
+	lastDcStartTimeFromSeconds := common.ParseTimeFieldFromSeconds(line, formats.LastDcStartTimeRegex)
 
 	if dcUID == "" &&
 		lastServerCommTimeFromSeconds.Year() < 1000 &&
@@ -327,17 +329,17 @@ func parseSettingsPayload(line string) *models.SettingsPayload {
 		return nil
 	}
 
-	locality := parseFieldInBracketsAsString(line, formats.LocalityRegex)
-	region := parseFieldInBracketsAsString(line, formats.RegionRegex)
-	timezone := parseFieldInBracketsAsString(line, formats.TimezoneRegex)
-	globalFtpAddress := parseFieldInBracketsAsString(line, formats.GlobalFtpAddressRegex)
-	targetFirmwareVersion := parseFieldInBracketsAsString(line, formats.TargetFirmwareVersionRegex)
-	dcDistroTargetFirmwareVersion := parseFieldInBracketsAsString(line, formats.DcDistroTargetFirmwareVersionRegex)
+	locality := common.ParseFieldInBracketsAsString(line, formats.LocalityRegex)
+	region := common.ParseFieldInBracketsAsString(line, formats.RegionRegex)
+	timezone := common.ParseFieldInBracketsAsString(line, formats.TimezoneRegex)
+	globalFtpAddress := common.ParseFieldInBracketsAsString(line, formats.GlobalFtpAddressRegex)
+	targetFirmwareVersion := common.ParseFieldInBracketsAsString(line, formats.TargetFirmwareVersionRegex)
+	dcDistroTargetFirmwareVersion := common.ParseFieldInBracketsAsString(line, formats.DcDistroTargetFirmwareVersionRegex)
 
-	indexCollection := tryParseIntFromString(indexCollectionString)
-	dataPublish := tryParseIntFromString(dataPublishString)
-	frequencyBandChanged := tryParseIntFromString(frequencyBandChangedString) == 1
-	frequencyBandRollBackDone := tryParseIntFromString(frequencyBandRollBackDonestirng) == 1
+	indexCollection := common.TryParseIntFromString(indexCollectionString)
+	dataPublish := common.TryParseIntFromString(dataPublishString)
+	frequencyBandChanged := common.TryParseIntFromString(frequencyBandChangedString) == 1
+	frequencyBandRollBackDone := common.TryParseIntFromString(frequencyBandRollBackDonestirng) == 1
 
 	result := models.SettingsPayload{
 		DcUID:            dcUID,
@@ -357,11 +359,15 @@ func parseSettingsPayload(line string) *models.SettingsPayload {
 }
 
 func parseServiceLevelPayload(line string) *models.ServiceLevelPayload {
-	meterModeString := parseFieldInBracketsAsString(line, formats.MeterModeRegex)
-	maxActivePowerstring := parseFieldInBracketsAsString(line, formats.MaxActivePowerRegex)
-	loadSheddingDailyEnergyBudgetString := parseFieldInBracketsAsString(line, formats.LoadSheddingDailyEnergyBudgetRegex)
-	localSheddingDailyEnergyBudgetString := parseFieldInBracketsAsString(line, formats.LocalSheddingDailyEnergyBudgetRegex)
-	inServiceString := parseFieldInBracketsAsString(line, formats.InServiceRegex)
+	meterModeString := common.ParseFieldInBracketsAsString(line, formats.MeterModeRegex)
+	maxActivePowerstring := common.ParseFieldInBracketsAsString(line, formats.MaxActivePowerRegex)
+	loadSheddingDailyEnergyBudgetString := common.ParseFieldInBracketsAsString(
+		line,
+		formats.LoadSheddingDailyEnergyBudgetRegex)
+	localSheddingDailyEnergyBudgetString := common.ParseFieldInBracketsAsString(
+		line,
+		formats.LocalSheddingDailyEnergyBudgetRegex)
+	inServiceString := common.ParseFieldInBracketsAsString(line, formats.InServiceRegex)
 	if meterModeString == "" &&
 		maxActivePowerstring == "" &&
 		loadSheddingDailyEnergyBudgetString == "" &&
@@ -371,14 +377,14 @@ func parseServiceLevelPayload(line string) *models.ServiceLevelPayload {
 		return nil
 	}
 
-	meterMode := tryParseIntFromString(meterModeString)
-	maxActivePower := tryParseIntFromString(maxActivePowerstring)
-	loadSheddingDailyEnergyBudget := tryParseIntFromString(loadSheddingDailyEnergyBudgetString)
-	localSheddingDailyEnergyBudget := tryParseIntFromString(localSheddingDailyEnergyBudgetString)
-	inService := tryParseIntFromString(inServiceString) == 1
+	meterMode := common.TryParseIntFromString(meterModeString)
+	maxActivePower := common.TryParseIntFromString(maxActivePowerstring)
+	loadSheddingDailyEnergyBudget := common.TryParseIntFromString(loadSheddingDailyEnergyBudgetString)
+	localSheddingDailyEnergyBudget := common.TryParseIntFromString(localSheddingDailyEnergyBudgetString)
+	inService := common.TryParseIntFromString(inServiceString) == 1
 
-	startHourDailyCycle := parseFieldInBracketsAsString(line, formats.StartHourDailyCycleRegex)
-	name := parseFieldInBracketsAsString(line, formats.NameRegex)
+	startHourDailyCycle := common.ParseFieldInBracketsAsString(line, formats.StartHourDailyCycleRegex)
+	name := common.ParseFieldInBracketsAsString(line, formats.NameRegex)
 
 	hourlyEnergyLimits := parseHourlyEnergyLimits(line, formats.HourlyEnergyLimitsRegex)
 	localHourlyEnergyLimits := parseHourlyEnergyLimits(line, formats.LocalHourlyEnergyLimitsRegex)
@@ -399,12 +405,12 @@ func parseServiceLevelPayload(line string) *models.ServiceLevelPayload {
 func parseHourlyEnergyLimits(line string, energyLimitRegex string) [24]models.HourlyEnergyLimit {
 	var result [24]models.HourlyEnergyLimit
 	hoursInADay := 24
-	hourlyLimitsString := parseFieldInDoubleBracketsAsString(line, energyLimitRegex)
+	hourlyLimitsString := common.ParseFieldInDoubleBracketsAsString(line, energyLimitRegex)
 	if hourlyLimitsString != "" {
 		limitParts := strings.Split(hourlyLimitsString, " ")
 		if len(limitParts) == hoursInADay {
 			for i, val := range limitParts {
-				result[i] = models.HourlyEnergyLimit{HourNumber: i, Limit: tryParseIntFromString(val)}
+				result[i] = models.HourlyEnergyLimit{HourNumber: i, Limit: common.TryParseIntFromString(val)}
 			}
 
 			return result
@@ -418,16 +424,16 @@ func parseHourlyEnergyLimits(line string, energyLimitRegex string) [24]models.Ho
 }
 
 func parseSmcAddressPayload(line string) *models.SmcAddressParams {
-	smcUID := parseFieldInBracketsAsString(line, formats.SMCUIDRegex)
-	physicalAddress := parseFieldInBracketsAsString(line, formats.PhysicalAddressRegex)
-	logicalAddress := parseFieldInBracketsAsString(line, formats.LogicalAddressRegex)
-	shortAddressString := parseFieldInBracketsAsString(line, formats.ShortAddressRegex)
+	smcUID := common.ParseFieldInBracketsAsString(line, formats.SMCUIDRegex)
+	physicalAddress := common.ParseFieldInBracketsAsString(line, formats.PhysicalAddressRegex)
+	logicalAddress := common.ParseFieldInBracketsAsString(line, formats.LogicalAddressRegex)
+	shortAddressString := common.ParseFieldInBracketsAsString(line, formats.ShortAddressRegex)
 	if smcUID == "" && physicalAddress == "" && logicalAddress == "" && shortAddressString == "" {
 		return nil
 	}
 
-	lastJoiningDate := parseDateTimeField(line, formats.LastJoiningDateRegex)
-	shortAddress := tryParseIntFromString(shortAddressString)
+	lastJoiningDate := common.ParseDateTimeField(line, formats.LastJoiningDateRegex)
+	shortAddress := common.TryParseIntFromString(shortAddressString)
 
 	result := models.SmcAddressParams{
 		SmcUID:          smcUID,
@@ -439,21 +445,21 @@ func parseSmcAddressPayload(line string) *models.SmcAddressParams {
 }
 
 func parseSmcConfigPayload(line string) *models.SmcConfigPayload {
-	customerSerialNumber := parseFieldInBracketsAsString(line, formats.CustomerSerialNumberRegex)
-	physicalAddress := parseFieldInBracketsAsString(line, formats.PhysicalAddressRegex)
-	smcStatus := parseFieldInBracketsAsString(line, formats.SmcStatusRegex)
-	nextHopString := parseFieldInBracketsAsString(line, formats.NextHopRegex)
+	customerSerialNumber := common.ParseFieldInBracketsAsString(line, formats.CustomerSerialNumberRegex)
+	physicalAddress := common.ParseFieldInBracketsAsString(line, formats.PhysicalAddressRegex)
+	smcStatus := common.ParseFieldInBracketsAsString(line, formats.SmcStatusRegex)
+	nextHopString := common.ParseFieldInBracketsAsString(line, formats.NextHopRegex)
 
 	if customerSerialNumber == "" && physicalAddress == "" && smcStatus == "" && nextHopString == "" {
 		return nil
 	}
 
-	currentApp1Fw := parseFieldInBracketsAsString(line, formats.CurrentApp1FwRegex)
-	currentApp2Fw := parseFieldInBracketsAsString(line, formats.CurrentApp2FwRegex)
-	currentPlcFw := parseFieldInBracketsAsString(line, formats.CurrentPlcFwRegex)
+	currentApp1Fw := common.ParseFieldInBracketsAsString(line, formats.CurrentApp1FwRegex)
+	currentApp2Fw := common.ParseFieldInBracketsAsString(line, formats.CurrentApp2FwRegex)
+	currentPlcFw := common.ParseFieldInBracketsAsString(line, formats.CurrentPlcFwRegex)
 
-	lastSuccessfulDlmsResponseDate := parseDateTimeField(line, formats.LastSuccessfulRespDateRegex)
-	nextHop := tryParseIntFromString(nextHopString)
+	lastSuccessfulDlmsResponseDate := common.ParseDateTimeField(line, formats.LastSuccessfulRespDateRegex)
+	nextHop := common.TryParseIntFromString(nextHopString)
 
 	result := models.SmcConfigPayload{}
 	result.CurrentApp1Fw = currentApp1Fw
@@ -469,17 +475,17 @@ func parseSmcConfigPayload(line string) *models.SmcConfigPayload {
 }
 
 func parsePodConfigPayload(line string) *models.PodConfigPayload {
-	serialNumberString := parseFieldInBracketsAsString(line, formats.SerialNumberRegex)
-	phaseString := parseFieldInBracketsAsString(line, formats.PhaseRegex)
-	positionInSmcString := parseFieldInBracketsAsString(line, formats.PositionInSmcRegex)
-	softwareFirmwareVersion := parseFieldInBracketsAsString(line, formats.SoftwareFirmwareVersionRegex)
+	serialNumberString := common.ParseFieldInBracketsAsString(line, formats.SerialNumberRegex)
+	phaseString := common.ParseFieldInBracketsAsString(line, formats.PhaseRegex)
+	positionInSmcString := common.ParseFieldInBracketsAsString(line, formats.PositionInSmcRegex)
+	softwareFirmwareVersion := common.ParseFieldInBracketsAsString(line, formats.SoftwareFirmwareVersionRegex)
 	if serialNumberString == "" && phaseString == "" && positionInSmcString == "" && softwareFirmwareVersion == "" {
 		return nil
 	}
 
-	serialNumber := tryParseIntFromString(serialNumberString)
-	phase := tryParseIntFromString(phaseString)
-	positionInSmc := tryParseIntFromString(positionInSmcString)
+	serialNumber := common.TryParseIntFromString(serialNumberString)
+	phase := common.TryParseIntFromString(phaseString)
+	positionInSmc := common.TryParseIntFromString(positionInSmcString)
 
 	result := models.PodConfigPayload{
 		Phase:                   phase,

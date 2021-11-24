@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kozgot/go-log-processing/parser/internal/service"
+	"github.com/kozgot/go-log-processing/parser/internal/timestampparser"
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
 
@@ -49,9 +49,9 @@ func TestParseTimestamp(t *testing.T) {
 			" (abstract_smart_meter_cabinet.h::314)",
 	}
 
-	parsedErrorEntry := service.ParseTimestamp(errorEntry)
-	parsedWarningEntry := service.ParseTimestamp(warningEntry)
-	parsedInfoConsumptionEntry := service.ParseTimestamp(infoConsumptionEntry)
+	parsedErrorEntry := timestampparser.ParseTimestamp(errorEntry)
+	parsedWarningEntry := timestampparser.ParseTimestamp(warningEntry)
+	parsedInfoConsumptionEntry := timestampparser.ParseTimestamp(infoConsumptionEntry)
 
 	if !reflect.DeepEqual(parsedErrorEntry, &expectedErrorEntry) {
 		t.Fatal("Got error entry does not match expected error entry")

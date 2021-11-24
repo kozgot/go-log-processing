@@ -1,11 +1,13 @@
-package service
+package contentparser
 
 import (
+	"github.com/kozgot/go-log-processing/parser/internal/common"
 	"github.com/kozgot/go-log-processing/parser/internal/formats"
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
 
-func parseError(line models.EntryWithLevelAndTimestamp) *models.ErrorParams {
+// ParseError parses an error level log entry.
+func ParseError(line models.EntryWithLevelAndTimestamp) *models.ErrorParams {
 	errorCode := parseErrorCode(line.Rest)
 	errorMessage := parseErrorMessage(line.Rest)
 	errorSeverity := parseErrorSeverity(line.Rest)
@@ -23,21 +25,21 @@ func parseError(line models.EntryWithLevelAndTimestamp) *models.ErrorParams {
 }
 
 func parseErrorCode(line string) int {
-	return tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ErrorCodeRegex))
+	return common.TryParseIntFromString(common.ParseFieldInBracketsAsString(line, formats.ErrorCodeRegex))
 }
 
 func parseErrorMessage(line string) string {
-	return parseFieldInBracketsAsString(line, formats.MessageRegex)
+	return common.ParseFieldInBracketsAsString(line, formats.MessageRegex)
 }
 
 func parseErrorDesc(line string) string {
-	return parseFieldInBracketsAsString(line, formats.ErrorDescRegex)
+	return common.ParseFieldInBracketsAsString(line, formats.ErrorDescRegex)
 }
 
 func parseErrorSource(line string) string {
-	return parseFieldInBracketsAsString(line, formats.ErrorSourceRegex)
+	return common.ParseFieldInBracketsAsString(line, formats.ErrorSourceRegex)
 }
 
 func parseErrorSeverity(line string) int {
-	return tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ErrorSeverityRegex))
+	return common.TryParseIntFromString(common.ParseFieldInBracketsAsString(line, formats.ErrorSeverityRegex))
 }

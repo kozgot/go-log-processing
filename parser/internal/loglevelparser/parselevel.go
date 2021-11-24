@@ -1,4 +1,4 @@
-package service
+package loglevelparser
 
 import (
 	"regexp"
@@ -9,14 +9,14 @@ import (
 )
 
 // ParseLogLevelAndFilter decides if a line is relevant in the input file.
-func ParseLogLevelAndFilter(line string) (*models.EntryWithLogLevel, bool) {
+func ParseLogLevelAndFilter(line string) *models.EntryWithLogLevel {
 	levelRegex, _ := regexp.Compile(formats.LogLevelsRegex)
 	logLevel := levelRegex.FindString(line)
 	if logLevel != "" {
 		restOfLine := strings.Replace(line, logLevel, "", 1)
-		return &models.EntryWithLogLevel{Level: logLevel, Rest: restOfLine}, true
+		return &models.EntryWithLogLevel{Level: logLevel, Rest: restOfLine}
 	}
 
 	// could not parse log level
-	return nil, false
+	return nil
 }

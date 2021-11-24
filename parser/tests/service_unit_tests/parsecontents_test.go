@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kozgot/go-log-processing/parser/internal/service"
+	"github.com/kozgot/go-log-processing/parser/internal/contentparser"
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
 
@@ -79,9 +79,9 @@ func TestParseContents(t *testing.T) {
 		},
 	}
 
-	parsedErrorEntry := service.ParseContents(errorEntry)
-	parsedWarningEntry := service.ParseContents(warningEntry)
-	parsedInfoConsumptionEntry := service.ParseContents(infoConsumptionEntry)
+	parsedErrorEntry := contentparser.ParseEntryContents(errorEntry)
+	parsedWarningEntry := contentparser.ParseEntryContents(warningEntry)
+	parsedInfoConsumptionEntry := contentparser.ParseEntryContents(infoConsumptionEntry)
 
 	if !reflect.DeepEqual(parsedErrorEntry, &expectedErrorEntry) {
 		t.Fatal("Got error entry does not match expected error entry")

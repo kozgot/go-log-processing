@@ -1,4 +1,4 @@
-package service
+package common
 
 import (
 	"regexp"
@@ -7,10 +7,12 @@ import (
 	"time"
 
 	"github.com/kozgot/go-log-processing/parser/internal/formats"
+	"github.com/kozgot/go-log-processing/parser/internal/utils"
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
 
-func parseFieldInBracketsAsString(line string, regexString string) string {
+// ParseFieldInBracketsAsString parses a field in a log entry surrounded by brackets.
+func ParseFieldInBracketsAsString(line string, regexString string) string {
 	regex, _ := regexp.Compile(regexString)
 	textualField := regex.FindString(line)
 
@@ -24,7 +26,8 @@ func parseFieldInBracketsAsString(line string, regexString string) string {
 	return textualFieldValue
 }
 
-func parseFieldInDoubleBracketsAsString(line string, regexString string) string {
+// ParseFieldInDoubleBracketsAsString parses a field in a log entry surrounded by double brackets.
+func ParseFieldInDoubleBracketsAsString(line string, regexString string) string {
 	regex, _ := regexp.Compile(regexString)
 	textualField := regex.FindString(line)
 
@@ -38,12 +41,12 @@ func parseFieldInDoubleBracketsAsString(line string, regexString string) string 
 	return textualFieldValue
 }
 
-func parseFieldInParenthesesAsString(line string, regexString string) string {
+// ParseFieldInParenthesesAsString parses a field in a log entry surrounded by parentheses.
+func ParseFieldInParenthesesAsString(line string, regexString string) string {
 	regex, _ := regexp.Compile(regexString)
 	textualField := regex.FindString(line)
 
 	if textualField == "" {
-		// log.Println("Could not parse textual field from line: ", line, regex)
 		return ""
 	}
 
@@ -53,7 +56,8 @@ func parseFieldInParenthesesAsString(line string, regexString string) string {
 	return textualFieldValue
 }
 
-func parseFieldAsString(line string, regexString string) string {
+// ParseFieldAsString parses a field of a log entry as string.
+func ParseFieldAsString(line string, regexString string) string {
 	regex, _ := regexp.Compile(regexString)
 	textualField := regex.FindString(line)
 
@@ -65,49 +69,41 @@ func parseFieldAsString(line string, regexString string) string {
 	return textualField
 }
 
-func tryParseIntFromString(stringRepresentation string) int {
+// TryParseIntFromString parses an integer value from a string representation.
+func TryParseIntFromString(stringRepresentation string) int {
 	if stringRepresentation != "" {
 		parsedNumber, err := strconv.Atoi(stringRepresentation)
-		if err != nil {
-			panic(err)
-		}
-
+		utils.FailOnError(err, "Could not parse integer value from string representation.")
 		return parsedNumber
 	}
 
 	return 0
 }
 
-func tryParseInt64FromString(stringRepresentation string) int64 {
+// TryParseInt64FromString parses an int64 value from a string representation.
+func TryParseInt64FromString(stringRepresentation string) int64 {
 	if stringRepresentation != "" {
-		base := 10
-		bitSize := 64
-		parsedNumber, err := strconv.ParseInt(stringRepresentation, base, bitSize)
-		if err != nil {
-			panic(err)
-		}
-
+		parsedNumber, err := strconv.ParseInt(stringRepresentation, 10, 64)
+		utils.FailOnError(err, "Could not parse int64 value from string representation.")
 		return parsedNumber
 	}
 
 	return 0
 }
 
-func tryParseFloat64FromString(stringRepresentation string) float64 {
+// TryParseFloat64FromString parses a float value from a string representation.
+func TryParseFloat64FromString(stringRepresentation string) float64 {
 	if stringRepresentation != "" {
-		bitSize := 64
-		parsedNumber, err := strconv.ParseFloat(stringRepresentation, bitSize)
-		if err != nil {
-			panic(err)
-		}
-
+		parsedNumber, err := strconv.ParseFloat(stringRepresentation, 64)
+		utils.FailOnError(err, "Could not parse float value from string representation.")
 		return parsedNumber
 	}
 
 	return 0
 }
 
-func parseDateTimeField(line string, regex string) time.Time {
+// ParseDateTimeField parses a datetime field sorrounded by brackets.
+func ParseDateTimeField(line string, regex string) time.Time {
 	timeFieldRegex, _ := regexp.Compile(regex)
 	timeField := timeFieldRegex.FindString(line)
 
@@ -115,14 +111,15 @@ func parseDateTimeField(line string, regex string) time.Time {
 		timeString := strings.Split(timeField, "[")[1]
 		timeString = strings.Replace(timeString, "]", "", 1)
 
-		dateTime := parseDateTime(timeString)
+		dateTime := ParseDateTime(timeString)
 		return dateTime
 	}
 
 	return time.Time{}
 }
 
-func parseDateTime(timeString string) time.Time {
+// ParseDateTime parses a datetime field.
+func ParseDateTime(timeString string) time.Time {
 	dateRegex, _ := regexp.Compile(formats.DateFormatRegex)
 
 	dateString := dateRegex.FindString(timeString)
@@ -139,8 +136,9 @@ func parseDateTime(timeString string) time.Time {
 	return time.Time{}
 }
 
-func parseTimeFieldFromSeconds(line string, timeStampRegex string) time.Time {
-	seconds := tryParseInt64FromString(parseFieldInBracketsAsString(line, timeStampRegex))
+// ParseTimeFieldFromSeconds parses a time field represented by seconds.
+func ParseTimeFieldFromSeconds(line string, timeStampRegex string) time.Time {
+	seconds := TryParseInt64FromString(ParseFieldInBracketsAsString(line, timeStampRegex))
 	if seconds != 0 {
 		dateTimeFromsSecs := time.Unix(seconds, 0)
 		utcDatTime := time.Date(
@@ -158,8 +156,9 @@ func parseTimeFieldFromSeconds(line string, timeStampRegex string) time.Time {
 	return time.Time{}
 }
 
-func parseTimeFieldFromMilliSeconds(line string, timeStampRegex string) time.Time {
-	milliseconds := tryParseInt64FromString(parseFieldInBracketsAsString(line, timeStampRegex))
+// ParseTimeFieldFromMilliSeconds parses a time field represented by milliseconds.
+func ParseTimeFieldFromMilliSeconds(line string, timeStampRegex string) time.Time {
+	milliseconds := TryParseInt64FromString(ParseFieldInBracketsAsString(line, timeStampRegex))
 	if milliseconds != 0 {
 		dateTimeFromsSecs := time.Unix(0, convertMillisecondsToSeconds(milliseconds))
 		utcDatTime := time.Date(
@@ -177,20 +176,21 @@ func parseTimeFieldFromMilliSeconds(line string, timeStampRegex string) time.Tim
 	return time.Time{}
 }
 
-func parseTimeRange(line string) *models.TimeRange {
-	from := parseDateTimeField(line, formats.TimeRangeFromRegex)
-	if !isValidDate(from) {
+// ParseTimeRange parses a time range from a log entry.
+func ParseTimeRange(line string) *models.TimeRange {
+	from := ParseDateTimeField(line, formats.TimeRangeFromRegex)
+	if !IsValidDate(from) {
 		// The from field is in a different format, try using that.
-		from = parseTimeFieldFromSeconds(line, formats.TimeRangeStartTicksRegex)
+		from = ParseTimeFieldFromSeconds(line, formats.TimeRangeStartTicksRegex)
 	}
 
-	to := parseDateTimeField(line, formats.TimeRangeToRegex)
-	if !isValidDate(to) {
+	to := ParseDateTimeField(line, formats.TimeRangeToRegex)
+	if !IsValidDate(to) {
 		// The to field is in a different format, try using that.
-		to = parseTimeFieldFromSeconds(line, formats.TimeRangeEndTicksRegex)
+		to = ParseTimeFieldFromSeconds(line, formats.TimeRangeEndTicksRegex)
 	}
 
-	if isValidDate(from) && isValidDate(to) {
+	if IsValidDate(from) && IsValidDate(to) {
 		result := models.TimeRange{From: from, To: to}
 		return &result
 	}
@@ -198,7 +198,8 @@ func parseTimeRange(line string) *models.TimeRange {
 	return nil
 }
 
-func isValidDate(date time.Time) bool {
+// IsValidDate checks if the parsed date is valid by checking if the year value is big enough.
+func IsValidDate(date time.Time) bool {
 	return (date.Year() > 1500)
 }
 

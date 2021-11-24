@@ -1,4 +1,4 @@
-package service
+package contentparser
 
 import (
 	"strings"

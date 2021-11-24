@@ -4,7 +4,7 @@ import (
 	"log"
 	"sync"
 
-	"github.com/kozgot/go-log-processing/parser/internal/service"
+	"github.com/kozgot/go-log-processing/parser/internal/fileparser"
 	"github.com/kozgot/go-log-processing/parser/pkg/filedownloader"
 	"github.com/kozgot/go-log-processing/parser/pkg/rabbitmq"
 )
@@ -38,7 +38,7 @@ func (logparser *LogParser) ParseLogfiles() {
 		readCloser := logparser.fileDownloader.DownloadFile(fileName)
 
 		wg.Add(1)
-		go service.ParseSingleFile(readCloser, fileName, &wg, logparser.rabbitMqProducer)
+		go fileparser.ParseSingleFile(readCloser, fileName, &wg, logparser.rabbitMqProducer)
 	}
 	wg.Wait()
 

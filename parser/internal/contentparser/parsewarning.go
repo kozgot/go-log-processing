@@ -1,10 +1,11 @@
-package service
+package contentparser
 
 import (
 	"regexp"
 	"strings"
 	"time"
 
+	"github.com/kozgot/go-log-processing/parser/internal/common"
 	"github.com/kozgot/go-log-processing/parser/internal/formats"
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
@@ -76,7 +77,7 @@ func parseWarn(line models.EntryWithLevelAndTimestamp) *models.WarningParams {
 	warningParams.MinLaunchTime = minLaunchTime
 
 	// parse inner error params
-	innerErrorParams := parseError(line)
+	innerErrorParams := ParseError(line)
 	warningParams.Details = innerErrorParams
 
 	return &warningParams
@@ -114,38 +115,38 @@ func parseTimeoutEntry(line string) *models.TimelineOutParams {
 	}
 
 	result := models.TimelineOutParams{}
-	result.Protocol = parseFieldInBracketsAsString(line, formats.TimeoutProtocolRegex)
-	result.URL = parseFieldInBracketsAsString(line, formats.TimeoutURLRegex)
+	result.Protocol = common.ParseFieldInBracketsAsString(line, formats.TimeoutProtocolRegex)
+	result.URL = common.ParseFieldInBracketsAsString(line, formats.TimeoutURLRegex)
 
 	return &result
 }
 
 func parseWarningPriority(line string) int {
-	return tryParseIntFromString(parseFieldInBracketsAsString(line, formats.WarningPriorityRegex))
+	return common.TryParseIntFromString(common.ParseFieldInBracketsAsString(line, formats.WarningPriorityRegex))
 }
 
 func parseWarningRetry(line string) int {
-	return tryParseIntFromString(parseFieldInBracketsAsString(line, formats.WarningRetryRegex))
+	return common.TryParseIntFromString(common.ParseFieldInBracketsAsString(line, formats.WarningRetryRegex))
 }
 
 func parseWarningUID(line string) int {
-	return tryParseIntFromString(parseFieldInBracketsAsString(line, formats.UIDRegex))
+	return common.TryParseIntFromString(common.ParseFieldInBracketsAsString(line, formats.UIDRegex))
 }
 
 func parseWarningName(line string) string {
-	return parseFieldInBracketsAsString(line, formats.WarningNameRegex)
+	return common.ParseFieldInBracketsAsString(line, formats.WarningNameRegex)
 }
 
 func parseWarningSMCUID(line string) string {
-	return parseFieldInBracketsAsString(line, formats.SMCUIDRegex)
+	return common.ParseFieldInBracketsAsString(line, formats.SMCUIDRegex)
 }
 
 func parseWarningCreationTime(line string) time.Time {
-	return parseDateTimeField(line, formats.CreationTimeRegex)
+	return common.ParseDateTimeField(line, formats.CreationTimeRegex)
 }
 
 func parseWarningMinLaunchTime(line string) time.Time {
-	return parseDateTimeField(line, formats.MinLaunchTimeRegex)
+	return common.ParseDateTimeField(line, formats.MinLaunchTimeRegex)
 }
 
 func parseFileName(line string) string {

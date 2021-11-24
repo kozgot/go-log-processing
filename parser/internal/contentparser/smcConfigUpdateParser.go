@@ -1,8 +1,9 @@
-package service
+package contentparser
 
 import (
 	"strings"
 
+	"github.com/kozgot/go-log-processing/parser/internal/common"
 	"github.com/kozgot/go-log-processing/parser/internal/formats"
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
@@ -10,7 +11,7 @@ import (
 func parseSmcConfigUpdate(line string) *models.SmcConfigUpdateParams {
 	if strings.Contains(line, formats.SmcConfigUpdatePrefix) {
 		smcAddress := parseSmcAddressPayload(line)
-		smcUID := parseFieldInBracketsAsString(line, formats.SmcUIDRegex)
+		smcUID := common.ParseFieldInBracketsAsString(line, formats.SmcUIDRegex)
 
 		if smcAddress != nil {
 			smcConfigUpdate := models.SmcConfigUpdateParams{

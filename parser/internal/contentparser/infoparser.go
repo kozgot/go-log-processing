@@ -1,14 +1,15 @@
-package service
+package contentparser
 
 import (
 	"log"
 	"strings"
 
+	"github.com/kozgot/go-log-processing/parser/internal/common"
 	"github.com/kozgot/go-log-processing/parser/internal/formats"
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
 
-func parseInfo(line models.EntryWithLevelAndTimestamp) *models.InfoParams {
+func ParseInfo(line models.EntryWithLevelAndTimestamp) *models.InfoParams {
 	infoParams := models.InfoParams{}
 
 	routingMessage := parseRoutingTableLine(line.Rest)
@@ -79,35 +80,39 @@ func parseInfo(line models.EntryWithLevelAndTimestamp) *models.InfoParams {
 
 func parseStatusLine(line string) *models.StatusMessageParams {
 	statusLine := models.StatusMessageParams{}
-	statusLine.StatusByte = parseFieldInBracketsAsString(line, formats.StatusByteRegex)
+	statusLine.StatusByte = common.ParseFieldInBracketsAsString(line, formats.StatusByteRegex)
 	if statusLine.StatusByte == "" {
 		return nil
 	}
 
-	statusLine.Message = parseFieldAsString(line, formats.StatusMessageRegex)
+	statusLine.Message = common.ParseFieldAsString(line, formats.StatusMessageRegex)
 
 	return &statusLine
 }
 
 func parseRoutingTableLine(line string) *models.RoutingTableParams {
-	isRoutingTableLine := parseFieldAsString(line, formats.RoutingTableRegex) != ""
+	isRoutingTableLine := common.ParseFieldAsString(line, formats.RoutingTableRegex) != ""
 	if !isRoutingTableLine {
 		return nil
 	}
 
 	routingtableLine := models.RoutingTableParams{}
-	routingtableLine.Address = parseFieldInBracketsAsString(line, formats.RoutingAddressRegex)
-	routingtableLine.NextHopAddress = parseFieldInBracketsAsString(line, formats.NextHopAddressRegex)
-	routingtableLine.RouteCost = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.RouteCostRegex))
-	routingtableLine.ValidTimeMins = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.ValidTimeRegex))
-	routingtableLine.WeakLink = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.WeakLinkRegex))
-	routingtableLine.HopCount = tryParseIntFromString(parseFieldInBracketsAsString(line, formats.HopCountRegex))
+	routingtableLine.Address = common.ParseFieldInBracketsAsString(line, formats.RoutingAddressRegex)
+	routingtableLine.NextHopAddress = common.ParseFieldInBracketsAsString(line, formats.NextHopAddressRegex)
+	routingtableLine.RouteCost = common.TryParseIntFromString(
+		common.ParseFieldInBracketsAsString(line, formats.RouteCostRegex))
+	routingtableLine.ValidTimeMins = common.TryParseIntFromString(
+		common.ParseFieldInBracketsAsString(line, formats.ValidTimeRegex))
+	routingtableLine.WeakLink = common.TryParseIntFromString(
+		common.ParseFieldInBracketsAsString(line, formats.WeakLinkRegex))
+	routingtableLine.HopCount = common.TryParseIntFromString(
+		common.ParseFieldInBracketsAsString(line, formats.HopCountRegex))
 
 	return &routingtableLine
 }
 
 func parseSmcJoinLine(line string) *models.SmcJoinMessageParams {
-	smcJoinstring := parseFieldAsString(line, formats.SmcJoinRegex)
+	smcJoinstring := common.ParseFieldAsString(line, formats.SmcJoinRegex)
 	isSmcJoinLine := smcJoinstring != ""
 	if !isSmcJoinLine {
 		return nil
@@ -128,7 +133,7 @@ func parseSmcJoinLine(line string) *models.SmcJoinMessageParams {
 	}
 
 	responseString := messageParts[0]
-	response := parseFieldInBracketsAsString(responseString, formats.AnyLettersBetweenBrackets)
+	response := common.ParseFieldInBracketsAsString(responseString, formats.AnyLettersBetweenBrackets)
 	smcJoinLine.Response = response
 
 	status := parseJoinStatus(responseString)
@@ -137,39 +142,39 @@ func parseSmcJoinLine(line string) *models.SmcJoinMessageParams {
 	payloadString := strings.TrimLeft(messageParts[1], " [")
 	payloadString = strings.TrimRight(payloadString, "] ")
 
-	joinType := parseFieldInBracketsAsString(payloadString, formats.JoinTypeRegex)
+	joinType := common.ParseFieldInBracketsAsString(payloadString, formats.JoinTypeRegex)
 	if joinType != "" {
 		smcJoinLine.JoinType = joinType
 	}
 
 	smcAddress := models.SmcAddressParams{}
 
-	smcUID := parseFieldInBracketsAsString(payloadString, formats.SmcUIDRegex)
+	smcUID := common.ParseFieldInBracketsAsString(payloadString, formats.SmcUIDRegex)
 	if smcUID != "" {
 		smcAddress.SmcUID = smcUID
 	}
 
-	physicalAddress := parseFieldInBracketsAsString(payloadString, formats.PhysicalAddressRegex)
+	physicalAddress := common.ParseFieldInBracketsAsString(payloadString, formats.PhysicalAddressRegex)
 	if physicalAddress != "" {
 		smcAddress.PhysicalAddress = physicalAddress
 	}
 
-	logicalAddress := parseFieldInBracketsAsString(payloadString, formats.LogicalAddressRegex)
+	logicalAddress := common.ParseFieldInBracketsAsString(payloadString, formats.LogicalAddressRegex)
 	if logicalAddress != "" {
 		smcAddress.LogicalAddress = logicalAddress
 	}
 
-	shortAddress := parseFieldInBracketsAsString(payloadString, formats.ShortAddressRegex)
+	shortAddress := common.ParseFieldInBracketsAsString(payloadString, formats.ShortAddressRegex)
 	if shortAddress != "" {
-		smcAddress.ShortAddress = tryParseIntFromString(shortAddress)
+		smcAddress.ShortAddress = common.TryParseIntFromString(shortAddress)
 	}
 
-	smcAddress.LastJoiningDate = parseDateTimeField(line, formats.LastJoiningDateRegex)
+	smcAddress.LastJoiningDate = common.ParseDateTimeField(line, formats.LastJoiningDateRegex)
 	smcJoinLine.SmcAddress = smcAddress
 	return &smcJoinLine
 }
 
 func parseJoinStatus(line string) string {
-	parsed := parseFieldAsString(line, formats.JoinStatusResponseRegex)
+	parsed := common.ParseFieldAsString(line, formats.JoinStatusResponseRegex)
 	return parsed
 }

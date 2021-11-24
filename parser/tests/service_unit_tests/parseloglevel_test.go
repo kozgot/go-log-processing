@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/kozgot/go-log-processing/parser/internal/service"
+	"github.com/kozgot/go-log-processing/parser/internal/loglevelparser"
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
 
@@ -36,18 +36,18 @@ func TestParseLogLevel(t *testing.T) {
 			" value[0] service_level_id[9] (abstract_smart_meter_cabinet.h::314)",
 	}
 
-	parsedErrorEntry, isRelevant := service.ParseLogLevelAndFilter(errorEntry)
-	if !isRelevant {
+	parsedErrorEntry := loglevelparser.ParseLogLevelAndFilter(errorEntry)
+	if parsedErrorEntry == nil {
 		t.Fatal("Did not mark relevant ERROR line as relevant")
 	}
 
-	parsedWarningEntry, isRelevant := service.ParseLogLevelAndFilter(warningEntry)
-	if !isRelevant {
+	parsedWarningEntry := loglevelparser.ParseLogLevelAndFilter(warningEntry)
+	if parsedWarningEntry == nil {
 		t.Fatal("Did not mark relevant WARN line as relevant")
 	}
 
-	parsedInfoConsumptionEntry, isRelevant := service.ParseLogLevelAndFilter(infoConsEntry)
-	if !isRelevant {
+	parsedInfoConsumptionEntry := loglevelparser.ParseLogLevelAndFilter(infoConsEntry)
+	if parsedInfoConsumptionEntry == nil {
 		t.Fatal("Did not mark relevant INFO line as relevant")
 	}
 
