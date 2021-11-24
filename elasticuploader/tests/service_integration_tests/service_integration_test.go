@@ -46,7 +46,7 @@ func TestServiceIntegrationWithElasticsearch(t *testing.T) {
 
 	// We need to wait, because the upload time period is 5 seconds,
 	// so to be sure everything is finished uploading, we wait 6 seconds.
-	ticker := time.NewTicker(6 * time.Second)
+	ticker := time.NewTicker(8 * time.Second)
 	<-ticker.C
 
 	log.Println(" [TEST] Uploading finished, checking results...")
@@ -87,7 +87,6 @@ func TestServiceIntegrationWithRabbitMQ(t *testing.T) {
 	uploaderService := service.NewUploaderService(rabbitMQConsumer, mockESClient)
 	uploaderService.HandleMessages()
 
-	// todo: test producer
 	testProducer := testutils.NewTestRabbitMqProducer(rabbitMQURL, exchangeName, routingKey)
 	testProducer.Connect()
 	testProducer.PublishRecreateIndexMessage(testIndexName)
