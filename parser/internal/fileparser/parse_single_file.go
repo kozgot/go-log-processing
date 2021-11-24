@@ -8,8 +8,8 @@ import (
 
 	"github.com/kozgot/go-log-processing/parser/internal/contentparser"
 	"github.com/kozgot/go-log-processing/parser/internal/loglevelparser"
+	"github.com/kozgot/go-log-processing/parser/internal/rabbitmq"
 	"github.com/kozgot/go-log-processing/parser/internal/timestampparser"
-	"github.com/kozgot/go-log-processing/parser/pkg/rabbitmq"
 )
 
 func ParseSingleFile(readCloser io.ReadCloser, logFileName string,

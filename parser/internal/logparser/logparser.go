@@ -4,9 +4,9 @@ import (
 	"log"
 	"sync"
 
+	"github.com/kozgot/go-log-processing/parser/internal/filedownloader"
 	"github.com/kozgot/go-log-processing/parser/internal/fileparser"
-	"github.com/kozgot/go-log-processing/parser/pkg/filedownloader"
-	"github.com/kozgot/go-log-processing/parser/pkg/rabbitmq"
+	"github.com/kozgot/go-log-processing/parser/internal/rabbitmq"
 )
 
 // LogParser encapsulates parser data and logic.

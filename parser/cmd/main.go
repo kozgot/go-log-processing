@@ -5,9 +5,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/kozgot/go-log-processing/parser/pkg/filedownloader"
-	"github.com/kozgot/go-log-processing/parser/pkg/logparser"
-	"github.com/kozgot/go-log-processing/parser/pkg/rabbitmq"
+	"github.com/kozgot/go-log-processing/parser/internal/filedownloader"
+	"github.com/kozgot/go-log-processing/parser/internal/logparser"
+	"github.com/kozgot/go-log-processing/parser/internal/rabbitmq"
 )
 
 func main() {
