@@ -7,8 +7,8 @@ import (
 
 	parsermodels "github.com/kozgot/go-log-processing/parser/pkg/models"
 	"github.com/kozgot/go-log-processing/postprocessor/internal/rabbitmq"
+	"github.com/kozgot/go-log-processing/postprocessor/internal/utils"
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
-	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
 )
 
 type EntryProcessor struct {

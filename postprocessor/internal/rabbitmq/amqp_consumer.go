@@ -1,11 +1,14 @@
-package testutils
+package rabbitmq
 
 import (
-	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
+	"log"
+
+	"github.com/kozgot/go-log-processing/postprocessor/internal/utils"
 	"github.com/streadway/amqp"
 )
 
-type TestRabbitConsumer struct {
+// AmqpConsumer encapsulates data related to consuming messages from rabbitmq.
+type AmqpConsumer struct {
 	hostURL      string
 	channel      *amqp.Channel
 	queue        amqp.Queue
@@ -15,13 +18,9 @@ type TestRabbitConsumer struct {
 	routingKey   string
 }
 
-// Creates a new TestRabbitConsumer.
-func NewTestRabbitConsumer(
-	hostURL string,
-	routingKey string,
-	exchangeName string,
-	queueName string) *TestRabbitConsumer {
-	rabbitMQConsumer := TestRabbitConsumer{
+// Creates a new AmqpConsumer.
+func NewAmqpConsumer(hostURL string, routingKey string, exchangeName string, queueName string) *AmqpConsumer {
+	rabbitMQConsumer := AmqpConsumer{
 		hostURL:      hostURL,
 		routingKey:   routingKey,
 		exchangeName: exchangeName,
@@ -31,23 +30,25 @@ func NewTestRabbitConsumer(
 }
 
 // Connect initializes a connection.
-func (c *TestRabbitConsumer) Connect() {
+func (c *AmqpConsumer) Connect() {
 	var err error
 	c.connection, err = amqp.Dial(c.hostURL)
-	utils.FailOnError(err, "  [TEST CONSUMER] Failed to connect to RabbitMQ server.")
+	utils.FailOnError(err, " [AMQP CONSUMER] Failed to connect to RabbitMQ server.")
 
 	c.channel, err = c.connection.Channel()
-	utils.FailOnError(err, "  [TEST CONSUMER] Failed to open a channel.")
+	utils.FailOnError(err, " [AMQP CONSUMER] Failed to open a channel.")
 }
 
 // CloseConnection closes the connection.
-func (c *TestRabbitConsumer) CloseConnectionAndChannel() {
+func (c *AmqpConsumer) CloseConnectionAndChannel() {
 	c.connection.Close()
+	log.Println(" [AMQP CONSUMER] Closed consumer connection")
 	c.channel.Close()
+	log.Println(" [AMQP CONSUMER] Closed consumer channel")
 }
 
 // ConsumeMessages consumes messages from rabbitmq, returns the deliveries.
-func (c *TestRabbitConsumer) ConsumeMessages() <-chan amqp.Delivery {
+func (c *AmqpConsumer) ConsumeMessages() <-chan amqp.Delivery {
 	var err error
 	var msgs <-chan amqp.Delivery
 	err = c.channel.ExchangeDeclare(
@@ -59,7 +60,7 @@ func (c *TestRabbitConsumer) ConsumeMessages() <-chan amqp.Delivery {
 		false,          // no-wait
 		nil,            // arguments
 	)
-	utils.FailOnError(err, "  [TEST CONSUMER] Failed to declare an exchange")
+	utils.FailOnError(err, " [AMQP CONSUMER] Failed to declare an exchange")
 
 	c.queue, err = c.channel.QueueDeclare(
 		c.queueName, // name
@@ -69,7 +70,7 @@ func (c *TestRabbitConsumer) ConsumeMessages() <-chan amqp.Delivery {
 		false,       // no-wait
 		nil,         // arguments
 	)
-	utils.FailOnError(err, "  [TEST CONSUMER] Failed to declare a queue")
+	utils.FailOnError(err, " [AMQP CONSUMER] Failed to declare a queue")
 
 	err = c.channel.QueueBind(
 		c.queue.Name,   // queue name
@@ -78,7 +79,7 @@ func (c *TestRabbitConsumer) ConsumeMessages() <-chan amqp.Delivery {
 		false,
 		nil,
 	)
-	utils.FailOnError(err, "  [TEST CONSUMER] Failed to bind a queue")
+	utils.FailOnError(err, " [AMQP CONSUMER] Failed to bind a queue")
 
 	msgs, err = c.channel.Consume(
 		c.queue.Name, // queue
@@ -89,7 +90,7 @@ func (c *TestRabbitConsumer) ConsumeMessages() <-chan amqp.Delivery {
 		false,        // no-wait
 		nil,          // args
 	)
-	utils.FailOnError(err, "  [TEST CONSUMER] Failed to register a test consumer")
+	utils.FailOnError(err, " [AMQP CONSUMER] Failed to register a consumer")
 
 	return msgs
 }

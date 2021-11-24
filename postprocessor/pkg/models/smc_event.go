@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
+	"github.com/kozgot/go-log-processing/postprocessor/internal/utils"
 )
 
 // SmcEvent is an event happening to a specific smc at a specific time.

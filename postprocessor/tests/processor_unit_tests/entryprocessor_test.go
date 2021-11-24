@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/kozgot/go-log-processing/postprocessor/internal/processing"
+	"github.com/kozgot/go-log-processing/postprocessor/internal/utils"
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
-	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
 	"github.com/kozgot/go-log-processing/postprocessor/tests/mocks"
 	"github.com/kozgot/go-log-processing/postprocessor/tests/testmodels"
 )

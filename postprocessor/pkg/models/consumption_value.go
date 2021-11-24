@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
+	"github.com/kozgot/go-log-processing/postprocessor/internal/utils"
 )
 
 // ConsumtionValue contains cunsumption data in a given time range.

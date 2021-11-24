@@ -3,7 +3,7 @@ package models
 import (
 	"encoding/json"
 
-	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
+	"github.com/kozgot/go-log-processing/postprocessor/internal/utils"
 )
 
 // DataUnit contains the sent data unit.

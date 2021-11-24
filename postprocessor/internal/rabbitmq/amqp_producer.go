@@ -3,8 +3,8 @@ package rabbitmq
 import (
 	"log"
 
+	"github.com/kozgot/go-log-processing/postprocessor/internal/utils"
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
-	"github.com/kozgot/go-log-processing/postprocessor/pkg/utils"
 	"github.com/streadway/amqp"
 )
 
