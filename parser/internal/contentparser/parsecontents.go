@@ -10,13 +10,17 @@ func ParseEntryContents(line models.EntryWithLevelAndTimestamp) *models.ParsedLo
 		Level:     line.Level,
 		Timestamp: line.Timestamp}
 
+	infoParser := NewInfoParser(line)
+	warningParser := NewWarningParser(line)
+	errorParser := NewErrorParser(line)
+
 	switch line.Level {
 	case "ERROR":
-		errorParams := ParseError(line)
+		errorParams := errorParser.ParseError()
 		parsedLine.ErrorParams = errorParams
 
 	case "WARN":
-		warning := parseWarn(line)
+		warning := warningParser.ParseWarn()
 		if warning == nil {
 			return nil
 		}
@@ -25,11 +29,11 @@ func ParseEntryContents(line models.EntryWithLevelAndTimestamp) *models.ParsedLo
 	// Log entries with 'WARNING' log level come from a different log file,
 	// and they have a completely different format, so they are handled separately.
 	case "WARNING":
-		warning := parseWarning(line)
+		warning := warningParser.ParseWarning()
 		parsedLine.WarningParams = warning
 
 	case "INFO":
-		info := ParseInfo(line)
+		info := infoParser.ParseInfo()
 		parsedLine.InfoParams = info
 	}
 

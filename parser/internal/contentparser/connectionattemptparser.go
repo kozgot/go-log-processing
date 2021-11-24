@@ -8,11 +8,15 @@ import (
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
 
-func parseConnectionAttempt(line string) *models.ConnectionAttemptParams {
+type ConnectionAttemptParser struct {
+	line models.EntryWithLevelAndTimestamp
+}
+
+func (c *ConnectionAttemptParser) Parse() *models.ConnectionAttemptParams {
 	// parse entries like this:
 	// Attempt to connect to SMC_dc18-smc27 (@ 0021) at URL fe80::4021:ff:fe00:21:61616 ..
 
-	if !strings.Contains(line, formats.ConnectionAttemptPrefix) {
+	if !strings.Contains(c.line.Rest, formats.ConnectionAttemptPrefix) {
 		// This is not a connection attempt entry.
 		return nil
 	}
@@ -20,26 +24,25 @@ func parseConnectionAttempt(line string) *models.ConnectionAttemptParams {
 	attempt := models.ConnectionAttemptParams{}
 
 	// parse the SMC UID
-	attempt.SmcUID = parseUIDFromConnectionAttempt(line)
+	attempt.SmcUID = c.parseUID()
 
 	// Parse the (@ 0021) like part
 	atFieldRegex, _ := regexp.Compile(formats.AtRegex)
-	atFieldString := atFieldRegex.FindString(line)
+	atFieldString := atFieldRegex.FindString(c.line.Rest)
 
 	if atFieldString != "" {
 		attempt.At = atFieldString
 	}
 
-	attempt.URL = parseURLFromConnectionAttempt(line)
-
+	attempt.URL = c.parseURL()
 	return &attempt
 }
 
-func parseURLFromConnectionAttempt(line string) string {
+func (c *ConnectionAttemptParser) parseURL() string {
 	// parse the fe80::4021:ff:fe00:21:61616 part from these kinds of entries:
 	// Attempt to connect to SMC_dc18-smc27 (@ 0021) at URL fe80::4021:ff:fe00:21:61616 ..
 	minLengthIfContainsSeparator := 2
-	parts := strings.Split(line, formats.URLPrefix)
+	parts := strings.Split(c.line.Rest, formats.URLPrefix)
 	if len(parts) < minLengthIfContainsSeparator {
 		return ""
 	}
@@ -52,11 +55,11 @@ func parseURLFromConnectionAttempt(line string) string {
 	return parts[0]
 }
 
-func parseUIDFromConnectionAttempt(line string) string {
+func (c *ConnectionAttemptParser) parseUID() string {
 	// parse the dc18-smc27 part from these kinds of entries:
 	// Attempt to connect to SMC_dc18-smc27 (@ 0021) at URL fe80::4021:ff:fe00:21:61616 ..
 	minLengthIfContainsSeparator := 2
-	parts := strings.Split(line, "(@")
+	parts := strings.Split(c.line.Rest, "(@")
 	if len(parts) < minLengthIfContainsSeparator {
 		return ""
 	}

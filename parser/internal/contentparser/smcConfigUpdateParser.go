@@ -8,20 +8,28 @@ import (
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
 
-func parseSmcConfigUpdate(line string) *models.SmcConfigUpdateParams {
-	if strings.Contains(line, formats.SmcConfigUpdatePrefix) {
-		smcAddress := parseSmcAddressPayload(line)
-		smcUID := common.ParseFieldInBracketsAsString(line, formats.SmcUIDRegex)
+// SmcConfigUpdateParser parses an SMC config update log entry.
+type SmcConfigUpdateParser struct {
+	line models.EntryWithLevelAndTimestamp
+}
 
-		if smcAddress != nil {
-			smcConfigUpdate := models.SmcConfigUpdateParams{
-				PhysicalAddress: smcAddress.PhysicalAddress,
-				LogicalAddress:  smcAddress.LogicalAddress,
-				ShortAddress:    smcAddress.ShortAddress,
-				SmcUID:          smcUID,
-				LastJoiningDate: smcAddress.LastJoiningDate}
-			return &smcConfigUpdate
-		}
+// Parse parses an SMC config update log entry.
+func (s *SmcConfigUpdateParser) Parse() *models.SmcConfigUpdateParams {
+	if strings.Contains(s.line.Rest, formats.SmcConfigUpdatePrefix) {
+		smcConfigUpdate := models.SmcConfigUpdateParams{}
+
+		smcConfigUpdate.SmcUID = common.ParseFieldInBracketsAsString(s.line.Rest, formats.SmcUIDRegex)
+		smcConfigUpdate.PhysicalAddress = common.ParseFieldInBracketsAsString(s.line.Rest, formats.PhysicalAddressRegex)
+		smcConfigUpdate.LogicalAddress = common.ParseFieldInBracketsAsString(s.line.Rest, formats.LogicalAddressRegex)
+
+		smcConfigUpdate.ShortAddress = common.TryParseIntFromString(
+			common.ParseFieldInBracketsAsString(s.line.Rest, formats.ShortAddressRegex))
+
+		smcConfigUpdate.LastJoiningDate = common.ParseDateTimeField(s.line.Rest, formats.LastJoiningDateRegex)
+		smcUID := common.ParseFieldInBracketsAsString(s.line.Rest, formats.SmcUIDRegex)
+		smcConfigUpdate.SmcUID = smcUID
+
+		return &smcConfigUpdate
 	}
 
 	return nil

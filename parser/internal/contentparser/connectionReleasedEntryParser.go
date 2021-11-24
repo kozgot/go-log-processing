@@ -7,11 +7,15 @@ import (
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
 )
 
-func parseConnectionReleasedEntry(line string) *models.ConnectionReleasedParams {
-	if strings.Contains(line, formats.ConnectionReleasedPrefix) {
+type ConnectionReleasedEntryParser struct {
+	line models.EntryWithLevelAndTimestamp
+}
+
+func (c *ConnectionReleasedEntryParser) Parse() *models.ConnectionReleasedParams {
+	if strings.Contains(c.line.Rest, formats.ConnectionReleasedPrefix) {
 		// the entry looks like this:
 		// Successfully Released DLMS connection fe80::4021:ff:fe00:23:61616 (smart_meter_cabinet_initializer.cc::115)
-		url := parseURLFromConnectionEntries(strings.Replace(line, formats.ConnectionReleasedPrefix, "", 1))
+		url := parseURLFromConnectionEntries(strings.Replace(c.line.Rest, formats.ConnectionReleasedPrefix, "", 1))
 		connectionReleasedParams := models.ConnectionReleasedParams{URL: url}
 
 		return &connectionReleasedParams
