@@ -8,26 +8,36 @@ import (
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/rabbit"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/utils"
 	"github.com/kozgot/go-log-processing/elasticuploader/pkg/models"
+	postprocmodels "github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 )
 
 // UploaderService encapsultes the data and logic of the uploading service.
 type UploaderService struct {
-	rabbitMQConsumer rabbit.MessageConsumer
-	esClient         elastic.EsClient
+	rabbitMQConsumer     rabbit.MessageConsumer
+	esClient             elastic.EsClient
+	eventIndexName       string
+	consumptionIndexName string
 }
 
 // NewUploaderService creates a new uploader service instance.
-func NewUploaderService(messageConsumer rabbit.MessageConsumer, esClient elastic.EsClient) *UploaderService {
+func NewUploaderService(
+	messageConsumer rabbit.MessageConsumer,
+	esClient elastic.EsClient,
+	eventIndexName string,
+	consumptionIndexName string,
+) *UploaderService {
 	service := UploaderService{
-		rabbitMQConsumer: messageConsumer,
-		esClient:         esClient,
+		rabbitMQConsumer:     messageConsumer,
+		esClient:             esClient,
+		eventIndexName:       eventIndexName,
+		consumptionIndexName: consumptionIndexName,
 	}
 	return &service
 }
 
 // HandleMessages consumes messages from rabbitMQ and uploads them to ES.
 func (service *UploaderService) HandleMessages() {
-	uploadBuffer := NewUploadBuffer(service.esClient, 1000)
+	uploadBuffer := NewUploadBuffer(service.esClient, 1000, service.eventIndexName, service.consumptionIndexName)
 
 	msgs, err := service.rabbitMQConsumer.Consume()
 	utils.FailOnError(err, " [UPLOADER SERVICE] Failed to register a consumer")
@@ -39,15 +49,12 @@ func (service *UploaderService) HandleMessages() {
 			switch msgPrefix {
 			case "DONE":
 				log.Println(" [UPLOADER SERVICE] Received DONE from Postprocessor")
-			case "RECREATEINDEX":
-				indexName := msgParts[1]
-				service.esClient.RecreateEsIndex(indexName)
 			default:
-				data := models.ReceivedDataUnit{}
-				data.FromJSON(delivery.Body)
+				data := postprocmodels.DataUnit{}
+				data.Deserialize(delivery.Body)
 				uploadBuffer.AppendAndUploadIfNeeded(
 					models.DataUnit{Content: data.Data},
-					data.IndexName,
+					data.DataType,
 				)
 			}
 

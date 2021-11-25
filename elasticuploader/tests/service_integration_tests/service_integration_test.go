@@ -35,7 +35,7 @@ func TestServiceIntegrationWithElasticsearch(t *testing.T) {
 	esClient := elastic.NewEsClientWrapper(testESURL)
 
 	// Start handling messages.
-	uploaderService := uploader.NewUploaderService(mockConsumer, esClient)
+	uploaderService := uploader.NewUploaderService(mockConsumer, esClient, "todo", "todo")
 	uploaderService.HandleMessages()
 
 	log.Println(" [TEST] Handling messages...")
@@ -84,7 +84,7 @@ func TestServiceIntegrationWithRabbitMQ(t *testing.T) {
 		make(map[string][]models.DataUnit),
 		len(testInputData.Consumptions)+len(testInputData.Events))
 
-	uploaderService := uploader.NewUploaderService(rabbitMQConsumer, mockESClient)
+	uploaderService := uploader.NewUploaderService(rabbitMQConsumer, mockESClient, "todo", "todo")
 	uploaderService.HandleMessages()
 
 	testProducer := testutils.NewTestRabbitMqProducer(rabbitMQURL, exchangeName, routingKey)

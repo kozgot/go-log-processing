@@ -15,7 +15,7 @@ func (m *EsClientMock) BulkUpload(dataUnits []models.DataUnit, indexName string)
 }
 
 // RecreateEsIndex mocks the RecreateEsIndex function of the EsClient interface.
-func (m *EsClientMock) RecreateEsIndex(index string) {
+func (m *EsClientMock) CreateEsIndex(index string) {
 	m.Indexes[index] = []models.DataUnit{}
 }
 

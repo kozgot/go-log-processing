@@ -35,7 +35,12 @@ func TestUploderService(t *testing.T) {
 		make(map[string][]models.DataUnit),
 		expectedDocCount)
 
-	uploaderService := uploader.NewUploaderService(mockConsumer, mockESClient)
+	uploaderService := uploader.NewUploaderService(
+		mockConsumer,
+		mockESClient,
+		"todo",
+		"todo",
+	)
 	uploaderService.HandleMessages()
 
 	log.Println(" [TEST] Handling messages...")

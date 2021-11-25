@@ -95,7 +95,7 @@ func (esuploader *EsClientWrapper) BulkUpload(dataUnits []models.DataUnit, index
 }
 
 // RecreateEsIndex deletes an ES index if it exists, and then recreates it.
-func (esuploader *EsClientWrapper) RecreateEsIndex(index string) {
+func (esuploader *EsClientWrapper) CreateEsIndex(index string) {
 	var (
 		res *esapi.Response
 		err error

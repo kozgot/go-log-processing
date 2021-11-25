@@ -7,5 +7,5 @@ import (
 // EsClient interface exposes elasticsearch functionality used by the uploader service.
 type EsClient interface {
 	BulkUpload(dataUnits []models.DataUnit, indexName string)
-	RecreateEsIndex(index string)
+	CreateEsIndex(index string)
 }
