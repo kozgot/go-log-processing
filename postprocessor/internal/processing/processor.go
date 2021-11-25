@@ -21,16 +21,12 @@ type EntryProcessor struct {
 
 	messageProducer rabbitmq.MessageProducer
 	messageConsumer rabbitmq.MessageConsumer
-
-	eventIndexName       string
-	consumptionIndexName string
 }
 
 func NewEntryProcessor(
 	uploader rabbitmq.MessageProducer,
 	messageConsumer rabbitmq.MessageConsumer,
-	eventIndexName string,
-	consumptionIndexName string) *EntryProcessor {
+) *EntryProcessor {
 	eventsBySmcUID := make(map[string][]models.SmcEvent)
 	smcDataBySmcUID := make(map[string]models.SmcData)
 	smcUIDsByURL := make(map[string]string)
@@ -39,16 +35,14 @@ func NewEntryProcessor(
 	indexValues := []models.IndexValue{}
 
 	result := EntryProcessor{
-		eventsBySmcUID:       eventsBySmcUID,
-		smcDataBySmcUID:      smcDataBySmcUID,
-		smcUIDsByURL:         smcUIDsByURL,
-		podUIDToSmcUID:       podUIDToSmcUID,
-		consumptionValues:    consumptionValues,
-		indexValues:          indexValues,
-		messageProducer:      uploader,
-		messageConsumer:      messageConsumer,
-		eventIndexName:       eventIndexName,
-		consumptionIndexName: consumptionIndexName,
+		eventsBySmcUID:    eventsBySmcUID,
+		smcDataBySmcUID:   smcDataBySmcUID,
+		smcUIDsByURL:      smcUIDsByURL,
+		podUIDToSmcUID:    podUIDToSmcUID,
+		consumptionValues: consumptionValues,
+		indexValues:       indexValues,
+		messageProducer:   uploader,
+		messageConsumer:   messageConsumer,
 	}
 
 	return &result
@@ -69,7 +63,7 @@ func (processor *EntryProcessor) HandleEntries() {
 					processor.consumptionValues,
 					processor.indexValues,
 					processor.messageProducer,
-					processor.consumptionIndexName)
+				)
 				consumptionProcessor.ProcessConsumptionAndIndexValues()
 
 				log.Println(" [PROCESSOR] Done processing consumption data")
@@ -82,10 +76,7 @@ func (processor *EntryProcessor) HandleEntries() {
 				utils.FailOnError(err, " [PROCESSOR] Could not acknowledge END message")
 				continue
 			} else if strings.Contains(string(d.Body), "START") {
-				// Recreate indices in ES.
-				processor.messageProducer.PublishRecreateIndexMessage(processor.eventIndexName)
-				processor.messageProducer.PublishRecreateIndexMessage(processor.consumptionIndexName)
-
+				// todo: check if this is still needed
 				// Acknowledge the message after it has been processed.
 				err := d.Ack(false)
 				utils.FailOnError(err, " [PROCESSOR] Could not acknowledge START message")
@@ -187,7 +178,7 @@ func (processor *EntryProcessor) registerEvent(event *models.SmcEvent, data *mod
 	processor.eventsBySmcUID[smcUID] = append(processor.eventsBySmcUID[smcUID], *event)
 
 	// send to ES
-	processor.messageProducer.PublishEvent(*event, processor.eventIndexName)
+	processor.messageProducer.PublishEvent(*event)
 }
 
 func (processor *EntryProcessor) updateSmcData(data *models.SmcData) {

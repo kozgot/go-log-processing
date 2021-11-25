@@ -47,18 +47,6 @@ func main() {
 		log.Fatal("The PROCESS_ENTRY_ROUTING_KEY environment variable is not set")
 	}
 
-	consumptionIndexName := os.Getenv("CONSUMPTION_INDEX_NAME")
-	fmt.Println("CONSUMPTION_INDEX_NAME:", consumptionIndexName)
-	if len(consumptionIndexName) == 0 {
-		log.Fatal("The CONSUMPTION_INDEX_NAME environment variable is not set")
-	}
-
-	eventsIndexName := os.Getenv("EVENTS_INDEX_NAME")
-	fmt.Println("EVENTS_INDEX_NAME:", eventsIndexName)
-	if len(eventsIndexName) == 0 {
-		log.Fatal("The EVENTS_INDEX_NAME environment variable is not set")
-	}
-
 	// Init message consumer.
 	rabbitMQConsumer := rabbitmq.NewAmqpConsumer(
 		rabbitMqURL,
@@ -82,7 +70,7 @@ func main() {
 
 	forever := make(chan bool)
 
-	processor := processing.NewEntryProcessor(rabbitMqProducer, rabbitMQConsumer, eventsIndexName, consumptionIndexName)
+	processor := processing.NewEntryProcessor(rabbitMqProducer, rabbitMQConsumer)
 	processor.HandleEntries()
 
 	log.Printf(" [POSTPROCESSOR] Waiting for messages. To exit press CTRL+C...")

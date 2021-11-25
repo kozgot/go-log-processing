@@ -19,9 +19,6 @@ type postProcessorTest struct {
 }
 
 func TestProcessEntries(t *testing.T) {
-	smcEventIndexName := "testSmcEvents"
-	consumtionIndexName := "testConsumptions"
-
 	postProcessorTests := []postProcessorTest{
 		{
 			inputDataFile:    "./resources/parsed_test_dc_main.json",
@@ -41,7 +38,6 @@ func TestProcessEntries(t *testing.T) {
 			Data: testmodels.TestProcessedData{
 				Events:       []models.SmcEvent{},
 				Consumptions: []models.ConsumtionValue{},
-				IndexNames:   []string{},
 			},
 			Done: done,
 		}
@@ -58,8 +54,6 @@ func TestProcessEntries(t *testing.T) {
 		processor := processing.NewEntryProcessor(
 			&mockMessageProducer,
 			&mockMessageConsumer,
-			smcEventIndexName,
-			consumtionIndexName,
 		)
 		processor.HandleEntries()
 

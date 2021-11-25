@@ -10,16 +10,16 @@ type MockMessageProducer struct {
 	Done chan string
 }
 
-// PublishEvent is the implementation of the PublishEvent(event models.SmcEvent, eventIndexName string)
+// PublishEvent is the implementation of the PublishEvent(event models.SmcEvent)
 // function of the MessageProducer interface.
-func (m *MockMessageProducer) PublishEvent(event models.SmcEvent, eventIndexName string) {
+func (m *MockMessageProducer) PublishEvent(event models.SmcEvent) {
 	m.Data.Events = append(m.Data.Events, event)
 }
 
 // PublishConsumption is the implementation
-// of the PublishConsumption(cons models.ConsumtionValue, consumptionIndexName string)
+// of the PublishConsumption(cons models.ConsumtionValue)
 // function of the MessageProducer interface.
-func (m *MockMessageProducer) PublishConsumption(cons models.ConsumtionValue, consumptionIndexName string) {
+func (m *MockMessageProducer) PublishConsumption(cons models.ConsumtionValue) {
 	m.Data.Consumptions = append(m.Data.Consumptions, cons)
 }
 
@@ -38,10 +38,4 @@ func (m *MockMessageProducer) CloseChannelAndConnection() {
 // PublishDoneMessage is the implementation of the PublishDoneMessage() function of the MessageProducer interface.
 func (m *MockMessageProducer) PublishDoneMessage() {
 	m.Done <- "done"
-}
-
-// PublishRecreateIndexMessage is the implementation of
-// the PublishRecreateIndexMessage(indexName string) function of the MessageProducer interface.
-func (m *MockMessageProducer) PublishRecreateIndexMessage(indexName string) {
-	m.Data.IndexNames = append(m.Data.IndexNames, indexName)
 }

@@ -31,14 +31,14 @@ func NewAmqpProducer(
 }
 
 // PublishEvent sends an SMC event to the uploader service.
-func (producer *AmqpProducer) PublishEvent(event models.SmcEvent, eventIndexName string) {
-	dataToSend := models.DataUnit{IndexName: eventIndexName, Data: event.Serialize()}
+func (producer *AmqpProducer) PublishEvent(event models.SmcEvent) {
+	dataToSend := models.DataUnit{DataType: models.Event, Data: event.Serialize()}
 	producer.publishData(dataToSend.Serialize())
 }
 
 // PublishConsumption sends a consumption data item to the uploader service.
-func (producer *AmqpProducer) PublishConsumption(cons models.ConsumtionValue, consumptionIndexName string) {
-	dataToSend := models.DataUnit{IndexName: consumptionIndexName, Data: cons.Serialize()}
+func (producer *AmqpProducer) PublishConsumption(cons models.ConsumtionValue) {
+	dataToSend := models.DataUnit{DataType: models.Consumption, Data: cons.Serialize()}
 	producer.publishData(dataToSend.Serialize())
 }
 
@@ -72,12 +72,6 @@ func (producer *AmqpProducer) CloseChannelAndConnection() {
 	log.Println(" [AMQP PRODUCER] Closed connection")
 	producer.channel.Close()
 	log.Println(" [AMQP PRODUCER] Closed channel")
-}
-
-// PublishRecreateIndexMessage sends a string message to the message queue.
-func (producer *AmqpProducer) PublishRecreateIndexMessage(indexName string) {
-	bytes := []byte("RECREATEINDEX|" + indexName)
-	producer.publishData(bytes)
 }
 
 // PublishDoneMessage sends a string message to the message queue.

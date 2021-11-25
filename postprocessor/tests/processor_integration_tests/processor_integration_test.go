@@ -20,9 +20,6 @@ const updateResourcesEnabled = true
 // TestProcessDCMain calls processor.HandleEntries()
 // with a real rabbitM message consumer that consumes parsed log entries from a dc_main.log file.
 func TestProcessDCMain(t *testing.T) {
-	testEventIdxName := "smctest"
-	testConsumptionIdxName := "consumptiontest"
-
 	testInputFileName := "./resources/parsed_test_dc_main.json"
 	expectedDataFileName := "./resources/expected_processed_dc_main.json"
 
@@ -41,8 +38,7 @@ func TestProcessDCMain(t *testing.T) {
 	processor := processing.NewEntryProcessor(
 		rabbitMqOutputProducer,
 		rabbitMqInputConsumer,
-		testEventIdxName,
-		testConsumptionIdxName)
+	)
 	processor.HandleEntries()
 
 	// Read test input from resource file.
@@ -56,11 +52,7 @@ func TestProcessDCMain(t *testing.T) {
 	sendTestInput(testInputProducer, testparsedFile)
 
 	// Handle output created by the processor.
-	processedData := getSentProcessedData(msgs, testEventIdxName, testConsumptionIdxName)
-	if len(processedData.IndexNames) != 2 {
-		t.Fatalf("Expected to create 2 indices, actual: %d", len(processedData.IndexNames))
-	}
-
+	processedData := getSentProcessedData(msgs)
 	actualProcessedDataBytes := processedData.ToJSON()
 	updateResourcesIfEnabled(expectedDataFileName, actualProcessedDataBytes)
 
@@ -77,9 +69,6 @@ func TestProcessDCMain(t *testing.T) {
 // TestProcessPLCManager calls processor.HandleEntries()
 // with a real rabbitM message consumer that consumes parsed log entries from a plc-manager.log file.
 func TestProcessPLCManager(t *testing.T) {
-	testEventIdxName := "smctest"
-	testConsumptionIdxName := "consumptiontest"
-
 	testInputFileName := "./resources/parsed_test_plc_manager.json"
 	expectedDataFileName := "./resources/expected_processed_plc_manager.json"
 
@@ -98,8 +87,7 @@ func TestProcessPLCManager(t *testing.T) {
 	processor := processing.NewEntryProcessor(
 		rabbitMqOutputProducer,
 		rabbitMqInputConsumer,
-		testEventIdxName,
-		testConsumptionIdxName)
+	)
 	processor.HandleEntries()
 
 	// Read test input from resource file.
@@ -113,10 +101,7 @@ func TestProcessPLCManager(t *testing.T) {
 	sendTestInput(testInputProducer, testparsedFile)
 
 	// Handle output created by the processor.
-	processedData := getSentProcessedData(msgs, testEventIdxName, testConsumptionIdxName)
-	if len(processedData.IndexNames) != 2 {
-		t.Fatalf("Expected to create 2 indices, got %d", len(processedData.IndexNames))
-	}
+	processedData := getSentProcessedData(msgs)
 
 	actualProcessedDataBytes := processedData.ToJSON()
 	updateResourcesIfEnabled(expectedDataFileName, actualProcessedDataBytes)
@@ -198,10 +183,8 @@ func tearDownDependecies(
 // getSentProcessedData reads and returns the processed data sent to a rabbitMQ exchange by the postprocessor.
 func getSentProcessedData(
 	deliveries <-chan amqp.Delivery,
-	testEventIdxName string,
-	testConsumptionIdxName string) testmodels.TestProcessedData {
+) testmodels.TestProcessedData {
 	testdata := testmodels.TestProcessedData{
-		IndexNames:   []string{},
 		Events:       []models.SmcEvent{},
 		Consumptions: []models.ConsumtionValue{},
 	}
@@ -211,18 +194,17 @@ func getSentProcessedData(
 		switch msgPrefix {
 		case "DONE":
 			return testdata
-		case "RECREATEINDEX":
-			indexName := strings.Split(string(delivery.Body), "|")[1]
-			testdata.IndexNames = append(testdata.IndexNames, indexName)
 		default:
 			dataUnit := models.DataUnit{}
 			dataUnit.Deserialize(delivery.Body)
-			switch dataUnit.IndexName {
-			case testEventIdxName:
+			switch dataUnit.DataType {
+			case models.UnknownDataType:
+				break
+			case models.Event:
 				smcEvent := models.SmcEvent{}
 				smcEvent.Deserialize(dataUnit.Data)
 				testdata.Events = append(testdata.Events, smcEvent)
-			case testConsumptionIdxName:
+			case models.Consumption:
 				consumption := models.ConsumtionValue{}
 				consumption.Deserialize(dataUnit.Data)
 				testdata.Consumptions = append(testdata.Consumptions, consumption)
