@@ -57,8 +57,8 @@ func (producer *TestRabbitMqProducer) CloseChannelAndConnection() {
 }
 
 // PublishStringMessage sends a string message to the message queue.
-func (producer *TestRabbitMqProducer) PublishStringMessage(indexName string) {
-	bytes := []byte(indexName)
+func (producer *TestRabbitMqProducer) PublishStringMessage(message string) {
+	bytes := []byte(message)
 	producer.sendDataToPostprocessor(bytes)
 }
 
