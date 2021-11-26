@@ -33,7 +33,12 @@ func TestServiceIntegrationWithElasticsearch(t *testing.T) {
 	allMessagesAcknowledged := make(chan bool)
 
 	// Create a mock rabbitMQ consumer and actual ES client as dependencies.
-	mockConsumer := mocks.NewRabbitMQConsumerMock(testInputData, allMessagesAcknowledged)
+	mockConsumer := mocks.NewRabbitMQConsumerMock(
+		testInputData,
+		allMessagesAcknowledged,
+		0,
+		len(testInputData.Consumptions)+len(testInputData.Events),
+	)
 	esClient := elastic.NewEsClientWrapper(testESURL)
 
 	// Start handling messages.

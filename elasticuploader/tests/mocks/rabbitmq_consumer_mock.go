@@ -1,6 +1,9 @@
 package mocks
 
 import (
+	"log"
+	"time"
+
 	"github.com/kozgot/go-log-processing/elasticuploader/tests/testmodels"
 	postprocmodels "github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 	"github.com/streadway/amqp"
@@ -10,20 +13,28 @@ import (
 type RabbitMQConsumerMock struct {
 	TestData     testmodels.TestProcessedData
 	acknowledger *MockAcknowledger
+	// this is needed to test the timed index-recreation functionality in the uploader service
+	// ignored, if set to zero
+	deliveryDelaySeconds int
 }
 
 // NewRabbitMQConsumerMock creates a new mock consumer
 // for providing processed data messages for the ulpoader service.
 // The testData will be used to create the processed data messages from.
 // The done channel is used to signal after all messages have been acknowledged.
+// The deliveryDelaySeconds is used to add an artificial delay after the first message,
+// to test the timed index recreation behaviour, it is ignored if set to zero.
 func NewRabbitMQConsumerMock(
 	testData testmodels.TestProcessedData,
 	done chan bool,
+	deliveryDelaySeconds int,
+	expectedDocCount int,
 ) *RabbitMQConsumerMock {
-	acknowledger := NewMockAcknowleder(len(testData.Consumptions)+len(testData.Events), done)
+	acknowledger := NewMockAcknowleder(expectedDocCount, done)
 	mock := RabbitMQConsumerMock{
-		TestData:     testData,
-		acknowledger: acknowledger,
+		TestData:             testData,
+		acknowledger:         acknowledger,
+		deliveryDelaySeconds: deliveryDelaySeconds,
 	}
 
 	return &mock
@@ -43,6 +54,19 @@ func (m *RabbitMQConsumerMock) Consume() (<-chan amqp.Delivery, error) {
 		message := postprocmodels.DataUnit{DataType: postprocmodels.Event, Data: event.Serialize()}
 		mockDelivery := NewMockDelivery(message.Serialize(), uint64(i), m.acknowledger)
 		deliveries <- mockDelivery
+	}
+
+	if m.deliveryDelaySeconds > 0 {
+		go func() {
+			log.Printf("Waiting %d seconds ...", m.deliveryDelaySeconds)
+			time.Sleep(time.Duration(m.deliveryDelaySeconds) * time.Second)
+			log.Printf("%d seconds passed, continue consuming messages...", m.deliveryDelaySeconds)
+			for i, event := range m.TestData.Events {
+				message := postprocmodels.DataUnit{DataType: postprocmodels.Event, Data: event.Serialize()}
+				mockDelivery := NewMockDelivery(message.Serialize(), uint64(i), m.acknowledger)
+				deliveries <- mockDelivery
+			}
+		}()
 	}
 
 	return deliveries, nil

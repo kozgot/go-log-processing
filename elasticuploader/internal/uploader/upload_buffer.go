@@ -134,7 +134,7 @@ func createIndexPostFix() string {
 
 	return fmt.Sprint(currentDateTime.Year()) +
 		fmt.Sprint(int(currentDateTime.Month())) +
-		fmt.Sprint(currentDateTime.Day()) +
+		fmt.Sprint(currentDateTime.Day()) + "_" +
 		fmt.Sprint(currentDateTime.Hour()) +
 		fmt.Sprint(currentDateTime.Minute()) +
 		fmt.Sprint(currentDateTime.Second())
@@ -162,7 +162,7 @@ func (d *UploadBuffer) uploadAndClearBuffer() {
 	// locking is handled from the outside
 	for indexName := range d.value {
 		if len(d.value[indexName]) > 0 {
-			log.Println(" [UPLOADER SERVICE] Uploading leftovers into index " + indexName)
+			log.Println(" [UPLOADER SERVICE] Uploading leftovers into index " + d.postfixIndexName(indexName))
 			d.esClient.BulkUpload(d.value[indexName], d.postfixIndexName(indexName))
 
 			// Clear the buffer after uploading the contents.

@@ -14,9 +14,9 @@ import (
 	"github.com/kozgot/go-log-processing/elasticuploader/tests/testmodels"
 )
 
-// TestUploderService tests the uploader service
-// with a large index recreation time period.
-func TestUploderService(t *testing.T) {
+// TestUploderServiceTimed tests the uploader service
+// with a shorter index recreation time period.
+func TestUploderServiceTimed(t *testing.T) {
 	inputFileName := "./resources/input_data.json"
 
 	// Read test input from resource file.
@@ -25,13 +25,14 @@ func TestUploderService(t *testing.T) {
 	testInputData := testmodels.TestProcessedData{}
 	testInputData.FromJSON(testInput)
 
-	expectedDocCount := len(testInputData.Events) + len(testInputData.Consumptions)
+	// We send the events a second time, after the delay.
+	expectedDocCount := len(testInputData.Events)*2 + len(testInputData.Consumptions)
 
 	// A channel to indicate that all mocked deliveries are acknowledged (handled).
 	allMessagesAcknowledged := make(chan bool)
 
-	// Create a mock rabbitMQ consumer.
-	mockConsumer := mocks.NewRabbitMQConsumerMock(testInputData, allMessagesAcknowledged, 0, expectedDocCount)
+	// Create a mock rabbitMQ consumer with an artificial delay of 10 seconds after the first message.
+	mockConsumer := mocks.NewRabbitMQConsumerMock(testInputData, allMessagesAcknowledged, 10, expectedDocCount)
 
 	// Create a mock ES client.
 	mockESClient := mocks.NewESClientMock(
@@ -43,7 +44,7 @@ func TestUploderService(t *testing.T) {
 		mockESClient,
 		"test_events",       // event index name
 		"test_consumptions", // consumption index name
-		"@midnight",         // index recreation time, in a non-test environment it would be every midnight
+		"@every 10s",        // index recreation time, in a non-test environment it would be every midnight
 	)
 	uploaderService.HandleMessages()
 
@@ -60,8 +61,11 @@ func TestUploderService(t *testing.T) {
 
 	log.Println(" [TEST] Uploading finished, checking results...")
 
-	if len(mockESClient.Indexes) != 2 {
-		t.Fatalf("Expected to create %d indexes, created %d", 2, len(mockESClient.Indexes))
+	if len(mockESClient.Indexes) != 4 {
+		t.Fatalf("Expected to create %d indexes, created %d",
+			4,
+			len(mockESClient.Indexes),
+		)
 	}
 
 	for key, data := range mockESClient.Indexes {
