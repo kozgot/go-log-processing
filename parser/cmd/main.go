@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/kozgot/go-log-processing/parser/internal/filedownloader"
@@ -11,6 +12,12 @@ import (
 )
 
 func main() {
+	http.HandleFunc("/process/", handler)
+	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Printf("  [PARSER] Application started, listening on port 8080")
+}
+
+func handler(w http.ResponseWriter, r *http.Request) {
 	rabbitMqURL := os.Getenv("RABBIT_URL")
 	log.Println("RabbitMQ URL: ", rabbitMqURL)
 
@@ -39,6 +46,10 @@ func main() {
 		log.Fatal("The PROCESS_ENTRY_ROUTING_KEY environment variable is not set")
 	}
 
+	fmt.Fprintf(w, "<div>Storage account: %s, container: %s</div>",
+		azureStorageAccountName,
+		azureStorageContainer)
+
 	// Initialize rabbitMQ producer.
 	rabbitMqProducer := rabbitmq.NewAmqpProducer(processEntryRoutingKey, logEntriesExchangeName, rabbitMqURL)
 
@@ -56,8 +67,6 @@ func main() {
 	logParser := logparser.NewLogParser(azureFileDownloader, rabbitMqProducer)
 	logParser.ParseLogfiles()
 
-	log.Printf("  [PARSER] Press CTRL+C to exit...")
-
-	forever := make(chan bool)
-	<-forever
+	fmt.Fprint(w, "<div>Finished parsing log files, allow a few seconds for the processing to finish...</div>")
+	fmt.Fprintf(w, "<a href=\"http://localhost:5601/app/home#/\">Check results in Kibana</a>")
 }
