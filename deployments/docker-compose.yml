@@ -48,7 +48,7 @@ services:
       - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
       - AZURE_STORAGE_ACCOUNT=kozgotstorage
       - AZURE_STORAGE_CONTAINER=testcontainer
-      - AZURE_STORAGE_ACCESS_KEY=N11Yit2QSwnJA+pDUajl/kQiYAeceOt3On2uy9fNuVcOrasEvwTEZVoCmZ15qSaLHv/ddheB1KRB6bdB7C1sVQ==
+      - AZURE_STORAGE_ACCESS_KEY=actual-key-here
       - LOG_ENTRIES_EXCHANGE=logentries_direct_durable
       - PROCESS_ENTRY_ROUTING_KEY=process-entry
     container_name: parser
