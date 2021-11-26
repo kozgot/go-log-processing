@@ -3,6 +3,7 @@ package serviceintegrationtests
 import (
 	"io/ioutil"
 	"log"
+	"strings"
 	"testing"
 	"time"
 
@@ -85,7 +86,6 @@ func TestServiceIntegrationWithElasticsearch(t *testing.T) {
 }
 
 func TestServiceIntegrationWithRabbitMQ(t *testing.T) {
-	testIndexName := "test"
 	inputFileName := "./resources/input_data.json"
 	rabbitMQURL := "amqp://guest:guest@rabbitmq:5672/"
 	exchangeName := "test_exchange"
@@ -110,7 +110,7 @@ func TestServiceIntegrationWithRabbitMQ(t *testing.T) {
 		mockESClient,
 		"test_events",
 		"test_consumptions",
-		"@every 10s", // todo
+		"@midnight", // todo
 	)
 
 	uploaderService.HandleMessages()
@@ -118,7 +118,7 @@ func TestServiceIntegrationWithRabbitMQ(t *testing.T) {
 	testProducer := testutils.NewTestRabbitMqProducer(rabbitMQURL, exchangeName, routingKey)
 	testProducer.Connect()
 
-	testProducer.PublishTestInput(testInputData, testIndexName)
+	testProducer.PublishTestInput(testInputData)
 	testProducer.PublishDoneMessage()
 
 	log.Println(" [TEST] Waiting for uploading to finish...")
@@ -129,8 +129,26 @@ func TestServiceIntegrationWithRabbitMQ(t *testing.T) {
 
 	log.Println(" [TEST] Uploading finished, checking results...")
 
-	if len(mockESClient.Indexes) != 1 {
-		t.Fatalf("Expected to create %d indexes, created %d", 1, len(mockESClient.Indexes))
+	if len(mockESClient.Indexes) != 2 {
+		t.Fatalf("Expected to create %d indexes, created %d", 2, len(mockESClient.Indexes))
+	}
+
+	for key, data := range mockESClient.Indexes {
+		if strings.Contains(key, "test_events") && len(data) != 23 {
+			t.Fatalf(
+				"Expected to have %d documents in the events index, actual doc count %d",
+				23,
+				len(data),
+			)
+		}
+
+		if strings.Contains(key, "test_consumptions") && len(data) != 0 {
+			t.Fatalf(
+				"Expected to have %d documents in the consumptions index, actual doc count %d",
+				0,
+				len(data),
+			)
+		}
 	}
 
 	// cleanup
