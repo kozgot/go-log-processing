@@ -72,12 +72,9 @@ func (processor *EntryProcessor) HandleEntries() {
 				// Acknowledge the message after it has been processed.
 				err := d.Ack(false)
 				utils.FailOnError(err, " [PROCESSOR] Could not acknowledge END message")
-				continue
-			} else if strings.Contains(string(d.Body), "START") {
-				// todo: check if this is still needed
-				// Acknowledge the message after it has been processed.
-				err := d.Ack(false)
-				utils.FailOnError(err, " [PROCESSOR] Could not acknowledge START message")
+
+				// Clear previous processed data.
+				processor.reset()
 				continue
 			}
 
@@ -277,6 +274,27 @@ func updateAddresIfNeeded(oldAddress models.AddressDetails, newAddress models.Ad
 	}
 
 	return result
+}
+
+func (processor *EntryProcessor) reset() {
+	for k := range processor.eventsBySmcUID {
+		delete(processor.eventsBySmcUID, k)
+	}
+
+	for k := range processor.smcDataBySmcUID {
+		delete(processor.smcDataBySmcUID, k)
+	}
+
+	for k := range processor.smcUIDsByURL {
+		delete(processor.smcUIDsByURL, k)
+	}
+
+	for k := range processor.podUIDToSmcUID {
+		delete(processor.podUIDToSmcUID, k)
+	}
+
+	processor.consumptionValues = []models.ConsumtionValue{}
+	processor.indexValues = []models.IndexValue{}
 }
 
 func deserializeParsedLogEntry(bytes []byte) parsermodels.ParsedLogEntry {

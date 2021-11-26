@@ -228,10 +228,8 @@ func getSentProcessedData(
 // sendTestInput publishes test parsed log entries to a rabbitMQ exchange for the processor to consume.
 func sendTestInput(
 	testInputProducer *testutils.TestRabbitMqProducer,
-	testparsedFile testmodels.TestParsedLogFile) {
-	// Send a message indicating that this is the start of the entries.
-	testInputProducer.PublishStringMessage("START")
-
+	testparsedFile testmodels.TestParsedLogFile,
+) {
 	for _, parsedEntry := range testparsedFile.Lines {
 		testInputProducer.PublishEntry(parsedEntry)
 	}
