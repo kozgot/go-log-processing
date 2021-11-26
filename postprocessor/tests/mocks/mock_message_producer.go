@@ -6,14 +6,36 @@ import (
 )
 
 type MockMessageProducer struct {
-	Data testmodels.TestProcessedData
-	Done chan string
+	Data                     testmodels.TestProcessedData
+	done                     chan string
+	expectedEventCount       int
+	expectedConsumptionCount int
+	publishedDataCount       int
+}
+
+func NewMockMessageProducer(
+	data testmodels.TestProcessedData,
+	done chan string,
+	expectedEventCount int,
+	expectedConsumptionCount int,
+) *MockMessageProducer {
+	return &MockMessageProducer{
+		Data:                     data,
+		done:                     done,
+		expectedEventCount:       expectedEventCount,
+		expectedConsumptionCount: expectedConsumptionCount,
+		publishedDataCount:       0,
+	}
 }
 
 // PublishEvent is the implementation of the PublishEvent(event models.SmcEvent)
 // function of the MessageProducer interface.
 func (m *MockMessageProducer) PublishEvent(event models.SmcEvent) {
 	m.Data.Events = append(m.Data.Events, event)
+	m.publishedDataCount++
+	if m.publishedDataCount == m.expectedConsumptionCount+m.expectedEventCount {
+		m.done <- "DONE"
+	}
 }
 
 // PublishConsumption is the implementation
@@ -21,6 +43,10 @@ func (m *MockMessageProducer) PublishEvent(event models.SmcEvent) {
 // function of the MessageProducer interface.
 func (m *MockMessageProducer) PublishConsumption(cons models.ConsumtionValue) {
 	m.Data.Consumptions = append(m.Data.Consumptions, cons)
+	m.publishedDataCount++
+	if m.publishedDataCount == m.expectedConsumptionCount+m.expectedEventCount {
+		m.done <- "DONE"
+	}
 }
 
 // Connect is the implementation of the Connect() function of the MessageProducer interface.
@@ -33,9 +59,4 @@ func (m *MockMessageProducer) Connect() {
 // the CloseChannelAndConnection() function of the MessageProducer interface.
 func (m *MockMessageProducer) CloseChannelAndConnection() {
 	// NOOP
-}
-
-// PublishDoneMessage is the implementation of the PublishDoneMessage() function of the MessageProducer interface.
-func (m *MockMessageProducer) PublishDoneMessage() {
-	m.Done <- "done"
 }

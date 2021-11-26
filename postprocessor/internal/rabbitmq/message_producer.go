@@ -8,5 +8,4 @@ type MessageProducer interface {
 	PublishConsumption(cons models.ConsumtionValue)
 	Connect()
 	CloseChannelAndConnection()
-	PublishDoneMessage()
 }

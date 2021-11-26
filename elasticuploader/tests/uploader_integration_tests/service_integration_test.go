@@ -119,7 +119,6 @@ func TestServiceIntegrationWithRabbitMQ(t *testing.T) {
 	testProducer.Connect()
 
 	testProducer.PublishTestInput(testInputData)
-	testProducer.PublishDoneMessage()
 
 	log.Println(" [TEST] Waiting for uploading to finish...")
 	// We need to wait, because the upload time period is 5 seconds,

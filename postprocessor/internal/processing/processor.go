@@ -66,10 +66,8 @@ func (processor *EntryProcessor) HandleEntries() {
 				)
 				consumptionProcessor.ProcessConsumptionAndIndexValues()
 
+				// todo: time consumption calculation...?
 				log.Println(" [PROCESSOR] Done processing consumption data")
-
-				// Tell ES uploader that we reached the end of the log entries.
-				processor.messageProducer.PublishDoneMessage()
 
 				// Acknowledge the message after it has been processed.
 				err := d.Ack(false)
@@ -99,13 +97,13 @@ func (processor *EntryProcessor) ProcessEntry(logEntry parsermodels.ParsedLogEnt
 	var data *models.SmcData
 	var event *models.SmcEvent
 	var consumption *models.ConsumtionValue
-	var index *models.IndexValue
+	var indexvalue *models.IndexValue
 	switch logEntry.Level {
 	case "INFO":
 		infoProcessor := InfoEntryProcessor{
 			PodUIDToSmcUID: processor.podUIDToSmcUID,
 		}
-		data, event, consumption, index = infoProcessor.ProcessInfoEntry(logEntry)
+		data, event, consumption, indexvalue = infoProcessor.ProcessInfoEntry(logEntry)
 
 		if event != nil && event.EventType == models.ConnectionAttempt {
 			// This is the only entry where the URL and SMC UID parameters are given at the same time.
@@ -119,8 +117,8 @@ func (processor *EntryProcessor) ProcessEntry(logEntry parsermodels.ParsedLogEnt
 			}
 		}
 
-		if index != nil {
-			processor.indexValues = append(processor.indexValues, *index)
+		if indexvalue != nil {
+			processor.indexValues = append(processor.indexValues, *indexvalue)
 		}
 		if consumption != nil {
 			processor.consumptionValues = append(processor.consumptionValues, *consumption)

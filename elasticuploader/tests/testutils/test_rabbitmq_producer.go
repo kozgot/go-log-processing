@@ -78,12 +78,6 @@ func (producer *TestRabbitMqProducer) PublishTestInput(
 	}
 }
 
-// PublishDoneMessage sends a string message to the message queue.
-func (producer *TestRabbitMqProducer) PublishDoneMessage() {
-	bytes := []byte("DONE")
-	producer.publishData(bytes)
-}
-
 func (producer *TestRabbitMqProducer) publishData(data []byte) {
 	body := data
 

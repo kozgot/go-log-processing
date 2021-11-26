@@ -41,12 +41,6 @@ func (m *RabbitMQConsumerMock) Consume() (<-chan amqp.Delivery, error) {
 		deliveries <- mockDelivery
 	}
 
-	doneDelivery := NewMockDelivery(
-		[]byte("DONE"),
-		uint64(len(m.TestData.Consumptions)+len(m.TestData.Events)+1),
-		m.acknowledger)
-	deliveries <- doneDelivery
-
 	return deliveries, nil
 }
 

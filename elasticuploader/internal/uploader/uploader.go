@@ -1,7 +1,6 @@
 package uploader
 
 import (
-	"log"
 	"strings"
 
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/elastic"
@@ -55,9 +54,7 @@ func (service *UploaderService) HandleMessages() {
 		for delivery := range msgs {
 			msgParts := strings.Split(string(delivery.Body), "|")
 			msgPrefix := msgParts[0]
-			switch msgPrefix {
-			case "DONE":
-				log.Println(" [UPLOADER SERVICE] Received DONE from Postprocessor")
+			switch msgPrefix { // todo
 			default:
 				data := postprocmodels.DataUnit{}
 				data.Deserialize(delivery.Body)
