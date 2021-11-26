@@ -12,6 +12,10 @@ type RabbitMQConsumerMock struct {
 	acknowledger *MockAcknowledger
 }
 
+// NewRabbitMQConsumerMock creates a new mock consumer
+// for providing processed data messages for the ulpoader service.
+// The testData will be used to create the processed data messages from.
+// The done channel is used to signal after all messages have been acknowledged.
 func NewRabbitMQConsumerMock(
 	testData testmodels.TestProcessedData,
 	done chan bool,

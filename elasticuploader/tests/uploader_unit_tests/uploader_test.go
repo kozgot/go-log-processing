@@ -14,6 +14,8 @@ import (
 	"github.com/kozgot/go-log-processing/elasticuploader/tests/testmodels"
 )
 
+// TestUploderService tests the uploader service
+// with a large index recreation time period.
 func TestUploderService(t *testing.T) {
 	inputFileName := "./resources/input_data.json"
 
@@ -28,9 +30,10 @@ func TestUploderService(t *testing.T) {
 	// A channel to indicate that all mocked deliveries are acknowledged (handled).
 	allMessagesAcknowledged := make(chan bool)
 
-	// Create a mock rabbitMQ consumer and actual ES client as dependencies.
+	// Create a mock rabbitMQ consumer.
 	mockConsumer := mocks.NewRabbitMQConsumerMock(testInputData, allMessagesAcknowledged)
 
+	// Create a mock ES client.
 	mockESClient := mocks.NewESClientMock(
 		make(map[string][]models.DataUnit),
 		expectedDocCount)
