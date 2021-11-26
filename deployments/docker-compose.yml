@@ -1,0 +1,129 @@
+version: "3.3"
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+    container_name: elasticsearch
+    restart: always
+    environment:
+      - cluster.name=elasticsearch
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - elasticsearch-prod-data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:9200"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+    networks:
+      - logprocessor-network
+  kibana:
+    container_name: kibana
+    build:
+      context: .
+      dockerfile: ../kibana.Dockerfile
+    restart: always
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200    # address of elasticsearch docker container which kibana will connect
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch                                   # kibana will start when elasticsearch has started
+    networks:
+      - logprocessor-network
+  container-parser:
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
+      - AZURE_STORAGE_ACCOUNT=kozgotstorage
+      - AZURE_STORAGE_CONTAINER=testcontainer
+      - AZURE_STORAGE_ACCESS_KEY=N11Yit2QSwnJA+pDUajl/kQiYAeceOt3On2uy9fNuVcOrasEvwTEZVoCmZ15qSaLHv/ddheB1KRB6bdB7C1sVQ==
+      - LOG_ENTRIES_EXCHANGE=logentries_direct_durable
+      - PROCESS_ENTRY_ROUTING_KEY=process-entry
+    container_name: parser
+    build:
+      context: ../parser
+      dockerfile: ./Dockerfile
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    ports:
+      - 8080:8080
+    links:
+      - container-elasticuploader
+    networks:
+      - logprocessor-network
+  container-postprocessor:
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
+      - PROCESSED_DATA_EXCHANGE=processeddata_direct_durable
+      - SAVE_DATA_ROUTING_KEY=save-data
+      - LOG_ENTRIES_EXCHANGE=logentries_direct_durable
+      - PROCESSING_QUEUE=processing_queue_durable
+      - PROCESS_ENTRY_ROUTING_KEY=process-entry
+    container_name: postprocessor
+    build:
+      context: ../postprocessor
+      dockerfile: ./Dockerfile
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    links:
+      - container-elasticuploader
+    networks:
+      - logprocessor-network
+  rabbitmq:
+    image: rabbitmq:3-management
+    command: rabbitmq-server
+    ports:
+      - 15672:15672
+    volumes:
+      - rabbitmq_prod_data:/data
+    expose:
+      - 5672
+      - 15672
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+      interval: 5s
+      timeout: 15s
+      retries: 1
+    networks:
+      - logprocessor-network
+  container-elasticuploader:
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
+      - PROCESSED_DATA_EXCHANGE=processeddata_direct_durable
+      - SAVE_DATA_QUEUE=save_data_queue_durable
+      - SAVE_DATA_ROUTING_KEY=save-data
+      - EVENT_INDEX_NAME=event
+      - CONSUMPTION_INDEX_NAME=consumption
+    container_name: esuploader
+    build:
+      context: ../elasticuploader
+      dockerfile: ./Dockerfile
+    depends_on:
+      - rabbitmq
+    restart: on-failure
+    networks:
+      - logprocessor-network
+ 
+volumes:
+  elasticsearch-prod-data:
+  rabbitmq_prod_data:
+
+networks:
+  logprocessor-network:
+    driver: bridge
