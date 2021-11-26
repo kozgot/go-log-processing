@@ -1,4 +1,4 @@
-package serviceintegrationtests
+package uploaderintegrationtests
 
 import (
 	"io/ioutil"

@@ -1,8 +1,9 @@
-package serviceunittests
+package uploaderunittests
 
 import (
 	"io/ioutil"
 	"log"
+	"strings"
 	"testing"
 	"time"
 
@@ -14,7 +15,6 @@ import (
 )
 
 func TestUploderService(t *testing.T) {
-	testIndexName := "test"
 	inputFileName := "./resources/input_data.json"
 
 	// Read test input from resource file.
@@ -40,7 +40,7 @@ func TestUploderService(t *testing.T) {
 		mockESClient,
 		"test_events",       // event index name
 		"test_consumptions", // consumption index name
-		"@every 10s",        // index recreation time, in a non-test environment it would be every midnight
+		"@midnight",         // index recreation time, in a non-test environment it would be every midnight
 	)
 	uploaderService.HandleMessages()
 
@@ -57,13 +57,25 @@ func TestUploderService(t *testing.T) {
 
 	log.Println(" [TEST] Uploading finished, checking results...")
 
-	if len(mockESClient.Indexes) != 1 {
-		t.Fatalf("Expected to create %d indexes, created %d", 1, len(mockESClient.Indexes))
+	if len(mockESClient.Indexes) != 2 {
+		t.Fatalf("Expected to create %d indexes, created %d", 2, len(mockESClient.Indexes))
 	}
 
-	if len(mockESClient.Indexes[testIndexName]) != expectedDocCount {
-		t.Fatalf("Expected doc count %d, actual doc count %d",
-			expectedDocCount,
-			len(mockESClient.Indexes[testIndexName]))
+	for key, data := range mockESClient.Indexes {
+		if strings.Contains(key, "test_events") && len(data) != 23 {
+			t.Fatalf(
+				"Expected to have %d documents in the events index, actual doc count %d",
+				23,
+				len(data),
+			)
+		}
+
+		if strings.Contains(key, "test_consumptions") && len(data) != 0 {
+			t.Fatalf(
+				"Expected to have %d documents in the consumptions index, actual doc count %d",
+				0,
+				len(data),
+			)
+		}
 	}
 }
