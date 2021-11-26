@@ -73,8 +73,6 @@ services:
       - LOG_ENTRIES_EXCHANGE=logentries_direct_durable
       - PROCESSING_QUEUE=processing_queue_durable
       - PROCESS_ENTRY_ROUTING_KEY=process-entry
-      - CONSUMPTION_INDEX_NAME=consumption
-      - EVENTS_INDEX_NAME=smc
     build:
       context: .
       dockerfile: ./postprocessor/.devcontainer/Dockerfile
@@ -112,6 +110,8 @@ services:
       - PROCESSED_DATA_EXCHANGE=processeddata_direct_durable
       - SAVE_DATA_QUEUE=save_data_queue_durable
       - SAVE_DATA_ROUTING_KEY=save-data
+      - EVENT_INDEX_NAME=event
+      - CONSUMPTION_INDEX_NAME=consumption
     build:
       context: .
       dockerfile: ./elasticuploader/.devcontainer/Dockerfile

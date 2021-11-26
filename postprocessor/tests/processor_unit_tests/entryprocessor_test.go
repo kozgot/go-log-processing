@@ -14,19 +14,25 @@ import (
 const updateResourcesEnabled = false
 
 type postProcessorTest struct {
-	inputDataFile    string
-	expectedDataFile string
+	inputDataFile            string
+	expectedDataFile         string
+	expectedEventCount       int
+	expectedConsumptionCount int
 }
 
 func TestProcessEntries(t *testing.T) {
 	postProcessorTests := []postProcessorTest{
 		{
-			inputDataFile:    "./resources/parsed_test_dc_main.json",
-			expectedDataFile: "./resources/expected_processed_dc_main.json",
+			inputDataFile:            "./resources/parsed_test_dc_main.json",
+			expectedDataFile:         "./resources/expected_processed_dc_main.json",
+			expectedEventCount:       23,
+			expectedConsumptionCount: 0,
 		},
 		{
-			inputDataFile:    "./resources/parsed_test_plc_manager.json",
-			expectedDataFile: "./resources/expected_processed_plc_manager.json",
+			inputDataFile:            "./resources/parsed_test_plc_manager.json",
+			expectedDataFile:         "./resources/expected_processed_plc_manager.json",
+			expectedEventCount:       19,
+			expectedConsumptionCount: 0,
 		},
 	}
 
@@ -34,13 +40,15 @@ func TestProcessEntries(t *testing.T) {
 		done := make(chan string)
 
 		// Init a mock message producer.
-		mockMessageProducer := mocks.MockMessageProducer{
-			Data: testmodels.TestProcessedData{
+		mockMessageProducer := mocks.NewMockMessageProducer(
+			testmodels.TestProcessedData{
 				Events:       []models.SmcEvent{},
 				Consumptions: []models.ConsumtionValue{},
 			},
-			Done: done,
-		}
+			done,
+			test.expectedEventCount,
+			test.expectedConsumptionCount,
+		)
 
 		// Read test input from resource file.
 		parsedInputBytes, err := ioutil.ReadFile(test.inputDataFile)
@@ -52,7 +60,7 @@ func TestProcessEntries(t *testing.T) {
 
 		// Run processor
 		processor := processing.NewEntryProcessor(
-			&mockMessageProducer,
+			mockMessageProducer,
 			&mockMessageConsumer,
 		)
 		processor.HandleEntries()

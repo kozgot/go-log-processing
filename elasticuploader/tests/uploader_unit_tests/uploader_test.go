@@ -1,8 +1,9 @@
-package serviceunittests
+package uploaderunittests
 
 import (
 	"io/ioutil"
 	"log"
+	"strings"
 	"testing"
 	"time"
 
@@ -13,8 +14,9 @@ import (
 	"github.com/kozgot/go-log-processing/elasticuploader/tests/testmodels"
 )
 
+// TestUploderService tests the uploader service
+// with a large index recreation time period.
 func TestUploderService(t *testing.T) {
-	testIndexName := "test"
 	inputFileName := "./resources/input_data.json"
 
 	// Read test input from resource file.
@@ -28,14 +30,21 @@ func TestUploderService(t *testing.T) {
 	// A channel to indicate that all mocked deliveries are acknowledged (handled).
 	allMessagesAcknowledged := make(chan bool)
 
-	// Create a mock rabbitMQ consumer and actual ES client as dependencies.
-	mockConsumer := mocks.NewRabbitMQConsumerMock(testInputData, allMessagesAcknowledged, testIndexName)
+	// Create a mock rabbitMQ consumer.
+	mockConsumer := mocks.NewRabbitMQConsumerMock(testInputData, allMessagesAcknowledged, 0, expectedDocCount)
 
+	// Create a mock ES client.
 	mockESClient := mocks.NewESClientMock(
-		make(map[string][]models.DataUnit),
+		make(map[string][]models.ESDocument),
 		expectedDocCount)
 
-	uploaderService := uploader.NewUploaderService(mockConsumer, mockESClient)
+	uploaderService := uploader.NewUploaderService(
+		mockConsumer,
+		mockESClient,
+		"test_events",       // event index name
+		"test_consumptions", // consumption index name
+		"@midnight",         // index recreation time, in a non-test environment it would be every midnight
+	)
 	uploaderService.HandleMessages()
 
 	log.Println(" [TEST] Handling messages...")
@@ -51,13 +60,25 @@ func TestUploderService(t *testing.T) {
 
 	log.Println(" [TEST] Uploading finished, checking results...")
 
-	if len(mockESClient.Indexes) != 1 {
-		t.Fatalf("Expected to create %d indexes, created %d", 1, len(mockESClient.Indexes))
+	if len(mockESClient.Indexes) != 2 {
+		t.Fatalf("Expected to create %d indexes, created %d", 2, len(mockESClient.Indexes))
 	}
 
-	if len(mockESClient.Indexes[testIndexName]) != expectedDocCount {
-		t.Fatalf("Expected doc count %d, actual doc count %d",
-			expectedDocCount,
-			len(mockESClient.Indexes[testIndexName]))
+	for key, data := range mockESClient.Indexes {
+		if strings.Contains(key, "test_events") && len(data) != 23 {
+			t.Fatalf(
+				"Expected to have %d documents in the events index, actual doc count %d",
+				23,
+				len(data),
+			)
+		}
+
+		if strings.Contains(key, "test_consumptions") && len(data) != 0 {
+			t.Fatalf(
+				"Expected to have %d documents in the consumptions index, actual doc count %d",
+				0,
+				len(data),
+			)
+		}
 	}
 }

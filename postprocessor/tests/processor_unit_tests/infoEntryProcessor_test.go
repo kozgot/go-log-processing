@@ -158,12 +158,12 @@ func TestProcessInfoEntry(t *testing.T) {
 			PodUIDToSmcUID: podUIDToSmcUID,
 		}
 
-		smcData, event, consumption, index := infoProcessor.ProcessInfoEntry(test.inputEntry)
+		smcData, event, consumption, indexvalue := infoProcessor.ProcessInfoEntry(test.inputEntry)
 
 		testutils.AssertEqualSmcData(smcData, test.expectedSmcData, t, i)
 		testutils.AssertEqualSmcEvent(event, test.expectedSmcEvent, t, i)
 		testutils.AssertEqualConsumption(consumption, test.expectedConsumption, t, i)
-		testutils.AssertEqualIndex(index, test.expectedIndex, t, i)
+		testutils.AssertEqualIndex(indexvalue, test.expectedIndex, t, i)
 	}
 
 	log.Printf("Successfully run %d test cases.", len(infoProcessorTests))

@@ -44,6 +44,18 @@ func main() {
 		log.Fatal("The SAVE_DATA_ROUTING_KEY environment variable is not set")
 	}
 
+	eventIndexName := os.Getenv("EVENT_INDEX_NAME")
+	fmt.Println("EVENT_INDEX_NAME:", eventIndexName)
+	if len(eventIndexName) == 0 {
+		log.Fatal("The EVENT_INDEX_NAME environment variable is not set")
+	}
+
+	consumptionIndexName := os.Getenv("CONSUMPTION_INDEX_NAME")
+	fmt.Println("CONSUMPTION_INDEX_NAME:", consumptionIndexName)
+	if len(consumptionIndexName) == 0 {
+		log.Fatal("The CONSUMPTION_INDEX_NAME environment variable is not set")
+	}
+
 	// Setup ES client.
 	esClient := elastic.NewEsClientWrapper(elasticSearchURL)
 
@@ -61,7 +73,13 @@ func main() {
 	forever := make(chan bool)
 
 	// Start handling messages.
-	uploaderService := uploader.NewUploaderService(rabbitMQConsumer, esClient)
+	uploaderService := uploader.NewUploaderService(
+		rabbitMQConsumer,
+		esClient,
+		eventIndexName,       // index name to save the events to
+		consumptionIndexName, // index name to save the consumption values to
+		"@midnight",          // index recreation time
+	)
 	uploaderService.HandleMessages()
 
 	log.Printf(" [ESUPLOADER] Waiting for messages. To exit press CTRL+C")

@@ -18,7 +18,8 @@ import (
 
 // EsClientWrapper implements the Esclient interface used by the uploader service.
 type EsClientWrapper struct {
-	esClient *elasticsearch.Client
+	esClient          *elasticsearch.Client
+	CreatedIndexNames []string
 }
 
 // NewEsClientWrapper creates a new EsClientWrapper.
@@ -40,13 +41,13 @@ func NewEsClientWrapper(address string) *EsClientWrapper {
 		MaxRetries: 10,
 	})
 	utils.FailOnError(err, " [ESClient] Error creating the client")
-	clientWrapper := EsClientWrapper{esClient: elasticSearchClient}
+	clientWrapper := EsClientWrapper{esClient: elasticSearchClient, CreatedIndexNames: []string{}}
 
 	return &clientWrapper
 }
 
 // BulkUpload performs a bulk indexing for the given array of data units.
-func (esuploader *EsClientWrapper) BulkUpload(dataUnits []models.DataUnit, indexName string) {
+func (esuploader *EsClientWrapper) BulkUpload(dataUnits []models.ESDocument, indexName string) {
 	var (
 		countSuccessful uint64
 		err             error
@@ -94,8 +95,8 @@ func (esuploader *EsClientWrapper) BulkUpload(dataUnits []models.DataUnit, index
 	logBulkIndexerStats(biStats, dur)
 }
 
-// RecreateEsIndex deletes an ES index if it exists, and then recreates it.
-func (esuploader *EsClientWrapper) RecreateEsIndex(index string) {
+// CreateEsIndex deletes an ES index if it exists, and then recreates it.
+func (esuploader *EsClientWrapper) CreateEsIndex(index string) {
 	var (
 		res *esapi.Response
 		err error
@@ -121,6 +122,8 @@ func (esuploader *EsClientWrapper) RecreateEsIndex(index string) {
 		log.Fatalf(" [ESClient] Cannot create index: %s", res)
 	}
 	res.Body.Close()
+
+	esuploader.CreatedIndexNames = append(esuploader.CreatedIndexNames, index)
 }
 
 func logBulkIndexerStats(biStats esutil.BulkIndexerStats, dur time.Duration) {

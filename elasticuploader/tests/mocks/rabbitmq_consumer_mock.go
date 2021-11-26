@@ -1,30 +1,40 @@
 package mocks
 
 import (
-	"fmt"
+	"log"
+	"time"
 
-	"github.com/kozgot/go-log-processing/elasticuploader/pkg/models"
 	"github.com/kozgot/go-log-processing/elasticuploader/tests/testmodels"
+	postprocmodels "github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 	"github.com/streadway/amqp"
 )
 
 // RabbitMQConsumerMock is a mock RabbitMQ consumer used in tests.
 type RabbitMQConsumerMock struct {
-	TestData      testmodels.TestProcessedData
-	acknowledger  *MockAcknowledger
-	testIndexName string
+	TestData     testmodels.TestProcessedData
+	acknowledger *MockAcknowledger
+	// this is needed to test the timed index-recreation functionality in the uploader service
+	// ignored, if set to zero
+	deliveryDelaySeconds int
 }
 
+// NewRabbitMQConsumerMock creates a new mock consumer
+// for providing processed data messages for the ulpoader service.
+// The testData will be used to create the processed data messages from.
+// The done channel is used to signal after all messages have been acknowledged.
+// The deliveryDelaySeconds is used to add an artificial delay after the first message,
+// to test the timed index recreation behaviour, it is ignored if set to zero.
 func NewRabbitMQConsumerMock(
 	testData testmodels.TestProcessedData,
 	done chan bool,
-	testIndexName string,
+	deliveryDelaySeconds int,
+	expectedDocCount int,
 ) *RabbitMQConsumerMock {
-	acknowledger := NewMockAcknowleder(len(testData.Consumptions)+len(testData.Events)+2, done)
+	acknowledger := NewMockAcknowleder(expectedDocCount, done)
 	mock := RabbitMQConsumerMock{
-		TestData:      testData,
-		acknowledger:  acknowledger,
-		testIndexName: testIndexName,
+		TestData:             testData,
+		acknowledger:         acknowledger,
+		deliveryDelaySeconds: deliveryDelaySeconds,
 	}
 
 	return &mock
@@ -34,27 +44,30 @@ func NewRabbitMQConsumerMock(
 func (m *RabbitMQConsumerMock) Consume() (<-chan amqp.Delivery, error) {
 	deliveries := make(chan amqp.Delivery, 100)
 
-	createIndexDelivery := NewMockDelivery([]byte("RECREATEINDEX|"+m.testIndexName), uint64(0), m.acknowledger)
-	deliveries <- createIndexDelivery
-	fmt.Println("Created index " + m.testIndexName)
-
 	for i, cons := range m.TestData.Consumptions {
-		messageBytes := cons.Serialize()
-		mockDelivery := NewMockDelivery(messageBytes, uint64(i+1), m.acknowledger)
+		message := postprocmodels.DataUnit{DataType: postprocmodels.Consumption, Data: cons.Serialize()}
+		mockDelivery := NewMockDelivery(message.Serialize(), uint64(i+1), m.acknowledger)
 		deliveries <- mockDelivery
 	}
 
 	for i, event := range m.TestData.Events {
-		messageBytes := models.ReceivedDataUnit{IndexName: m.testIndexName, Data: event.Serialize()}
-		mockDelivery := NewMockDelivery(messageBytes.ToJSON(), uint64(i), m.acknowledger)
+		message := postprocmodels.DataUnit{DataType: postprocmodels.Event, Data: event.Serialize()}
+		mockDelivery := NewMockDelivery(message.Serialize(), uint64(i), m.acknowledger)
 		deliveries <- mockDelivery
 	}
 
-	doneDelivery := NewMockDelivery(
-		[]byte("DONE"),
-		uint64(len(m.TestData.Consumptions)+len(m.TestData.Events)+1),
-		m.acknowledger)
-	deliveries <- doneDelivery
+	if m.deliveryDelaySeconds > 0 {
+		go func() {
+			log.Printf("Waiting %d seconds ...", m.deliveryDelaySeconds)
+			time.Sleep(time.Duration(m.deliveryDelaySeconds) * time.Second)
+			log.Printf("%d seconds passed, continue consuming messages...", m.deliveryDelaySeconds)
+			for i, event := range m.TestData.Events {
+				message := postprocmodels.DataUnit{DataType: postprocmodels.Event, Data: event.Serialize()}
+				mockDelivery := NewMockDelivery(message.Serialize(), uint64(i), m.acknowledger)
+				deliveries <- mockDelivery
+			}
+		}()
+	}
 
 	return deliveries, nil
 }

@@ -30,9 +30,6 @@ func NewLogParser(fileDownloader filedownloader.FileDownloader, rabbitMqProducer
 func (logparser *LogParser) ParseLogfiles() {
 	azureFileNames := logparser.fileDownloader.ListFileNames()
 
-	// Send a message indicating that we are starting to parse the log entries.
-	logparser.rabbitMqProducer.PublishStringMessage("START")
-
 	var wg sync.WaitGroup
 	for _, fileName := range azureFileNames {
 		readCloser := logparser.fileDownloader.DownloadFile(fileName)

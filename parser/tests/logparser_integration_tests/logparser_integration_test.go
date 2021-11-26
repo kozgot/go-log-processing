@@ -161,11 +161,6 @@ func getSentParsedEntries(deliveries <-chan amqp.Delivery) []models.ParsedLogEnt
 			err := d.Ack(false)
 			utils.FailOnError(err, "Could not acknowledge END message")
 			break
-		} else if strings.Contains(string(d.Body), "START") {
-			// Acknowledge the message after it has been processed.
-			err := d.Ack(false)
-			utils.FailOnError(err, "Could not acknowledge START message")
-			continue
 		}
 		entry := models.ParsedLogEntry{}
 		entry.FromJSON(d.Body)

@@ -1,57 +1,68 @@
 package uploader
 
 import (
-	"log"
-	"strings"
-
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/elastic"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/rabbit"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/utils"
 	"github.com/kozgot/go-log-processing/elasticuploader/pkg/models"
+	postprocmodels "github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 )
 
 // UploaderService encapsultes the data and logic of the uploading service.
 type UploaderService struct {
-	rabbitMQConsumer rabbit.MessageConsumer
-	esClient         elastic.EsClient
+	rabbitMQConsumer        rabbit.MessageConsumer
+	esClient                elastic.EsClient
+	eventIndexName          string
+	consumptionIndexName    string
+	indexRecreationTimeSpec string
 }
 
 // NewUploaderService creates a new uploader service instance.
-func NewUploaderService(messageConsumer rabbit.MessageConsumer, esClient elastic.EsClient) *UploaderService {
+// The indexRecreationTimeSpec is used to time the creation of new ES indexes,
+// see the docs of github.com/robfig/cron/v3 for the syntax.
+func NewUploaderService(
+	messageConsumer rabbit.MessageConsumer,
+	esClient elastic.EsClient,
+	eventIndexName string,
+	consumptionIndexName string,
+	indexRecreationTimeSpec string,
+) *UploaderService {
 	service := UploaderService{
-		rabbitMQConsumer: messageConsumer,
-		esClient:         esClient,
+		rabbitMQConsumer:        messageConsumer,
+		esClient:                esClient,
+		eventIndexName:          eventIndexName,
+		consumptionIndexName:    consumptionIndexName,
+		indexRecreationTimeSpec: indexRecreationTimeSpec,
 	}
 	return &service
 }
 
 // HandleMessages consumes messages from rabbitMQ and uploads them to ES.
 func (service *UploaderService) HandleMessages() {
-	uploadBuffer := NewUploadBuffer(service.esClient, 1000)
+	uploadBuffer := NewUploadBuffer(
+		service.esClient,
+		1000,
+		service.eventIndexName,
+		service.consumptionIndexName,
+		service.indexRecreationTimeSpec,
+	)
 
 	msgs, err := service.rabbitMQConsumer.Consume()
 	utils.FailOnError(err, " [UPLOADER SERVICE] Failed to register a consumer")
 
 	go func() {
 		for delivery := range msgs {
-			msgParts := strings.Split(string(delivery.Body), "|")
-			msgPrefix := msgParts[0]
-			switch msgPrefix {
-			case "DONE":
-				log.Println(" [UPLOADER SERVICE] Received DONE from Postprocessor")
-			case "RECREATEINDEX":
-				indexName := msgParts[1]
-				service.esClient.RecreateEsIndex(indexName)
-			default:
-				data := models.ReceivedDataUnit{}
-				data.FromJSON(delivery.Body)
-				uploadBuffer.AppendAndUploadIfNeeded(
-					models.DataUnit{Content: data.Data},
-					data.IndexName,
-				)
-			}
+			// Deserialize the received data.
+			data := postprocmodels.DataUnit{}
+			data.Deserialize(delivery.Body)
 
-			// Acknowledge message
+			// Append it to the buffer.
+			uploadBuffer.AppendAndUploadIfNeeded(
+				models.ESDocument{Content: data.Data},
+				data.DataType,
+			)
+
+			// Acknowledge message.
 			err := delivery.Ack(false)
 			utils.FailOnError(err, " [UPLOADER SERVICE] Could not acknowledge message")
 		}

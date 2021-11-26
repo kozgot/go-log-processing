@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/utils"
-	"github.com/kozgot/go-log-processing/elasticuploader/pkg/models"
 	"github.com/kozgot/go-log-processing/elasticuploader/tests/testmodels"
+	postprocmodels "github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 	"github.com/streadway/amqp"
 )
 
@@ -64,28 +64,18 @@ func (producer *TestRabbitMqProducer) CloseChannelAndConnection() {
 	log.Println(" [AMQP PRODUCER] Closed channel")
 }
 
-func (producer *TestRabbitMqProducer) PublishTestInput(testData testmodels.TestProcessedData, testIndexName string) {
+func (producer *TestRabbitMqProducer) PublishTestInput(
+	testData testmodels.TestProcessedData,
+) {
 	for _, event := range testData.Events {
-		dataToSend := models.ReceivedDataUnit{IndexName: testIndexName, Data: event.Serialize()}
-		producer.publishData(dataToSend.ToJSON())
+		dataToSend := postprocmodels.DataUnit{DataType: postprocmodels.Event, Data: event.Serialize()}
+		producer.publishData(dataToSend.Serialize())
 	}
 
 	for _, event := range testData.Consumptions {
-		dataToSend := models.ReceivedDataUnit{IndexName: testIndexName, Data: event.Serialize()}
-		producer.publishData(dataToSend.ToJSON())
+		dataToSend := postprocmodels.DataUnit{DataType: postprocmodels.Consumption, Data: event.Serialize()}
+		producer.publishData(dataToSend.Serialize())
 	}
-}
-
-// PublishRecreateIndexMessage sends a string message to the message queue.
-func (producer *TestRabbitMqProducer) PublishRecreateIndexMessage(indexName string) {
-	bytes := []byte("RECREATEINDEX|" + indexName)
-	producer.publishData(bytes)
-}
-
-// PublishDoneMessage sends a string message to the message queue.
-func (producer *TestRabbitMqProducer) PublishDoneMessage() {
-	bytes := []byte("DONE")
-	producer.publishData(bytes)
 }
 
 func (producer *TestRabbitMqProducer) publishData(data []byte) {

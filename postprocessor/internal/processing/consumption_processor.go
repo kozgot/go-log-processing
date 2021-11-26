@@ -39,11 +39,11 @@ func (consumptionProcessor *ConsumptionProcessor) ProcessConsumptionAndIndexValu
 }
 
 func (consumptionProcessor *ConsumptionProcessor) findRelatedSmc(cons models.ConsumtionValue) string {
-	for _, index := range consumptionProcessor.indexValues {
-		if index.ServiceLevel == cons.ServiceLevel &&
-			index.ReceiveTime == cons.ReceiveTime &&
-			index.PreviousTime == cons.StartTime {
-			return index.SmcUID
+	for _, indexvalue := range consumptionProcessor.indexValues {
+		if indexvalue.ServiceLevel == cons.ServiceLevel &&
+			indexvalue.ReceiveTime == cons.ReceiveTime &&
+			indexvalue.PreviousTime == cons.StartTime {
+			return indexvalue.SmcUID
 		}
 	}
 	return ""
