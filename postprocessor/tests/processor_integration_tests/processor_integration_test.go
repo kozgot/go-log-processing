@@ -15,7 +15,7 @@ import (
 )
 
 // If set to true, running the tests automatically updates the expeted resource files.
-const updateResourcesEnabled = true
+const updateResourcesEnabled = false
 
 // TestProcessDCMain calls processor.HandleEntries()
 // with a real rabbitM message consumer that consumes parsed log entries from a dc_main.log file.
@@ -52,7 +52,7 @@ func TestProcessDCMain(t *testing.T) {
 	sendTestInput(testInputProducer, testparsedFile)
 
 	// Handle output created by the processor.
-	processedData := getSentProcessedData(msgs)
+	processedData := getSentProcessedData(msgs, 23)
 	actualProcessedDataBytes := processedData.ToJSON()
 	updateResourcesIfEnabled(expectedDataFileName, actualProcessedDataBytes)
 
@@ -101,7 +101,7 @@ func TestProcessPLCManager(t *testing.T) {
 	sendTestInput(testInputProducer, testparsedFile)
 
 	// Handle output created by the processor.
-	processedData := getSentProcessedData(msgs)
+	processedData := getSentProcessedData(msgs, 19) // todo
 
 	actualProcessedDataBytes := processedData.ToJSON()
 	updateResourcesIfEnabled(expectedDataFileName, actualProcessedDataBytes)
@@ -183,17 +183,17 @@ func tearDownDependecies(
 // getSentProcessedData reads and returns the processed data sent to a rabbitMQ exchange by the postprocessor.
 func getSentProcessedData(
 	deliveries <-chan amqp.Delivery,
+	expectedMessageCount int,
 ) testmodels.TestProcessedData {
 	testdata := testmodels.TestProcessedData{
 		Events:       []models.SmcEvent{},
 		Consumptions: []models.ConsumtionValue{},
 	}
+	gotMessageCount := 0
 	for delivery := range deliveries {
 		msgParts := strings.Split(string(delivery.Body), "|")
 		msgPrefix := msgParts[0]
 		switch msgPrefix {
-		case "DONE":
-			return testdata
 		default:
 			dataUnit := models.DataUnit{}
 			dataUnit.Deserialize(delivery.Body)
@@ -204,10 +204,16 @@ func getSentProcessedData(
 				smcEvent := models.SmcEvent{}
 				smcEvent.Deserialize(dataUnit.Data)
 				testdata.Events = append(testdata.Events, smcEvent)
+				gotMessageCount++
 			case models.Consumption:
 				consumption := models.ConsumtionValue{}
 				consumption.Deserialize(dataUnit.Data)
 				testdata.Consumptions = append(testdata.Consumptions, consumption)
+				gotMessageCount++
+			}
+
+			if gotMessageCount == expectedMessageCount {
+				return testdata
 			}
 		}
 
