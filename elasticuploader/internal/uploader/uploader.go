@@ -18,6 +18,8 @@ type UploaderService struct {
 }
 
 // NewUploaderService creates a new uploader service instance.
+// The indexRecreationTimeSpec is used to time the creation of new ES indexes,
+// see the docs of github.com/robfig/cron/v3 for the syntax.
 func NewUploaderService(
 	messageConsumer rabbit.MessageConsumer,
 	esClient elastic.EsClient,

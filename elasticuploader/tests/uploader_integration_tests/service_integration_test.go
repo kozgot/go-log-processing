@@ -47,7 +47,7 @@ func TestServiceIntegrationWithElasticsearch(t *testing.T) {
 		esClient,
 		"test_events",
 		"test_consumptions",
-		"@midnight", // todo
+		"@midnight",
 	)
 	uploaderService.HandleMessages()
 
@@ -115,7 +115,7 @@ func TestServiceIntegrationWithRabbitMQ(t *testing.T) {
 		mockESClient,
 		"test_events",
 		"test_consumptions",
-		"@midnight", // todo
+		"@midnight",
 	)
 
 	uploaderService.HandleMessages()
