@@ -13,8 +13,9 @@ import (
 
 func main() {
 	http.HandleFunc("/process/", handler)
+	log.Printf("  [PARSER] Application started, listening on port 8080...")
+
 	log.Fatal(http.ListenAndServe(":8080", nil))
-	log.Printf("  [PARSER] Application started, listening on port 8080")
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
