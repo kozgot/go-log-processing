@@ -107,7 +107,7 @@ func TestServiceIntegrationWithRabbitMQ(t *testing.T) {
 	rabbitMQConsumer.Connect()
 
 	mockESClient := mocks.NewESClientMock(
-		make(map[string][]models.DataUnit),
+		make(map[string][]models.ESDocument),
 		len(testInputData.Consumptions)+len(testInputData.Events))
 
 	uploaderService := uploader.NewUploaderService(

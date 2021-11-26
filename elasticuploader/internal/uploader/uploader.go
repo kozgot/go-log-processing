@@ -56,7 +56,7 @@ func (service *UploaderService) HandleMessages() {
 
 			// Append it to the buffer.
 			uploadBuffer.AppendAndUploadIfNeeded(
-				models.DataUnit{Content: data.Data},
+				models.ESDocument{Content: data.Data},
 				data.DataType,
 			)
 

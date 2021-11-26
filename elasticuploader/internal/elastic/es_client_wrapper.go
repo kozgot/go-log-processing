@@ -47,7 +47,7 @@ func NewEsClientWrapper(address string) *EsClientWrapper {
 }
 
 // BulkUpload performs a bulk indexing for the given array of data units.
-func (esuploader *EsClientWrapper) BulkUpload(dataUnits []models.DataUnit, indexName string) {
+func (esuploader *EsClientWrapper) BulkUpload(dataUnits []models.ESDocument, indexName string) {
 	var (
 		countSuccessful uint64
 		err             error

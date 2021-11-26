@@ -35,7 +35,7 @@ func TestUploderService(t *testing.T) {
 
 	// Create a mock ES client.
 	mockESClient := mocks.NewESClientMock(
-		make(map[string][]models.DataUnit),
+		make(map[string][]models.ESDocument),
 		expectedDocCount)
 
 	uploaderService := uploader.NewUploaderService(

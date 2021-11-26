@@ -17,7 +17,7 @@ import (
 // then uploads the contents, while implementing mutual exclosure.
 type UploadBuffer struct {
 	mutex                sync.Mutex
-	value                map[string][]models.DataUnit
+	value                map[string][]models.ESDocument
 	esClient             elastic.EsClient
 	ticker               *time.Ticker
 	bufferSize           int
@@ -36,7 +36,7 @@ func NewUploadBuffer(
 ) *UploadBuffer {
 	ticker := time.NewTicker(5 * time.Second)
 	uploadBuffer := UploadBuffer{
-		value:                make(map[string][]models.DataUnit),
+		value:                make(map[string][]models.ESDocument),
 		esClient:             esClient,
 		ticker:               ticker,
 		bufferSize:           size,
@@ -95,7 +95,7 @@ func NewUploadBuffer(
 }
 
 // AppendAndUploadIfNeeded appends a message for the given key.
-func (d *UploadBuffer) AppendAndUploadIfNeeded(m models.DataUnit, dataType postprocmodels.DataType) {
+func (d *UploadBuffer) AppendAndUploadIfNeeded(m models.ESDocument, dataType postprocmodels.DataType) {
 	// Lock so only one goroutine at a time can access the map.
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
@@ -108,7 +108,7 @@ func (d *UploadBuffer) AppendAndUploadIfNeeded(m models.DataUnit, dataType postp
 	// Check if the key is already present.
 	_, ok := d.value[indexName]
 	if !ok {
-		d.value[indexName] = []models.DataUnit{}
+		d.value[indexName] = []models.ESDocument{}
 	}
 
 	d.value[indexName] = append(d.value[indexName], m)
@@ -121,7 +121,7 @@ func (d *UploadBuffer) AppendAndUploadIfNeeded(m models.DataUnit, dataType postp
 		d.esClient.BulkUpload(d.value[indexName], d.postfixIndexName(indexName))
 
 		// Clear
-		d.value[indexName] = []models.DataUnit{}
+		d.value[indexName] = []models.ESDocument{}
 	}
 }
 
@@ -141,7 +141,7 @@ func createIndexPostFix() string {
 }
 
 // GetCurrentMessages returns the current messages for a given key.
-func (d *UploadBuffer) GetCurrentMessages(key string) []models.DataUnit {
+func (d *UploadBuffer) GetCurrentMessages(key string) []models.ESDocument {
 	// Lock so only one goroutine at a time can access the map.
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
@@ -166,7 +166,7 @@ func (d *UploadBuffer) uploadAndClearBuffer() {
 			d.esClient.BulkUpload(d.value[indexName], d.postfixIndexName(indexName))
 
 			// Clear the buffer after uploading the contents.
-			d.value[indexName] = []models.DataUnit{}
+			d.value[indexName] = []models.ESDocument{}
 		}
 	}
 }
