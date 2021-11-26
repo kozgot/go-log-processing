@@ -32,12 +32,9 @@ func NewUploadBuffer(
 	size int,
 	eventIndexName string,
 	consumptionIndexName string,
+	indexRecreationTimeSpec string,
 ) *UploadBuffer {
 	ticker := time.NewTicker(5 * time.Second)
-	currentDateTime := time.Now()
-	currentDateString := fmt.Sprint(currentDateTime.Year()) +
-		fmt.Sprint(int(currentDateTime.Month())) +
-		fmt.Sprint(currentDateTime.Day())
 	uploadBuffer := UploadBuffer{
 		value:                make(map[string][]models.DataUnit),
 		esClient:             esClient,
@@ -45,7 +42,7 @@ func NewUploadBuffer(
 		bufferSize:           size,
 		eventIndexName:       eventIndexName,
 		consumptionIndexName: consumptionIndexName,
-		indexPostFix:         currentDateString,
+		indexPostFix:         createIndexPostFix(),
 	}
 
 	// Create ES indexes for the day.
@@ -58,12 +55,10 @@ func NewUploadBuffer(
 	uploadBuffer.esClient.CreateEsIndex(currentConsIndexName)
 	log.Println(" [UPLOADER SERVICE] Created new indexes at startup")
 
-	// todo: location?
 	// initialize new cron job runner with custom location
 	cronHandler := cron.New(cron.WithLocation(time.Local))
-
 	// the 0/24th hour and 0th minute of every day
-	_, err := cronHandler.AddFunc("@every 10s", func() {
+	_, err := cronHandler.AddFunc(indexRecreationTimeSpec, func() {
 		uploadBuffer.mutex.Lock()
 
 		log.Println(" [UPLOADER SERVICE] Switching index names for the next day...")
@@ -71,13 +66,8 @@ func NewUploadBuffer(
 		// Upload remainings from the previous day.
 		uploadBuffer.uploadAndClearBuffer()
 
-		newDateTime := time.Now()
-		newDateString := fmt.Sprint(newDateTime.Year()) +
-			fmt.Sprint(int(newDateTime.Month())) +
-			fmt.Sprint(newDateTime.Day())
-
 		// Update index postfix.
-		uploadBuffer.indexPostFix = newDateString
+		uploadBuffer.indexPostFix = createIndexPostFix()
 
 		// Create ES indexes for the day, every day at midnight.
 		currentEventIndexName := uploadBuffer.postfixIndexName(eventIndexName)
@@ -139,6 +129,17 @@ func (d *UploadBuffer) postfixIndexName(indexName string) string {
 	return indexName + "_" + d.indexPostFix
 }
 
+func createIndexPostFix() string {
+	currentDateTime := time.Now()
+
+	return fmt.Sprint(currentDateTime.Year()) +
+		fmt.Sprint(int(currentDateTime.Month())) +
+		fmt.Sprint(currentDateTime.Day()) +
+		fmt.Sprint(currentDateTime.Hour()) +
+		fmt.Sprint(currentDateTime.Minute()) +
+		fmt.Sprint(currentDateTime.Second())
+}
+
 // GetCurrentMessages returns the current messages for a given key.
 func (d *UploadBuffer) GetCurrentMessages(key string) []models.DataUnit {
 	// Lock so only one goroutine at a time can access the map.
@@ -151,9 +152,10 @@ func (d *UploadBuffer) GetCurrentMessages(key string) []models.DataUnit {
 func (d *UploadBuffer) UploadRemaining() {
 	// Lock so only one goroutine at a time can access the map.
 	d.mutex.Lock()
-	defer d.mutex.Unlock()
 
 	d.uploadAndClearBuffer()
+
+	d.mutex.Unlock()
 }
 
 func (d *UploadBuffer) uploadAndClearBuffer() {

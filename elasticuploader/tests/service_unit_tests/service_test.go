@@ -29,7 +29,7 @@ func TestUploderService(t *testing.T) {
 	allMessagesAcknowledged := make(chan bool)
 
 	// Create a mock rabbitMQ consumer and actual ES client as dependencies.
-	mockConsumer := mocks.NewRabbitMQConsumerMock(testInputData, allMessagesAcknowledged, testIndexName)
+	mockConsumer := mocks.NewRabbitMQConsumerMock(testInputData, allMessagesAcknowledged)
 
 	mockESClient := mocks.NewESClientMock(
 		make(map[string][]models.DataUnit),
@@ -38,8 +38,9 @@ func TestUploderService(t *testing.T) {
 	uploaderService := uploader.NewUploaderService(
 		mockConsumer,
 		mockESClient,
-		"todo",
-		"todo",
+		"test_events",       // event index name
+		"test_consumptions", // consumption index name
+		"@every 10s",        // index recreation time, in a non-test environment it would be every midnight
 	)
 	uploaderService.HandleMessages()
 

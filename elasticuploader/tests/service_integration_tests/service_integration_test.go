@@ -16,8 +16,9 @@ import (
 	"github.com/kozgot/go-log-processing/elasticuploader/tests/testutils"
 )
 
+// TestServiceIntegrationWithElasticsearch uses a real ES client to upload data consumed from a mock RabbitMQ consumer.
+// Expected to create exactly 2 indexes, with only the events index containing any documents.
 func TestServiceIntegrationWithElasticsearch(t *testing.T) {
-	testIndexName := "test"
 	inputFileName := "./resources/input_data.json"
 	testESURL := "http://elasticsearch:9200"
 
@@ -31,11 +32,17 @@ func TestServiceIntegrationWithElasticsearch(t *testing.T) {
 	allMessagesAcknowledged := make(chan bool)
 
 	// Create a mock rabbitMQ consumer and actual ES client as dependencies.
-	mockConsumer := mocks.NewRabbitMQConsumerMock(testInputData, allMessagesAcknowledged, testIndexName)
+	mockConsumer := mocks.NewRabbitMQConsumerMock(testInputData, allMessagesAcknowledged)
 	esClient := elastic.NewEsClientWrapper(testESURL)
 
 	// Start handling messages.
-	uploaderService := uploader.NewUploaderService(mockConsumer, esClient, "todo", "todo")
+	uploaderService := uploader.NewUploaderService(
+		mockConsumer,
+		esClient,
+		"test_events",
+		"test_consumptions",
+		"@midnight", // todo
+	)
 	uploaderService.HandleMessages()
 
 	log.Println(" [TEST] Handling messages...")
@@ -51,15 +58,29 @@ func TestServiceIntegrationWithElasticsearch(t *testing.T) {
 
 	log.Println(" [TEST] Uploading finished, checking results...")
 
+	if len(esClient.CreatedIndexNames) != 2 {
+		t.Fatalf("Expected to create 2 indexes, actual index count: %d", len(esClient.CreatedIndexNames))
+	}
+
 	// Create a test ES client to query results.
 	testESClient := testutils.NewTestEsClientWrapper(testESURL)
-	docCount := testESClient.QueryDocCountInIndex(testIndexName)
-	testESClient.DeleteIndex(testIndexName) // Clean up test index.
 
+	// Check event documents.
+	docCount := testESClient.QueryDocCountInIndex(esClient.CreatedIndexNames[0])
+	testESClient.DeleteIndex(esClient.CreatedIndexNames[0]) // Clean up test index.
 	expectedDocCount := len(testInputData.Events) + len(testInputData.Consumptions)
-
 	if docCount != expectedDocCount {
 		t.Fatalf("Expected to have %d documents, actual doc count: %d", expectedDocCount, docCount)
+	}
+
+	// Check consumption documents.
+	consumptionDocCount := testESClient.QueryDocCountInIndex(esClient.CreatedIndexNames[1])
+	testESClient.DeleteIndex(esClient.CreatedIndexNames[1]) // Clean up test index.
+	if consumptionDocCount != 0 {
+		t.Fatalf("Expected to have %d documents in the consumption index, actual doc count: %d",
+			0,
+			consumptionDocCount,
+		)
 	}
 }
 
@@ -84,12 +105,18 @@ func TestServiceIntegrationWithRabbitMQ(t *testing.T) {
 		make(map[string][]models.DataUnit),
 		len(testInputData.Consumptions)+len(testInputData.Events))
 
-	uploaderService := uploader.NewUploaderService(rabbitMQConsumer, mockESClient, "todo", "todo")
+	uploaderService := uploader.NewUploaderService(
+		rabbitMQConsumer,
+		mockESClient,
+		"test_events",
+		"test_consumptions",
+		"@every 10s", // todo
+	)
+
 	uploaderService.HandleMessages()
 
 	testProducer := testutils.NewTestRabbitMqProducer(rabbitMQURL, exchangeName, routingKey)
 	testProducer.Connect()
-	testProducer.PublishRecreateIndexMessage(testIndexName)
 
 	testProducer.PublishTestInput(testInputData, testIndexName)
 	testProducer.PublishDoneMessage()

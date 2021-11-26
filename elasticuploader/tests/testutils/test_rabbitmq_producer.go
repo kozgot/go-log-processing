@@ -76,12 +76,6 @@ func (producer *TestRabbitMqProducer) PublishTestInput(testData testmodels.TestP
 	}
 }
 
-// PublishRecreateIndexMessage sends a string message to the message queue.
-func (producer *TestRabbitMqProducer) PublishRecreateIndexMessage(indexName string) {
-	bytes := []byte("RECREATEINDEX|" + indexName)
-	producer.publishData(bytes)
-}
-
 // PublishDoneMessage sends a string message to the message queue.
 func (producer *TestRabbitMqProducer) PublishDoneMessage() {
 	bytes := []byte("DONE")

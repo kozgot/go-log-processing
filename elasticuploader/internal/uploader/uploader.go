@@ -13,10 +13,11 @@ import (
 
 // UploaderService encapsultes the data and logic of the uploading service.
 type UploaderService struct {
-	rabbitMQConsumer     rabbit.MessageConsumer
-	esClient             elastic.EsClient
-	eventIndexName       string
-	consumptionIndexName string
+	rabbitMQConsumer        rabbit.MessageConsumer
+	esClient                elastic.EsClient
+	eventIndexName          string
+	consumptionIndexName    string
+	indexRecreationTimeSpec string
 }
 
 // NewUploaderService creates a new uploader service instance.
@@ -25,19 +26,27 @@ func NewUploaderService(
 	esClient elastic.EsClient,
 	eventIndexName string,
 	consumptionIndexName string,
+	indexRecreationTimeSpec string,
 ) *UploaderService {
 	service := UploaderService{
-		rabbitMQConsumer:     messageConsumer,
-		esClient:             esClient,
-		eventIndexName:       eventIndexName,
-		consumptionIndexName: consumptionIndexName,
+		rabbitMQConsumer:        messageConsumer,
+		esClient:                esClient,
+		eventIndexName:          eventIndexName,
+		consumptionIndexName:    consumptionIndexName,
+		indexRecreationTimeSpec: indexRecreationTimeSpec,
 	}
 	return &service
 }
 
 // HandleMessages consumes messages from rabbitMQ and uploads them to ES.
 func (service *UploaderService) HandleMessages() {
-	uploadBuffer := NewUploadBuffer(service.esClient, 1000, service.eventIndexName, service.consumptionIndexName)
+	uploadBuffer := NewUploadBuffer(
+		service.esClient,
+		1000,
+		service.eventIndexName,
+		service.consumptionIndexName,
+		service.indexRecreationTimeSpec,
+	)
 
 	msgs, err := service.rabbitMQConsumer.Consume()
 	utils.FailOnError(err, " [UPLOADER SERVICE] Failed to register a consumer")

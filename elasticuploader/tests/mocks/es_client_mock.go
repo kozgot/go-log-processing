@@ -14,7 +14,7 @@ func (m *EsClientMock) BulkUpload(dataUnits []models.DataUnit, indexName string)
 	m.allDocsCount += len(dataUnits)
 }
 
-// RecreateEsIndex mocks the RecreateEsIndex function of the EsClient interface.
+// CreateEsIndex mocks the CreateEsIndex function of the EsClient interface.
 func (m *EsClientMock) CreateEsIndex(index string) {
 	m.Indexes[index] = []models.DataUnit{}
 }

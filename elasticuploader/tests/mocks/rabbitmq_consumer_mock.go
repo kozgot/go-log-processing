@@ -1,30 +1,25 @@
 package mocks
 
 import (
-	"fmt"
-
-	"github.com/kozgot/go-log-processing/elasticuploader/pkg/models"
 	"github.com/kozgot/go-log-processing/elasticuploader/tests/testmodels"
+	postprocmodels "github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 	"github.com/streadway/amqp"
 )
 
 // RabbitMQConsumerMock is a mock RabbitMQ consumer used in tests.
 type RabbitMQConsumerMock struct {
-	TestData      testmodels.TestProcessedData
-	acknowledger  *MockAcknowledger
-	testIndexName string
+	TestData     testmodels.TestProcessedData
+	acknowledger *MockAcknowledger
 }
 
 func NewRabbitMQConsumerMock(
 	testData testmodels.TestProcessedData,
 	done chan bool,
-	testIndexName string,
 ) *RabbitMQConsumerMock {
-	acknowledger := NewMockAcknowleder(len(testData.Consumptions)+len(testData.Events)+2, done)
+	acknowledger := NewMockAcknowleder(len(testData.Consumptions)+len(testData.Events)+1, done)
 	mock := RabbitMQConsumerMock{
-		TestData:      testData,
-		acknowledger:  acknowledger,
-		testIndexName: testIndexName,
+		TestData:     testData,
+		acknowledger: acknowledger,
 	}
 
 	return &mock
@@ -34,19 +29,15 @@ func NewRabbitMQConsumerMock(
 func (m *RabbitMQConsumerMock) Consume() (<-chan amqp.Delivery, error) {
 	deliveries := make(chan amqp.Delivery, 100)
 
-	createIndexDelivery := NewMockDelivery([]byte("RECREATEINDEX|"+m.testIndexName), uint64(0), m.acknowledger)
-	deliveries <- createIndexDelivery
-	fmt.Println("Created index " + m.testIndexName)
-
 	for i, cons := range m.TestData.Consumptions {
-		messageBytes := cons.Serialize()
-		mockDelivery := NewMockDelivery(messageBytes, uint64(i+1), m.acknowledger)
+		message := postprocmodels.DataUnit{DataType: postprocmodels.Consumption, Data: cons.Serialize()}
+		mockDelivery := NewMockDelivery(message.Serialize(), uint64(i+1), m.acknowledger)
 		deliveries <- mockDelivery
 	}
 
 	for i, event := range m.TestData.Events {
-		messageBytes := models.ReceivedDataUnit{IndexName: m.testIndexName, Data: event.Serialize()}
-		mockDelivery := NewMockDelivery(messageBytes.ToJSON(), uint64(i), m.acknowledger)
+		message := postprocmodels.DataUnit{DataType: postprocmodels.Event, Data: event.Serialize()}
+		mockDelivery := NewMockDelivery(message.Serialize(), uint64(i), m.acknowledger)
 		deliveries <- mockDelivery
 	}
 

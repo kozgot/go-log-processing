@@ -73,7 +73,13 @@ func main() {
 	forever := make(chan bool)
 
 	// Start handling messages.
-	uploaderService := uploader.NewUploaderService(rabbitMQConsumer, esClient, eventIndexName, consumptionIndexName)
+	uploaderService := uploader.NewUploaderService(
+		rabbitMQConsumer,
+		esClient,
+		eventIndexName,       // index name to save the events to
+		consumptionIndexName, // index name to save the consumption values to
+		"@midnight",          // index recreation time
+	)
 	uploaderService.HandleMessages()
 
 	log.Printf(" [ESUPLOADER] Waiting for messages. To exit press CTRL+C")
