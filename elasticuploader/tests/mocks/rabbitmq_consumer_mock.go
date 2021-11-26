@@ -16,7 +16,7 @@ func NewRabbitMQConsumerMock(
 	testData testmodels.TestProcessedData,
 	done chan bool,
 ) *RabbitMQConsumerMock {
-	acknowledger := NewMockAcknowleder(len(testData.Consumptions)+len(testData.Events)+1, done)
+	acknowledger := NewMockAcknowleder(len(testData.Consumptions)+len(testData.Events), done)
 	mock := RabbitMQConsumerMock{
 		TestData:     testData,
 		acknowledger: acknowledger,

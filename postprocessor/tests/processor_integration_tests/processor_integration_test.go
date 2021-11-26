@@ -2,7 +2,6 @@ package processorintegrationtests
 
 import (
 	"io/ioutil"
-	"strings"
 	"testing"
 
 	"github.com/kozgot/go-log-processing/postprocessor/internal/processing"
@@ -191,30 +190,25 @@ func getSentProcessedData(
 	}
 	gotMessageCount := 0
 	for delivery := range deliveries {
-		msgParts := strings.Split(string(delivery.Body), "|")
-		msgPrefix := msgParts[0]
-		switch msgPrefix {
-		default:
-			dataUnit := models.DataUnit{}
-			dataUnit.Deserialize(delivery.Body)
-			switch dataUnit.DataType {
-			case models.UnknownDataType:
-				break
-			case models.Event:
-				smcEvent := models.SmcEvent{}
-				smcEvent.Deserialize(dataUnit.Data)
-				testdata.Events = append(testdata.Events, smcEvent)
-				gotMessageCount++
-			case models.Consumption:
-				consumption := models.ConsumtionValue{}
-				consumption.Deserialize(dataUnit.Data)
-				testdata.Consumptions = append(testdata.Consumptions, consumption)
-				gotMessageCount++
-			}
+		dataUnit := models.DataUnit{}
+		dataUnit.Deserialize(delivery.Body)
+		switch dataUnit.DataType {
+		case models.UnknownDataType:
+			break
+		case models.Event:
+			smcEvent := models.SmcEvent{}
+			smcEvent.Deserialize(dataUnit.Data)
+			testdata.Events = append(testdata.Events, smcEvent)
+			gotMessageCount++
+		case models.Consumption:
+			consumption := models.ConsumtionValue{}
+			consumption.Deserialize(dataUnit.Data)
+			testdata.Consumptions = append(testdata.Consumptions, consumption)
+			gotMessageCount++
+		}
 
-			if gotMessageCount == expectedMessageCount {
-				return testdata
-			}
+		if gotMessageCount == expectedMessageCount {
+			return testdata
 		}
 
 		// Acknowledge message
