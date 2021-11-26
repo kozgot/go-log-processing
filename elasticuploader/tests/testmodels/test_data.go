@@ -9,7 +9,6 @@ import (
 
 // TestProcessedData contains processed test data.
 type TestProcessedData struct {
-	IndexNames   []string
 	Events       []postprocmodels.SmcEvent
 	Consumptions []postprocmodels.ConsumtionValue
 }

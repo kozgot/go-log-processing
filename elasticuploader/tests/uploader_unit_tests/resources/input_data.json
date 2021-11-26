@@ -1,8 +1,4 @@
 {
- "IndexNames": [
-  "testSmcEvents",
-  "testConsumptions"
- ],
  "Events": [
   {
    "Time": "2020-06-10T09:18:28Z",
