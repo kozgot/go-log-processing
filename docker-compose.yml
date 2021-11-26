@@ -2,7 +2,7 @@ version: "3.3"
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
-    container_name: elasticsearch
+    container_name: elasticsearch_dev
     restart: always
     environment:
       - cluster.name=elasticsearch
@@ -29,7 +29,7 @@ services:
     networks:
       - parser-network
   kibana:
-    container_name: kibana
+    container_name: kibana_dev
     build:
       context: .
       dockerfile: ./kibana.Dockerfile
@@ -88,6 +88,7 @@ services:
       - parser-network
   rabbitmq:
     image: rabbitmq:3-management
+    container_name: rabbitmq_dev
     command: rabbitmq-server
     ports:
       - 15672:15672
