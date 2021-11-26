@@ -24,7 +24,6 @@ func (c *ConnectionReleasedEntryParser) Parse() *models.ConnectionReleasedParams
 	return nil
 }
 
-// Todo: maybe unify these kinds of parsing methods + extract to separate files.
 func parseURLFromConnectionEntries(entryWithoutPrefix string) string {
 	// We need to trim off the source file name in parentheses from the end.
 	minLengthIfContainsSeparator := 2

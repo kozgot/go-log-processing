@@ -66,7 +66,6 @@ func (processor *EntryProcessor) HandleEntries() {
 				)
 				consumptionProcessor.ProcessConsumptionAndIndexValues()
 
-				// todo: time consumption calculation...?
 				log.Println(" [PROCESSOR] Done processing consumption data")
 
 				// Acknowledge the message after it has been processed.

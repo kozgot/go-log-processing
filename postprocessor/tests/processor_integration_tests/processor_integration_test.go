@@ -100,7 +100,7 @@ func TestProcessPLCManager(t *testing.T) {
 	sendTestInput(testInputProducer, testparsedFile)
 
 	// Handle output created by the processor.
-	processedData := getSentProcessedData(msgs, 19) // todo
+	processedData := getSentProcessedData(msgs, 19)
 
 	actualProcessedDataBytes := processedData.ToJSON()
 	updateResourcesIfEnabled(expectedDataFileName, actualProcessedDataBytes)
