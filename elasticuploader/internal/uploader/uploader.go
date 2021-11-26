@@ -1,8 +1,6 @@
 package uploader
 
 import (
-	"strings"
-
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/elastic"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/rabbit"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/utils"
@@ -52,19 +50,17 @@ func (service *UploaderService) HandleMessages() {
 
 	go func() {
 		for delivery := range msgs {
-			msgParts := strings.Split(string(delivery.Body), "|")
-			msgPrefix := msgParts[0]
-			switch msgPrefix { // todo
-			default:
-				data := postprocmodels.DataUnit{}
-				data.Deserialize(delivery.Body)
-				uploadBuffer.AppendAndUploadIfNeeded(
-					models.DataUnit{Content: data.Data},
-					data.DataType,
-				)
-			}
+			// Deserialize the received data.
+			data := postprocmodels.DataUnit{}
+			data.Deserialize(delivery.Body)
 
-			// Acknowledge message
+			// Append it to the buffer.
+			uploadBuffer.AppendAndUploadIfNeeded(
+				models.DataUnit{Content: data.Data},
+				data.DataType,
+			)
+
+			// Acknowledge message.
 			err := delivery.Ack(false)
 			utils.FailOnError(err, " [UPLOADER SERVICE] Could not acknowledge message")
 		}
