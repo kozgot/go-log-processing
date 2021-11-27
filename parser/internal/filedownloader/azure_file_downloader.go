@@ -46,18 +46,17 @@ func (downloader *AzureDownloader) ListFileNames() []string {
 	fileNames := []string{}
 	ctx := context.Background()
 
-	// List the container that we have created above
 	log.Println("  [AZURE DOWNLOADER] Listing the blobs in the container:")
 	for marker := (azblob.Marker{}); marker.NotDone(); {
 		// Get a result segment starting with the blob indicated by the current Marker.
 		listBlob, err := downloader.ContainerURL.ListBlobsFlatSegment(ctx, marker, azblob.ListBlobsSegmentOptions{})
 		utils.FailOnError(err, "Could not list blobs")
 
-		// ListBlobs returns the start of the next segment; you MUST use this to get
+		// ListBlobs returns the start of the next segment; we MUST use this to get
 		// the next segment (after processing the current result segment).
 		marker = listBlob.NextMarker
 
-		// Process the blobs returned in this result segment (if the segment is empty, the loop body won't execute)
+		// Process the blobs returned in this result segment.
 		for _, blobInfo := range listBlob.Segment.BlobItems {
 			log.Println("  [AZURE DOWNLOADER]  Blob name: " + blobInfo.Name)
 			fileNames = append(fileNames, blobInfo.Name)
