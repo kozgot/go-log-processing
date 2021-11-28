@@ -33,7 +33,7 @@ func TestProcessWarnEntry(t *testing.T) {
 				Timestamp: time.Date(2020, time.June, 10, 14, 55, 31, 0, time.UTC),
 				Level:     "WARN",
 				WarningParams: &parsermodels.WarningParams{
-					TimeoutParams: &parsermodels.TimelineOutParams{
+					TimeoutParams: &parsermodels.TimeOutParams{
 						Protocol: "plc-udp",
 						URL:      "fe80::4021:ff:fe00:a:61616",
 					},

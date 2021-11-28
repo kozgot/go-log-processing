@@ -38,7 +38,7 @@ func TestProcessInfoEntry(t *testing.T) {
 				Timestamp: time.Date(2020, time.June, 10, 14, 55, 31, 0, time.UTC),
 				Level:     "INFO",
 				InfoParams: &parsermodels.InfoParams{
-					EntryType: parsermodels.UnknownEntryType,
+					EntryType: parsermodels.UnknownInfoType,
 				},
 			},
 			expectedSmcData:     nil,

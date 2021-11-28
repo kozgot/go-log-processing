@@ -75,7 +75,7 @@ func (i *InfoEntryProcessor) ProcessInfoEntry(logEntry parsermodels.ParsedLogEnt
 		return data, event, nil, nil
 
 	// Unrecognized entry type
-	case parsermodels.UnknownEntryType:
+	case parsermodels.UnknownInfoType:
 		return nil, nil, nil, nil
 	default:
 		break
