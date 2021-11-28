@@ -1,7 +1,7 @@
 package formats
 
-// WarnRegex represents the regular expression that matches relevant a warn line.
-const WarnRegex = "Task failed, "
+// TaskFailedWarnRegex represents the regular expression that matches relevant a warn line.
+const TaskFailedWarnRegex = "Task failed, "
 
 // WarningPriorityRegex represents the regular expression that matches the severity[number] field in an error line.
 const WarningPriorityRegex = "priority" + LongNumberBetweenBracketsRegex

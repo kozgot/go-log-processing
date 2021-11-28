@@ -1,4 +1,4 @@
-package serviceunittests
+package parserunittests
 
 import (
 	"reflect"

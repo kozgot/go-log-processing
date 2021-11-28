@@ -4,7 +4,17 @@ import "time"
 
 // WarningParams contains the parsed warning parameters.
 type WarningParams struct {
-	Name          string
+	WarningType WarningEntryType
+
+	TaskFailedWarningParams *TaskFailedWarningParams
+	JoinMessageParams       *SmcJoinMessageParams
+	TimeoutParams           *TimeOutParams
+	LostConnectionParams    *LostConnectionParams
+}
+
+// TaskFailedWarningParams contains a parsed task failed type, warn level log entry.
+type TaskFailedWarningParams struct {
+	Name          string // The name of the failed task.
 	SmcUID        string
 	UID           int
 	Priority      int
@@ -13,10 +23,7 @@ type WarningParams struct {
 	Creation      time.Time
 	MinLaunchTime time.Time
 
-	Details              *ErrorParams
-	JoinMessageParams    *SmcJoinMessageParams
-	TimeoutParams        *TimelineOutParams
-	LostConnectionParams *LostConnectionParams
+	Details *ErrorParams
 }
 
 // LostConnectionParams contains a parsed lost connaction warning entry.
@@ -30,8 +37,8 @@ type LostConnectionParams struct {
 	Connected bool
 }
 
-// TimelineOutParams contains the parsed timeout WARN level log entries.
-type TimelineOutParams struct {
+// TimeOutParams contains the parsed timeout WARN level log entries.
+type TimeOutParams struct {
 	Protocol string
 	URL      string
 }

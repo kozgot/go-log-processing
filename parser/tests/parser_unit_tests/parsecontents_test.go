@@ -1,4 +1,4 @@
-package serviceunittests
+package parserunittests
 
 import (
 	"reflect"
@@ -51,7 +51,8 @@ func TestParseContents(t *testing.T) {
 		InfoParams:  nil,
 		ErrorParams: nil,
 		WarningParams: &models.WarningParams{
-			TimeoutParams: &models.TimelineOutParams{
+			WarningType: models.TimeoutWarning,
+			TimeoutParams: &models.TimeOutParams{
 				Protocol: "plc-udp",
 				URL:      "fe80::4021:ff:fe00:10:61616",
 			},

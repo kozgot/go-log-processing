@@ -24,6 +24,7 @@ func (warningParser *WarningParser) ParseWarning() *models.WarningParams {
 	warningParams := models.WarningParams{}
 	smcJoinEntryParser := SmcJoinEntryParser{line: warningParser.line}
 	warningParams.JoinMessageParams = smcJoinEntryParser.Parse()
+	warningParams.WarningType = models.JoinRejectedWarning
 
 	return &warningParams
 }
@@ -34,6 +35,7 @@ func (warningParser *WarningParser) ParseWarn() *models.WarningParams {
 
 	if strings.Contains(warningParser.line.Rest, formats.LostConnectionPrefix) {
 		warningParams.LostConnectionParams = warningParser.parseLostConnectionEntry()
+		warningParams.WarningType = models.ConnectionLostWarning
 		return &warningParams
 	}
 
@@ -42,52 +44,58 @@ func (warningParser *WarningParser) ParseWarn() *models.WarningParams {
 		timeoutParams := warningParser.parseTimeoutEntry()
 		if timeoutParams != nil {
 			warningParams.TimeoutParams = timeoutParams
+			warningParams.WarningType = models.TimeoutWarning
 		}
 
 		return &warningParams
 	}
 
-	warnRegex, _ := regexp.Compile(formats.WarnRegex) // we only care for for Task failed warnings from here
-	warn := warnRegex.FindString(warningParser.line.Rest)
+	// we only care for for Task failed warnings from here
+	taskFailedWarnRegex, _ := regexp.Compile(formats.TaskFailedWarnRegex)
+	warn := taskFailedWarnRegex.FindString(warningParser.line.Rest)
 	if warn == "" {
 		return nil
 	}
 
 	// parse SMC UID
 	smcUID := warningParser.parseWarningSMCUID()
-	warningParams.SmcUID = smcUID
 
 	// parse UID
 	uid := warningParser.parseWarningUID()
-	warningParams.UID = uid
 
 	// parse Priority
 	priority := warningParser.parsePriority()
-	warningParams.Priority = priority
 
 	// parse Name
 	name := warningParser.parseWarningName()
-	warningParams.Name = name
 
 	// parse FileName
 	fileName := warningParser.parseFileName()
-	warningParams.FileName = fileName
 
 	// parse Retry
 	retry := warningParser.parseRetry()
-	warningParams.Retry = retry
 
 	// parse Creation
 	creationTime := warningParser.parseWarningCreationTime()
-	warningParams.Creation = creationTime
 
 	// parse MinLaunchTime
 	minLaunchTime := warningParser.parseWarningMinLaunchTime()
-	warningParams.MinLaunchTime = minLaunchTime
 
 	// parse inner error params
 	errorParser := NewErrorParser(warningParser.line)
-	warningParams.Details = errorParser.ParseError()
+	details := errorParser.ParseError()
+
+	warningParams.TaskFailedWarningParams = &models.TaskFailedWarningParams{
+		SmcUID:        smcUID,
+		Name:          name,
+		UID:           uid,
+		Priority:      priority,
+		FileName:      fileName,
+		Retry:         retry,
+		Creation:      creationTime,
+		MinLaunchTime: minLaunchTime,
+		Details:       details,
+	}
 
 	return &warningParams
 }
@@ -135,13 +143,13 @@ func (
 	return nil
 }
 
-func (warningParser *WarningParser) parseTimeoutEntry() *models.TimelineOutParams {
+func (warningParser *WarningParser) parseTimeoutEntry() *models.TimeOutParams {
 	if !strings.Contains(warningParser.line.Rest, formats.TimeoutWarnPrefix) {
 		// This is not a timeout warn log entry.
 		return nil
 	}
 
-	result := models.TimelineOutParams{}
+	result := models.TimeOutParams{}
 	result.Protocol = common.ParseFieldInBracketsAsString(warningParser.line.Rest, formats.TimeoutProtocolRegex)
 	result.URL = common.ParseFieldInBracketsAsString(warningParser.line.Rest, formats.TimeoutURLRegex)
 

@@ -6,7 +6,7 @@ import (
 
 // InfoParams contains the parsed info parameters.
 type InfoParams struct {
-	EntryType               EntryType
+	EntryType               InfoEntryType
 	RoutingMessage          *RoutingTableParams      // no smc UID for this kind of entries
 	JoinMessage             *SmcJoinMessageParams    // has an SMC UID
 	StatusMessage           *StatusMessageParams     // no smc UID for this kind of entries
