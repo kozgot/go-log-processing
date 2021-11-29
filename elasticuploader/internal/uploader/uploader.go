@@ -2,7 +2,7 @@ package uploader
 
 import (
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/elastic"
-	"github.com/kozgot/go-log-processing/elasticuploader/internal/rabbit"
+	"github.com/kozgot/go-log-processing/elasticuploader/internal/rabbitmq"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/utils"
 	"github.com/kozgot/go-log-processing/elasticuploader/pkg/models"
 	postprocmodels "github.com/kozgot/go-log-processing/postprocessor/pkg/models"
@@ -10,7 +10,7 @@ import (
 
 // UploaderService encapsultes the data and logic of the uploading service.
 type UploaderService struct {
-	rabbitMQConsumer        rabbit.MessageConsumer
+	rabbitMQConsumer        rabbitmq.MessageConsumer
 	esClient                elastic.EsClient
 	eventIndexName          string
 	consumptionIndexName    string
@@ -21,7 +21,7 @@ type UploaderService struct {
 // The indexRecreationTimeSpec is used to time the creation of new ES indexes,
 // see the docs of github.com/robfig/cron/v3 for the syntax.
 func NewUploaderService(
-	messageConsumer rabbit.MessageConsumer,
+	messageConsumer rabbitmq.MessageConsumer,
 	esClient elastic.EsClient,
 	eventIndexName string,
 	consumptionIndexName string,

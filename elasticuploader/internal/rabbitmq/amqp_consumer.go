@@ -1,4 +1,4 @@
-package rabbit
+package rabbitmq
 
 import (
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/utils"

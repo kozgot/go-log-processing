@@ -20,6 +20,7 @@ github.com/form3tech-oss/jwt-go v3.2.2+incompatible/go.mod h1:pbq4aXjuKjdthFRnoD
 github.com/google/uuid v1.2.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/kozgot/go-log-processing v0.0.0-20211125094322-c9a06978f2bb h1:FUl3k3s+hsH3RGcd7QPTGfHh5ZABIV+HBeGijxr9QqE=
+github.com/kozgot/go-log-processing v0.0.0-20211129132349-9f5048a01e0c h1:oMgF8jT/lzwfOINM5uZO0mS/fUWpcefgKHjLwqBIQ4M=
 github.com/kozgot/go-log-processing/parser v0.0.0-20211107232447-d527c573acc8/go.mod h1:m0WJo7oB66Ev75u/DFJQR4ogrI8iimy34Se7YczNfww=
 github.com/kozgot/go-log-processing/postprocessor v0.0.0-20211111213731-144453837117 h1:aAxLEfLCPoAyE3iSo53SnHPR5s+XAiNNbaPlhDVIngY=
 github.com/kozgot/go-log-processing/postprocessor v0.0.0-20211111213731-144453837117/go.mod h1:Ir1zU6yS8AhV/cRVHZbn0KigJB6Bknq4QimTTK0mdds=

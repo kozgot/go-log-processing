@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/elastic"
-	"github.com/kozgot/go-log-processing/elasticuploader/internal/rabbit"
+	"github.com/kozgot/go-log-processing/elasticuploader/internal/rabbitmq"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/uploader"
 )
 
@@ -60,7 +60,7 @@ func main() {
 	esClient := elastic.NewEsClientWrapper(elasticSearchURL)
 
 	// Setup rabbitmq consumer.
-	rabbitMQConsumer := rabbit.NewAmqpConsumer(
+	rabbitMQConsumer := rabbitmq.NewAmqpConsumer(
 		rabbitMqURL,
 		processedDataExchangeName,
 		saveDataRoutingKey,

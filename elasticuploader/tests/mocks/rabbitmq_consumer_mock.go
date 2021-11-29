@@ -40,6 +40,14 @@ func NewRabbitMQConsumerMock(
 	return &mock
 }
 
+func (m *RabbitMQConsumerMock) Connect() {
+	// noop
+}
+
+func (m *RabbitMQConsumerMock) CloseChannelAndConnection() {
+	// noop
+}
+
 // ConsumeMessages creates a channel from the parsed log file of the MockMessageConsumer.
 func (m *RabbitMQConsumerMock) Consume() (<-chan amqp.Delivery, error) {
 	deliveries := make(chan amqp.Delivery, 100)

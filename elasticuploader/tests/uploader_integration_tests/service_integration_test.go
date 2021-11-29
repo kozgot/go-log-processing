@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/elastic"
-	"github.com/kozgot/go-log-processing/elasticuploader/internal/rabbit"
+	"github.com/kozgot/go-log-processing/elasticuploader/internal/rabbitmq"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/uploader"
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/utils"
 	"github.com/kozgot/go-log-processing/elasticuploader/pkg/models"
@@ -103,7 +103,7 @@ func TestServiceIntegrationWithRabbitMQ(t *testing.T) {
 	testInputData := testmodels.TestProcessedData{}
 	testInputData.FromJSON(testInput)
 
-	rabbitMQConsumer := rabbit.NewAmqpConsumer(rabbitMQURL, exchangeName, routingKey, queueName)
+	rabbitMQConsumer := rabbitmq.NewAmqpConsumer(rabbitMQURL, exchangeName, routingKey, queueName)
 	rabbitMQConsumer.Connect()
 
 	mockESClient := mocks.NewESClientMock(
