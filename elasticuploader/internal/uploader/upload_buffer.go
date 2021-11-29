@@ -55,7 +55,6 @@ func NewUploadBuffer(
 	uploadBuffer.esClient.CreateEsIndex(currentConsIndexName)
 	log.Println(" [UPLOADER SERVICE] Created new indexes at startup")
 
-	// initialize new cron job runner with custom location
 	cronHandler := cron.New(cron.WithLocation(time.Local))
 	// the 0/24th hour and 0th minute of every day
 	_, err := cronHandler.AddFunc(indexRecreationTimeSpec, func() {
