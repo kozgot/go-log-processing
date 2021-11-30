@@ -14,7 +14,7 @@ type SmcEvent struct {
 	EventTypeString string
 	Label           string
 	SmcUID          string
-	DataPayload     SmcData
+	SMC             SmcData
 }
 
 // Serialize serializes an smc event and returns a byte array.

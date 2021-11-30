@@ -136,7 +136,7 @@ func TestProcessInfoEntry(t *testing.T) {
 				EventTypeString: models.EventTypeToString(models.SmcJoined),
 				Label:           "Smc " + "dc18-smc24" + " has joined",
 				SmcUID:          "dc18-smc24",
-				DataPayload: models.SmcData{
+				SMC: models.SmcData{
 					Address: models.AddressDetails{
 						PhysicalAddress: "EEBEDDFFFE62106D",
 						LogicalAddress:  "FE80::4021:FF:FE00:001f:61616",

@@ -49,7 +49,7 @@ func TestProcessWarnEntry(t *testing.T) {
 				EventType:       models.TimeoutWarning,
 				EventTypeString: models.EventTypeToString(models.TimeoutWarning),
 				Label:           "Timeout for URL " + "fe80::4021:ff:fe00:a:61616",
-				DataPayload: models.SmcData{
+				SMC: models.SmcData{
 					Address: models.AddressDetails{
 						URL: "fe80::4021:ff:fe00:a:61616",
 					},
@@ -113,7 +113,7 @@ func TestProcessWarniongEntry(t *testing.T) {
 				EventTypeString: models.EventTypeToString(models.JoinRejectedWarning),
 				Label:           "SMC join rejected for " + "dc18-smc36",
 				SmcUID:          "dc18-smc36",
-				DataPayload: models.SmcData{
+				SMC: models.SmcData{
 					Address: models.AddressDetails{
 						PhysicalAddress: "EEBEDDFFFE621128",
 						LogicalAddress:  "FE80::4021:FF:FE00:0008:61616",

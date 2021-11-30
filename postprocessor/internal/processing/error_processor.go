@@ -31,7 +31,7 @@ func (e *ErrorProcessor) ProcessError(logEntry parsermodels.ParsedLogEntry) (*mo
 		EventTypeString: models.EventTypeToString(models.DLMSError),
 		Label:           label,
 		SmcUID:          smcUID,
-		DataPayload:     data,
+		SMC:             data,
 	}
 
 	return &data, &event

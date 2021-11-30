@@ -49,7 +49,7 @@ func TestProcessErrorEntry(t *testing.T) {
 				EventTypeString: models.EventTypeToString(models.DLMSError),
 				Label:           "Error type DLMS error" + ", severity: 3",
 				SmcUID:          "dc18-smc32",
-				DataPayload: models.SmcData{
+				SMC: models.SmcData{
 					SmcUID: "dc18-smc32",
 				},
 			},

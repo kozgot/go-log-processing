@@ -6,7 +6,7 @@
    "EventTypeString": "ConfigurationReadFromDB",
    "Label": "SMC Config read from DB",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc3",
     "Address": {
      "ShortAddress": 0,
@@ -26,7 +26,7 @@
    "EventTypeString": "PodConfiguration",
    "Label": "Pod configuration read for pod 1479",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc3",
     "Address": {
      "ShortAddress": 0,
@@ -55,7 +55,7 @@
    "EventTypeString": "PodConfiguration",
    "Label": "Pod configuration read for pod 1478",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc3",
     "Address": {
      "ShortAddress": 0,
@@ -84,7 +84,7 @@
    "EventTypeString": "PodConfiguration",
    "Label": "Pod configuration read for pod 1477",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc3",
     "Address": {
      "ShortAddress": 0,
@@ -113,7 +113,7 @@
    "EventTypeString": "SmcAddressUpdated",
    "Label": "SMC address updated",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc3",
     "Address": {
      "ShortAddress": 9,
@@ -133,7 +133,7 @@
    "EventTypeString": "InternalDiagnostics",
    "Label": "Internal diagnostics...",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc3",
     "Address": {
      "ShortAddress": 0,
@@ -153,7 +153,7 @@
    "EventTypeString": "ConnectionAttempt",
    "Label": "Connection attempt to dc18-smc3",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc3",
     "Address": {
      "ShortAddress": 0,
@@ -173,7 +173,7 @@
    "EventTypeString": "InternalDiagnostics",
    "Label": "Internal diagnostics...",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc3",
     "Address": {
      "ShortAddress": 0,
@@ -193,7 +193,7 @@
    "EventTypeString": "InternalDiagnostics",
    "Label": "Internal diagnostics...",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc3",
     "Address": {
      "ShortAddress": 0,
@@ -213,7 +213,7 @@
    "EventTypeString": "ConfigurationUpdated",
    "Label": "Configuration update for dc18-smc3",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc3",
     "Address": {
      "ShortAddress": 9,
@@ -233,7 +233,7 @@
    "EventTypeString": "ConnectionAttempt",
    "Label": "Connection attempt to dc18-smc3",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc3",
     "Address": {
      "ShortAddress": 0,
@@ -253,7 +253,7 @@
    "EventTypeString": "StartToConnect",
    "Label": "Trying to connect to fe80::4021:ff:fe00:9:61616 ...",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "",
     "Address": {
      "ShortAddress": 0,
@@ -273,7 +273,7 @@
    "EventTypeString": "InitConnection",
    "Label": "Initialize DLMS connection, URL: fe80::4021:ff:fe00:9:61616",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "",
     "Address": {
      "ShortAddress": 0,
@@ -293,7 +293,7 @@
    "EventTypeString": "TimeoutWarning",
    "Label": "Timeout for URL fe80::4021:ff:fe00:9:61616",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "",
     "Address": {
      "ShortAddress": 0,
@@ -313,7 +313,7 @@
    "EventTypeString": "DLMSError",
    "Label": "Error type DLMS error, severity: 3",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc3",
     "Address": {
      "ShortAddress": 0,
@@ -333,7 +333,7 @@
    "EventTypeString": "DLMSError",
    "Label": "Error type DLMS error, severity: 3",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc3",
     "Address": {
      "ShortAddress": 0,
@@ -353,7 +353,7 @@
    "EventTypeString": "DLMSError",
    "Label": "Error type DLMS error, severity: 3",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc3",
     "Address": {
      "ShortAddress": 0,
@@ -373,7 +373,7 @@
    "EventTypeString": "StartToConnect",
    "Label": "Trying to connect to fe80::4021:ff:fe00:9:61616 ...",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "",
     "Address": {
      "ShortAddress": 0,
@@ -393,7 +393,7 @@
    "EventTypeString": "InitConnection",
    "Label": "Initialize DLMS connection, URL: fe80::4021:ff:fe00:9:61616",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "",
     "Address": {
      "ShortAddress": 0,
@@ -413,7 +413,7 @@
    "EventTypeString": "TimeoutWarning",
    "Label": "Timeout for URL fe80::4021:ff:fe00:9:61616",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "",
     "Address": {
      "ShortAddress": 0,
@@ -433,7 +433,7 @@
    "EventTypeString": "DLMSError",
    "Label": "Error type DLMS error, severity: 3",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc3",
     "Address": {
      "ShortAddress": 0,
@@ -453,7 +453,7 @@
    "EventTypeString": "DLMSError",
    "Label": "Error type DLMS error, severity: 3",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc3",
     "Address": {
      "ShortAddress": 0,
@@ -473,7 +473,7 @@
    "EventTypeString": "DLMSError",
    "Label": "Error type DLMS error, severity: 3",
    "SmcUID": "dc18-smc3",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc3",
     "Address": {
      "ShortAddress": 0,

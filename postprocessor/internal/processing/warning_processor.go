@@ -33,7 +33,7 @@ func (w *WarningProcessor) ProcessWarn(logEntry parsermodels.ParsedLogEntry) (*m
 			EventType:       models.TimeoutWarning,
 			EventTypeString: models.EventTypeToString(models.TimeoutWarning),
 			Label:           "Timeout for URL " + logEntry.WarningParams.TimeoutParams.URL,
-			DataPayload:     data,
+			SMC:             data,
 		}
 
 		return &data, &event
@@ -71,7 +71,7 @@ func (w *WarningProcessor) ProcessWarning(logEntry parsermodels.ParsedLogEntry) 
 		EventType:       models.JoinRejectedWarning,
 		Label:           "SMC join rejected for " + smcUID,
 		SmcUID:          smcUID,
-		DataPayload:     data,
+		SMC:             data,
 	}
 
 	return &data, &event

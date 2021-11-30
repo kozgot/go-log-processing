@@ -6,7 +6,7 @@
    "EventTypeString": "SmcJoined",
    "Label": "Smc dc18-smc32 has joined",
    "SmcUID": "dc18-smc32",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc32",
     "Address": {
      "ShortAddress": 10,
@@ -26,7 +26,7 @@
    "EventTypeString": "SmcJoined",
    "Label": "Smc dc18-smc30 has joined",
    "SmcUID": "dc18-smc30",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc30",
     "Address": {
      "ShortAddress": 20,
@@ -46,7 +46,7 @@
    "EventTypeString": "SmcJoined",
    "Label": "Smc dc18-smc21 has joined",
    "SmcUID": "dc18-smc21",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc21",
     "Address": {
      "ShortAddress": 6,
@@ -66,7 +66,7 @@
    "EventTypeString": "SmcJoined",
    "Label": "Smc dc18-smc31 has joined",
    "SmcUID": "dc18-smc31",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc31",
     "Address": {
      "ShortAddress": 25,
@@ -86,7 +86,7 @@
    "EventTypeString": "SmcJoined",
    "Label": "Smc dc18-smc24 has joined",
    "SmcUID": "dc18-smc24",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc24",
     "Address": {
      "ShortAddress": 31,
@@ -106,7 +106,7 @@
    "EventTypeString": "SmcJoined",
    "Label": "Smc dc18-smc27 has joined",
    "SmcUID": "dc18-smc27",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc27",
     "Address": {
      "ShortAddress": 33,
@@ -126,7 +126,7 @@
    "EventTypeString": "SmcJoined",
    "Label": "Smc dc18-smc37 has joined",
    "SmcUID": "dc18-smc37",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc37",
     "Address": {
      "ShortAddress": 3,
@@ -146,7 +146,7 @@
    "EventTypeString": "JoinRejectedWarning",
    "Label": "SMC join rejected for dc18-smc36",
    "SmcUID": "dc18-smc36",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc36",
     "Address": {
      "ShortAddress": 8,
@@ -166,7 +166,7 @@
    "EventTypeString": "JoinRejectedWarning",
    "Label": "SMC join rejected for dc18-smc20",
    "SmcUID": "dc18-smc20",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc20",
     "Address": {
      "ShortAddress": 27,
@@ -186,7 +186,7 @@
    "EventTypeString": "JoinRejectedWarning",
    "Label": "SMC join rejected for dc18-smc22",
    "SmcUID": "dc18-smc22",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc22",
     "Address": {
      "ShortAddress": 29,
@@ -206,7 +206,7 @@
    "EventTypeString": "JoinRejectedWarning",
    "Label": "SMC join rejected for dc18-smc10",
    "SmcUID": "dc18-smc10",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc10",
     "Address": {
      "ShortAddress": 35,
@@ -226,7 +226,7 @@
    "EventTypeString": "SmcJoined",
    "Label": "Smc dc18-smc17 has joined",
    "SmcUID": "dc18-smc17",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc17",
     "Address": {
      "ShortAddress": 4,
@@ -246,7 +246,7 @@
    "EventTypeString": "SmcJoined",
    "Label": "Smc dc18-smc8 has joined",
    "SmcUID": "dc18-smc8",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc8",
     "Address": {
      "ShortAddress": 12,
@@ -266,7 +266,7 @@
    "EventTypeString": "SmcJoined",
    "Label": "Smc dc18-smc2 has joined",
    "SmcUID": "dc18-smc2",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc2",
     "Address": {
      "ShortAddress": 11,
@@ -286,7 +286,7 @@
    "EventTypeString": "SmcJoined",
    "Label": "Smc dc18-smc38 has joined",
    "SmcUID": "dc18-smc38",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc38",
     "Address": {
      "ShortAddress": 13,
@@ -306,7 +306,7 @@
    "EventTypeString": "SmcJoined",
    "Label": "Smc dc18-smc25 has joined",
    "SmcUID": "dc18-smc25",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc25",
     "Address": {
      "ShortAddress": 17,
@@ -326,7 +326,7 @@
    "EventTypeString": "JoinRejectedWarning",
    "Label": "SMC join rejected for dc18-smc35",
    "SmcUID": "dc18-smc35",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc35",
     "Address": {
      "ShortAddress": 15,
@@ -346,7 +346,7 @@
    "EventTypeString": "SmcJoined",
    "Label": "Smc dc18-smc5 has joined",
    "SmcUID": "dc18-smc5",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc5",
     "Address": {
      "ShortAddress": 19,
@@ -366,7 +366,7 @@
    "EventTypeString": "SmcJoined",
    "Label": "Smc dc18-smc9 has joined",
    "SmcUID": "dc18-smc9",
-   "DataPayload": {
+   "SMC": {
     "SmcUID": "dc18-smc9",
     "Address": {
      "ShortAddress": 22,

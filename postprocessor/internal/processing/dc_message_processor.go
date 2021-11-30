@@ -218,7 +218,7 @@ func processIndexLowProfileGeneric(logEntry parsermodels.ParsedLogEntry) (*model
 		EventTypeString: models.EventTypeToString(models.IndexLowProfileGenericReceived),
 		Label:           "Index low profile generic from SMC",
 		SmcUID:          smcUID,
-		DataPayload:     data,
+		SMC:             data,
 	}
 
 	return &data, &event
@@ -242,7 +242,7 @@ func processIndexHighProfileGeneric(logEntry parsermodels.ParsedLogEntry) (*mode
 		EventTypeString: models.EventTypeToString(models.IndexHighProfileGenericReceived),
 		Label:           "Index high profile generic from SMC",
 		SmcUID:          smcUID,
-		DataPayload:     data,
+		SMC:             data,
 	}
 
 	return &data, &event
@@ -264,7 +264,7 @@ func processReadIndexProfiles(logEntry parsermodels.ParsedLogEntry) (*models.Smc
 		EventTypeString: models.EventTypeToString(models.IndexRead),
 		Label:           "Index read",
 		SmcUID:          smcUID,
-		DataPayload:     data,
+		SMC:             data,
 	}
 
 	return &data, &event
@@ -295,7 +295,7 @@ func processReadIndexLowProfiles(logEntry parsermodels.ParsedLogEntry) (*models.
 		EventTypeString: models.EventTypeToString(models.IndexCollectionStarted),
 		Label:           "Index collection started from " + fromDateString + " to " + toDateString,
 		SmcUID:          smcUID,
-		DataPayload:     data,
+		SMC:             data,
 	}
 
 	return &data, &event
@@ -358,7 +358,7 @@ func processNewSmc(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *mode
 		EventTypeString: models.EventTypeToString(models.NewSmc),
 		Label:           "New SMC, UID: " + data.SmcUID,
 		SmcUID:          data.SmcUID,
-		DataPayload:     data,
+		SMC:             data,
 	}
 
 	return &data, &event
@@ -389,7 +389,7 @@ func processPodConfig(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *m
 		EventTypeString: models.EventTypeToString(models.PodConfiguration),
 		Label:           "Pod configuration read for pod " + poidUID,
 		SmcUID:          smcUID,
-		DataPayload:     data,
+		SMC:             data,
 	}
 	return &data, &event
 }
@@ -412,7 +412,7 @@ func processConnect(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *mod
 		EventType:       models.StartToConnect,
 		EventTypeString: models.EventTypeToString(models.StartToConnect),
 		Label:           "Trying to connect to " + URL + " ...",
-		DataPayload:     data,
+		SMC:             data,
 	}
 	return &data, &event
 }
@@ -444,7 +444,7 @@ func processSmcAddressReadFromDB(logEntry parsermodels.ParsedLogEntry) (*models.
 		EventTypeString: models.EventTypeToString(eventType),
 		Label:           label,
 		SmcUID:          data.SmcUID,
-		DataPayload:     data,
+		SMC:             data,
 	}
 
 	return &data, &event
@@ -468,7 +468,7 @@ func processSmcConfigReadFromDB(logEntry parsermodels.ParsedLogEntry) (*models.S
 		EventTypeString: models.EventTypeToString(models.ConfigurationReadFromDB),
 		Label:           "SMC Config read from DB",
 		SmcUID:          data.SmcUID,
-		DataPayload:     data,
+		SMC:             data,
 	}
 
 	return &data, &event
@@ -492,7 +492,7 @@ func processStatistics(logEntry parsermodels.ParsedLogEntry) (*models.SmcData, *
 		EventTypeString: models.EventTypeToString(models.StatisticsSent),
 		Label:           "Statistics sent to SVI (" + statisticsPayload.Type + ")",
 		SmcUID:          smcUID,
-		DataPayload:     data,
+		SMC:             data,
 	}
 
 	return &data, &event
