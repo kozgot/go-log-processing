@@ -12,8 +12,8 @@ github.com/form3tech-oss/jwt-go v3.2.2+incompatible/go.mod h1:pbq4aXjuKjdthFRnoD
 github.com/google/uuid v1.2.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
 github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
-github.com/kozgot/go-log-processing/parser v0.0.0-20211128220317-a218b83bfedc h1:1tZVBaolCDuTgd43TgAbbRZD1D7g3403V5ygrge07+k=
-github.com/kozgot/go-log-processing/parser v0.0.0-20211128220317-a218b83bfedc/go.mod h1:m0WJo7oB66Ev75u/DFJQR4ogrI8iimy34Se7YczNfww=
+github.com/kozgot/go-log-processing/parser v0.0.0-20211130125815-f7855ac3898c h1:rdB6CYcoz21oD8UYNqe42HbRQFBfSaNsK9Swi0L8WI4=
+github.com/kozgot/go-log-processing/parser v0.0.0-20211130125815-f7855ac3898c/go.mod h1:m0WJo7oB66Ev75u/DFJQR4ogrI8iimy34Se7YczNfww=
 github.com/kr/pretty v0.2.1/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfnI=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
