@@ -1,4 +1,4 @@
-package parserunittests
+package timestampparserunittests
 
 import (
 	"reflect"

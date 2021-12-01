@@ -1,4 +1,4 @@
-package parserunittests
+package loglevelparserunittests
 
 import (
 	"reflect"
