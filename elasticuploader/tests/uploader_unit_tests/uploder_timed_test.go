@@ -32,12 +32,12 @@ func TestUploderServiceTimed(t *testing.T) {
 	allMessagesAcknowledged := make(chan bool)
 
 	// Create a mock rabbitMQ consumer with an artificial delay of 10 seconds after the first message.
-	mockConsumer := mocks.NewRabbitMQConsumerMock(testInputData, allMessagesAcknowledged, 10, expectedDocCount)
+	mockConsumer := mocks.NewMessageConsumerMock(testInputData, allMessagesAcknowledged, 10, expectedDocCount)
 
 	// Create a mock ES client.
 	mockESClient := mocks.NewESClientMock(
 		make(map[string][]models.ESDocument),
-		expectedDocCount)
+	)
 
 	uploaderService := uploader.NewUploaderService(
 		mockConsumer,

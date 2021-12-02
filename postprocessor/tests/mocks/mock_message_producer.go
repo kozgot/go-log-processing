@@ -6,25 +6,22 @@ import (
 )
 
 type MockMessageProducer struct {
-	Data                     testmodels.TestProcessedData
-	done                     chan string
-	expectedEventCount       int
-	expectedConsumptionCount int
-	publishedDataCount       int
+	Data               testmodels.TestProcessedData
+	done               chan string
+	expectedDataCount  int
+	publishedDataCount int
 }
 
 func NewMockMessageProducer(
 	data testmodels.TestProcessedData,
 	done chan string,
-	expectedEventCount int,
-	expectedConsumptionCount int,
+	expectedDataCount int,
 ) *MockMessageProducer {
 	return &MockMessageProducer{
-		Data:                     data,
-		done:                     done,
-		expectedEventCount:       expectedEventCount,
-		expectedConsumptionCount: expectedConsumptionCount,
-		publishedDataCount:       0,
+		Data:               data,
+		done:               done,
+		expectedDataCount:  expectedDataCount,
+		publishedDataCount: 0,
 	}
 }
 
@@ -33,7 +30,7 @@ func NewMockMessageProducer(
 func (m *MockMessageProducer) PublishEvent(event models.SmcEvent) {
 	m.Data.Events = append(m.Data.Events, event)
 	m.publishedDataCount++
-	if m.publishedDataCount == m.expectedConsumptionCount+m.expectedEventCount {
+	if m.publishedDataCount == m.expectedDataCount {
 		m.done <- "DONE"
 	}
 }
@@ -44,7 +41,7 @@ func (m *MockMessageProducer) PublishEvent(event models.SmcEvent) {
 func (m *MockMessageProducer) PublishConsumption(cons models.ConsumtionValue) {
 	m.Data.Consumptions = append(m.Data.Consumptions, cons)
 	m.publishedDataCount++
-	if m.publishedDataCount == m.expectedConsumptionCount+m.expectedEventCount {
+	if m.publishedDataCount == m.expectedDataCount {
 		m.done <- "DONE"
 	}
 }

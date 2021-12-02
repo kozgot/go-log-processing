@@ -9,8 +9,8 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// RabbitMQConsumerMock is a mock RabbitMQ consumer used in tests.
-type RabbitMQConsumerMock struct {
+// MessageConsumerMock is a mock MessageConsumer consumer used in tests.
+type MessageConsumerMock struct {
 	TestData     testmodels.TestProcessedData
 	acknowledger *MockAcknowledger
 	// this is needed to test the timed index-recreation functionality in the uploader service
@@ -18,20 +18,20 @@ type RabbitMQConsumerMock struct {
 	deliveryDelaySeconds int
 }
 
-// NewRabbitMQConsumerMock creates a new mock consumer
+// NewMessageConsumerMock creates a new mock consumer
 // for providing processed data messages for the ulpoader service.
 // The testData will be used to create the processed data messages from.
 // The done channel is used to signal after all messages have been acknowledged.
 // The deliveryDelaySeconds is used to add an artificial delay after the first message,
 // to test the timed index recreation behaviour, it is ignored if set to zero.
-func NewRabbitMQConsumerMock(
+func NewMessageConsumerMock(
 	testData testmodels.TestProcessedData,
-	done chan bool,
+	allMessagesAcknowledged chan bool,
 	deliveryDelaySeconds int,
 	expectedDocCount int,
-) *RabbitMQConsumerMock {
-	acknowledger := NewMockAcknowleder(expectedDocCount, done)
-	mock := RabbitMQConsumerMock{
+) *MessageConsumerMock {
+	acknowledger := NewMockAcknowleder(expectedDocCount, allMessagesAcknowledged)
+	mock := MessageConsumerMock{
 		TestData:             testData,
 		acknowledger:         acknowledger,
 		deliveryDelaySeconds: deliveryDelaySeconds,
@@ -40,16 +40,16 @@ func NewRabbitMQConsumerMock(
 	return &mock
 }
 
-func (m *RabbitMQConsumerMock) Connect() {
+func (m *MessageConsumerMock) Connect() {
 	// noop
 }
 
-func (m *RabbitMQConsumerMock) CloseChannelAndConnection() {
+func (m *MessageConsumerMock) CloseChannelAndConnection() {
 	// noop
 }
 
 // ConsumeMessages creates a channel from the parsed log file of the MockMessageConsumer.
-func (m *RabbitMQConsumerMock) Consume() (<-chan amqp.Delivery, error) {
+func (m *MessageConsumerMock) Consume() (<-chan amqp.Delivery, error) {
 	deliveries := make(chan amqp.Delivery, 100)
 
 	for i, cons := range m.TestData.Consumptions {

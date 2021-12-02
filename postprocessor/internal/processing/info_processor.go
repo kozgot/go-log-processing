@@ -5,12 +5,12 @@ import (
 	"github.com/kozgot/go-log-processing/postprocessor/pkg/models"
 )
 
-type InfoEntryProcessor struct {
+type InfoProcessor struct {
 	PodUIDToSmcUID map[string]string
 }
 
 // ProcessInfoEntry processes a log entry with INFO log level.
-func (i *InfoEntryProcessor) ProcessInfoEntry(logEntry parsermodels.ParsedLogEntry) (
+func (i *InfoProcessor) ProcessInfoEntry(logEntry parsermodels.ParsedLogEntry) (
 	*models.SmcData,
 	*models.SmcEvent,
 	*models.ConsumtionValue,

@@ -1,4 +1,4 @@
-package processorintegrationtests
+package processingintegrationtests
 
 import (
 	"io/ioutil"

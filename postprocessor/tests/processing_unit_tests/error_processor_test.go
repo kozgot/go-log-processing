@@ -1,4 +1,4 @@
-package processorunittests
+package processingunittests
 
 import (
 	"log"
@@ -17,7 +17,7 @@ type errorProcessorTest struct {
 	expectedSmcEvent *models.SmcEvent
 }
 
-func TestProcessErrorEntry(t *testing.T) {
+func TestProcessErrorEntries(t *testing.T) {
 	errorTests := []errorProcessorTest{
 		{
 			inputEntry: parsermodels.ParsedLogEntry{

@@ -31,12 +31,12 @@ func TestUploderService(t *testing.T) {
 	allMessagesAcknowledged := make(chan bool)
 
 	// Create a mock rabbitMQ consumer.
-	mockConsumer := mocks.NewRabbitMQConsumerMock(testInputData, allMessagesAcknowledged, 0, expectedDocCount)
+	mockConsumer := mocks.NewMessageConsumerMock(testInputData, allMessagesAcknowledged, 0, expectedDocCount)
 
 	// Create a mock ES client.
 	mockESClient := mocks.NewESClientMock(
 		make(map[string][]models.ESDocument),
-		expectedDocCount)
+	)
 
 	uploaderService := uploader.NewUploaderService(
 		mockConsumer,

@@ -1,4 +1,4 @@
-package processorunittests
+package processingunittests
 
 import (
 	"log"
@@ -17,7 +17,7 @@ type warningProcessorTest struct {
 	expectedSmcEvent *models.SmcEvent
 }
 
-func TestProcessWarnEntry(t *testing.T) {
+func TestProcessWarnEntries(t *testing.T) {
 	warnTests := []warningProcessorTest{
 		{
 			inputEntry: parsermodels.ParsedLogEntry{
@@ -69,7 +69,7 @@ func TestProcessWarnEntry(t *testing.T) {
 	log.Printf("Successfully run %d tests.", len(warnTests))
 }
 
-func TestProcessWarniongEntry(t *testing.T) {
+func TestProcessWarningEntries(t *testing.T) {
 	warningTests := []warningProcessorTest{
 		{
 			inputEntry: parsermodels.ParsedLogEntry{

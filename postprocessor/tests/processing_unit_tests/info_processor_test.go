@@ -1,4 +1,4 @@
-package processorunittests
+package processingunittests
 
 import (
 	"log"
@@ -19,7 +19,7 @@ type infoProcessorTest struct {
 	expectedIndex       *models.IndexValue
 }
 
-func TestProcessInfoEntry(t *testing.T) {
+func TestProcessInfoEntries(t *testing.T) {
 	podUIDToSmcUID := make(map[string]string)
 	infoProcessorTests := []infoProcessorTest{
 		{
@@ -154,7 +154,7 @@ func TestProcessInfoEntry(t *testing.T) {
 	}
 
 	for i, test := range infoProcessorTests {
-		infoProcessor := processing.InfoEntryProcessor{
+		infoProcessor := processing.InfoProcessor{
 			PodUIDToSmcUID: podUIDToSmcUID,
 		}
 

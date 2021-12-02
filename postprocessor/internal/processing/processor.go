@@ -96,7 +96,7 @@ func (processor *EntryProcessor) ProcessEntry(logEntry parsermodels.ParsedLogEnt
 	var indexvalue *models.IndexValue
 	switch logEntry.Level {
 	case "INFO":
-		infoProcessor := InfoEntryProcessor{
+		infoProcessor := InfoProcessor{
 			PodUIDToSmcUID: processor.podUIDToSmcUID,
 		}
 		data, event, consumption, indexvalue = infoProcessor.ProcessInfoEntry(logEntry)

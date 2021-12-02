@@ -1,7 +1,8 @@
-package processorunittests
+package processingunittests
 
 import (
 	"io/ioutil"
+	"log"
 	"testing"
 
 	"github.com/kozgot/go-log-processing/postprocessor/internal/processing"
@@ -36,7 +37,7 @@ func TestProcessEntries(t *testing.T) {
 		},
 	}
 
-	for _, test := range postProcessorTests {
+	for index, test := range postProcessorTests {
 		done := make(chan string)
 
 		// Init a mock message producer.
@@ -46,8 +47,7 @@ func TestProcessEntries(t *testing.T) {
 				Consumptions: []models.ConsumtionValue{},
 			},
 			done,
-			test.expectedEventCount,
-			test.expectedConsumptionCount,
+			test.expectedEventCount+test.expectedConsumptionCount,
 		)
 
 		// Read test input from resource file.
@@ -76,9 +76,11 @@ func TestProcessEntries(t *testing.T) {
 
 		// Assert
 		if string(actualProcessedDataBytes) != string(expectedBytes) {
-			t.Fatal("Expected json does not match actual json value of processed data.")
+			t.Fatalf("Expected json does not match actual json value of processed data in test number %d", index)
 		}
 	}
+
+	log.Printf("Successfully ran %d test cases", len(postProcessorTests))
 }
 
 func updateResourcesIfEnabled(resourceFileName string, newData []byte) {
