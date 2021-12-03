@@ -8,7 +8,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// AmqpProducer implements the RabbitMQProducer interface.
+// AmqpProducer implements the MessageProducer interface.
 type AmqpProducer struct {
 	connection   *amqp.Connection
 	channel      *amqp.Channel
