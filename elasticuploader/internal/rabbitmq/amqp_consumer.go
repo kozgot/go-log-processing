@@ -58,7 +58,7 @@ func (c *AmqpConsumer) Consume() (<-chan amqp.Delivery, error) {
 		c.queueName, // name
 		true,        // durable
 		false,       // delete when unused
-		true,        // exclusive
+		false,       // exclusive
 		false,       // no-wait
 		nil,         // arguments
 	)

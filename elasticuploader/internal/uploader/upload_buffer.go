@@ -24,6 +24,7 @@ type UploadBuffer struct {
 	eventIndexName       string
 	consumptionIndexName string
 	indexPostFix         string
+	backupBuffer         *BackupBuffer
 }
 
 // NewUploadBuffer initializes the buffer.
@@ -35,6 +36,7 @@ func NewUploadBuffer(
 	indexRecreationTimeSpec string,
 ) *UploadBuffer {
 	ticker := time.NewTicker(5 * time.Second)
+	backupBuffer := NewBackupBuffer()
 	uploadBuffer := UploadBuffer{
 		value:                make(map[string][]models.ESDocument),
 		esClient:             esClient,
@@ -43,7 +45,10 @@ func NewUploadBuffer(
 		eventIndexName:       eventIndexName,
 		consumptionIndexName: consumptionIndexName,
 		indexPostFix:         createIndexPostFix(),
+		backupBuffer:         backupBuffer,
 	}
+
+	uploadBuffer.uploadBackupIfNeeded()
 
 	// Create ES indexes for the day.
 	// This takes care of the index creation just after the service is started (it might not happen at midnight exactly).
@@ -54,6 +59,11 @@ func NewUploadBuffer(
 	uploadBuffer.esClient.CreateEsIndex(currentEventIndexName)
 	uploadBuffer.esClient.CreateEsIndex(currentConsIndexName)
 	log.Println(" [UPLOADER SERVICE] Created new indexes at startup")
+
+	// Save initial index name to the backup file.
+	uploadBuffer.backupBuffer.SetIndexNames(
+		uploadBuffer.postfixIndexName(eventIndexName),
+		uploadBuffer.postfixIndexName(consumptionIndexName))
 
 	cronHandler := cron.New(cron.WithLocation(time.Local))
 	// the 0/24th hour and 0th minute of every day
@@ -77,6 +87,11 @@ func NewUploadBuffer(
 		uploadBuffer.esClient.CreateEsIndex(currentEventIndexName)
 		log.Println(" [UPLOADER SERVICE] Created new indexes")
 
+		// Save current index name to the backup file.
+		uploadBuffer.backupBuffer.SetIndexNames(
+			uploadBuffer.postfixIndexName(eventIndexName),
+			uploadBuffer.postfixIndexName(consumptionIndexName))
+
 		uploadBuffer.mutex.Unlock()
 	})
 	utils.FailOnError(err, " [UPLOADER SERVICE] Failed to register cronhandler function")
@@ -91,6 +106,31 @@ func NewUploadBuffer(
 	}()
 
 	return &uploadBuffer
+}
+
+func (d *UploadBuffer) uploadBackupIfNeeded() {
+	log.Println(" [UPLOADER SERVICE] Checking backup documents to upload...")
+	unsavedEvents, unsavedConsumptions := d.backupBuffer.Load()
+	eventsIndexName, consumptionsIndexName := d.backupBuffer.GetBackupIndexNames()
+	foundBackupData := false
+	if len(unsavedEvents) > 0 {
+		log.Println(" [UPLOADER SERVICE] Found backup events to upload")
+		d.esClient.BulkUpload(unsavedEvents, eventsIndexName)
+		foundBackupData = true
+	}
+
+	if len(unsavedConsumptions) > 0 {
+		log.Println(" [UPLOADER SERVICE] Found backup consumptions to upload")
+		d.esClient.BulkUpload(unsavedConsumptions, consumptionsIndexName)
+		foundBackupData = true
+	}
+
+	if !foundBackupData {
+		log.Println(" [UPLOADER SERVICE] No backup documents to upload")
+		return
+	}
+
+	d.backupBuffer.Reset()
 }
 
 // AppendAndUploadIfNeeded appends a message for the given key.
@@ -110,7 +150,11 @@ func (d *UploadBuffer) AppendAndUploadIfNeeded(m models.ESDocument, dataType pos
 		d.value[indexName] = []models.ESDocument{}
 	}
 
+	// Append value to the buffer.
 	d.value[indexName] = append(d.value[indexName], m)
+
+	// Append value to the backup buffer until final upload.
+	d.backupBuffer.Add(m, dataType)
 
 	// If we hit the treshold, we upload to ES.
 	if len(d.value[indexName]) >= d.bufferSize {
@@ -119,8 +163,11 @@ func (d *UploadBuffer) AppendAndUploadIfNeeded(m models.ESDocument, dataType pos
 		// Upload to ES.
 		d.esClient.BulkUpload(d.value[indexName], d.postfixIndexName(indexName))
 
-		// Clear
+		// Clear the buffer.
 		d.value[indexName] = []models.ESDocument{}
+
+		// Clear the backup after upload.
+		d.backupBuffer.Clear(dataType)
 	}
 }
 
@@ -158,6 +205,8 @@ func (d *UploadBuffer) UploadRemaining() {
 }
 
 func (d *UploadBuffer) uploadAndClearBuffer() {
+	resetNeeded := false
+
 	// locking is handled from the outside
 	for indexName := range d.value {
 		if len(d.value[indexName]) > 0 {
@@ -166,6 +215,12 @@ func (d *UploadBuffer) uploadAndClearBuffer() {
 
 			// Clear the buffer after uploading the contents.
 			d.value[indexName] = []models.ESDocument{}
+			resetNeeded = true
 		}
+	}
+
+	if resetNeeded {
+		// Clear the local backup of the documents after they have been uploaded.
+		d.backupBuffer.Reset()
 	}
 }

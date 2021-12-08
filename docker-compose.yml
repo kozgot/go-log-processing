@@ -109,7 +109,7 @@ services:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
       - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
       - PROCESSED_DATA_EXCHANGE=processeddata_direct_durable
-      - SAVE_DATA_QUEUE=save_data_queue_durable
+      - SAVE_DATA_QUEUE=savedata_queue_durable
       - SAVE_DATA_ROUTING_KEY=save-data
       - EVENT_INDEX_NAME=event
       - CONSUMPTION_INDEX_NAME=consumption
