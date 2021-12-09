@@ -2,6 +2,7 @@ package rabbitmq
 
 import (
 	"log"
+	"sync"
 
 	"github.com/kozgot/go-log-processing/parser/internal/utils"
 	"github.com/kozgot/go-log-processing/parser/pkg/models"
@@ -15,6 +16,7 @@ type AmqpProducer struct {
 	routingKey   string
 	exchangeName string
 	rabbitMqURL  string
+	mutex        sync.Mutex
 }
 
 // NewAmqpProducer creates a new AmqpProducer instance with the given parameters.
@@ -57,16 +59,20 @@ func (producer *AmqpProducer) CloseChannelAndConnection() {
 
 // PublishStringMessage sends a string message to the message queue.
 func (producer *AmqpProducer) PublishStringMessage(indexName string) {
+	producer.mutex.Lock()
 	bytes := []byte(indexName)
-	producer.sendDataToPostprocessor(bytes)
+	producer.publish(bytes)
+	producer.mutex.Unlock()
 }
 
 // PublishEntry sends the parsed log lines to the message queue.
 func (producer *AmqpProducer) PublishEntry(line models.ParsedLogEntry) {
-	producer.sendDataToPostprocessor(line.Serialize())
+	producer.mutex.Lock()
+	producer.publish(line.Serialize())
+	producer.mutex.Unlock()
 }
 
-func (producer *AmqpProducer) sendDataToPostprocessor(data []byte) {
+func (producer *AmqpProducer) publish(data []byte) {
 	body := data
 
 	err := producer.channel.Publish(
