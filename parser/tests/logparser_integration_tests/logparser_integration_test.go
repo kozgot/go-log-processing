@@ -25,7 +25,7 @@ func TestLogParserDCMain(t *testing.T) {
 	rabbitMqURL := "amqp://guest:guest@rabbitmq:5672/"
 	testRoutingKey := "test-routing-key"
 	testExchangeName := "test_exchange"
-	testQueueName := "test_queue"
+	testQueueName := "test_queue_1"
 
 	rabbitProducer, testConsumer, mockDownloader := setupDependencies(
 		rabbitMqURL,
@@ -73,7 +73,7 @@ func TestLogParserPLCManager(t *testing.T) {
 	rabbitMqURL := "amqp://guest:guest@rabbitmq:5672/"
 	testRoutingKey := "test-routing-key"
 	testExchangeName := "test_exchange"
-	testQueueName := "test_queue"
+	testQueueName := "test_queue_2"
 
 	rabbitProducer, testConsumer, mockDownloader := setupDependencies(
 		rabbitMqURL,
