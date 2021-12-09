@@ -3,7 +3,6 @@ package elastic
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"log"
 	"sync/atomic"
 	"time"
@@ -58,7 +57,6 @@ func (esuploader *EsClientWrapper) BulkUpload(dataUnits []models.ESDocument, ind
 	// Check if the index still exists.
 	res, err = esuploader.esClient.Indices.Exists([]string{indexName})
 	utils.FailOnError(err, "Failed to check if index exists")
-	fmt.Println(res)
 	if res.IsError() {
 		esuploader.CreateEsIndex(indexName)
 	}
