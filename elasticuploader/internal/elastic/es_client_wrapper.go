@@ -54,6 +54,10 @@ func (esuploader *EsClientWrapper) BulkUpload(dataUnits []models.ESDocument, ind
 		res             *esapi.Response
 	)
 
+	res, err = esuploader.esClient.Indices.Refresh()
+	utils.FailOnError(err, "Could not refresh indices.")
+	res.Body.Close()
+
 	// Check if the index still exists.
 	res, err = esuploader.esClient.Indices.Exists([]string{indexName})
 	utils.FailOnError(err, "Failed to check if index exists")
