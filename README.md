@@ -19,3 +19,5 @@ This repository contains the source code of my thesis project, which is Diagnost
 ## Running the application
 To run the application, issue the following command from the deployments directory:
 `docker-compose up`
+
+Before running the application, edit the docker-compose.yml file in the deployments directory to specify your azure storage account, container name and access key to access the log files to process. 
