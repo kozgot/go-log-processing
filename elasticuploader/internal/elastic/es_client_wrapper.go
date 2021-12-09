@@ -51,7 +51,17 @@ func (esuploader *EsClientWrapper) BulkUpload(dataUnits []models.ESDocument, ind
 	var (
 		countSuccessful uint64
 		err             error
+		res             *esapi.Response
 	)
+
+	// Check if the index still exists.
+	res, err = esuploader.esClient.Indices.Exists([]string{indexName})
+	utils.FailOnError(err, "Failed to check if index exists")
+	if res.IsError() {
+		esuploader.CreateEsIndex(indexName)
+	}
+
+	res.Body.Close()
 
 	// Create the BulkIndexer.
 	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
@@ -102,7 +112,7 @@ func (esuploader *EsClientWrapper) CreateEsIndex(index string) {
 		err error
 	)
 
-	log.Println(" [ESClient] Deleting index:  ", index, "...")
+	log.Println(" [ESClient] Deleting index:  ", index)
 
 	// Re-create the index
 	if res, err = esuploader.esClient.Indices.Delete(
@@ -113,7 +123,7 @@ func (esuploader *EsClientWrapper) CreateEsIndex(index string) {
 
 	res.Body.Close()
 
-	log.Println(" [ESClient] Creating index:  ", index, "...")
+	log.Println(" [ESClient] Creating index:  ", index)
 	res, err = esuploader.esClient.Indices.Create(index)
 	if err != nil {
 		log.Fatalf(" [ESClient] Cannot create index: %s", err)

@@ -17,7 +17,7 @@ import (
 const updateResourcesEnabled = false
 
 // TestProcessDCMain calls processor.HandleEntries()
-// with a real rabbitM message consumer that consumes parsed log entries from a dc_main.log file.
+// with a real rabbitMQ message consumer that consumes parsed log entries from a dc_main.log file.
 func TestProcessDCMain(t *testing.T) {
 	testInputFileName := "./resources/parsed_test_dc_main.json"
 	expectedDataFileName := "./resources/expected_processed_dc_main.json"

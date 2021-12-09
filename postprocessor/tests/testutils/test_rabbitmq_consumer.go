@@ -84,7 +84,7 @@ func (c *TestRabbitConsumer) ConsumeMessages() <-chan amqp.Delivery {
 		c.queue.Name, // queue
 		"",           // consumer
 		false,        // auto-ack
-		false,        // exclusive
+		true,         // exclusive
 		false,        // no-local
 		false,        // no-wait
 		nil,          // args
