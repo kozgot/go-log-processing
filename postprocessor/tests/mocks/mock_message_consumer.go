@@ -27,6 +27,9 @@ func (m *MockMessageConsumer) ConsumeMessages() <-chan amqp.Delivery {
 	return deliveries
 }
 
+func (m *MockMessageConsumer) CloseConnectionAndChannel() {}
+func (m *MockMessageConsumer) Connect()                   {}
+
 // NewMockDelivery creates an amqp.Delivery from a parsed log entry,
 // filling only the properties to used by the processor code.
 func NewMockDelivery(data []byte, tag uint64) amqp.Delivery {
