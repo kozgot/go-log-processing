@@ -2,7 +2,9 @@ package uploader
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
+	"os"
 
 	"github.com/kozgot/go-log-processing/elasticuploader/internal/utils"
 	"github.com/kozgot/go-log-processing/elasticuploader/pkg/models"
@@ -16,6 +18,8 @@ type Backup struct {
 	EventIndexName       string
 	ConsumptionIndexName string
 }
+
+const backupFileName = "unsaved_docs_backup.json"
 
 func (backup *Backup) ToJSON() []byte {
 	bytes, err := json.MarshalIndent(backup, "", " ")
@@ -72,11 +76,11 @@ func (b *BackupBuffer) save() {
 	b.backup.ConsumptionDocuments = append(b.backup.ConsumptionDocuments, b.consumptionsBuffer...)
 
 	serialized := b.backup.ToJSON()
-	_ = ioutil.WriteFile("unsaved_docs_backup.json", serialized, 0600)
+	_ = ioutil.WriteFile(backupFileName, serialized, 0600)
 }
 
 // Reset resets the backup buffer and clears the backup file contents.
-func (b *BackupBuffer) Reset() { // todo
+func (b *BackupBuffer) Reset() {
 	b.backup.EventDocuments = []models.ESDocument{}
 	b.backup.ConsumptionDocuments = []models.ESDocument{}
 
@@ -84,7 +88,7 @@ func (b *BackupBuffer) Reset() { // todo
 	b.eventsBuffer = []models.ESDocument{}
 
 	serialized := b.backup.ToJSON()
-	_ = ioutil.WriteFile("unsaved_docs_backup.json", serialized, 0600)
+	_ = ioutil.WriteFile(backupFileName, serialized, 0600)
 }
 
 // Clear clears the documents of the given type from the backup buffer.
@@ -103,12 +107,17 @@ func (b *BackupBuffer) Clear(dataType postprocmodels.DataType) {
 	}
 
 	serialized := b.backup.ToJSON()
-	_ = ioutil.WriteFile("unsaved_docs_backup.json", serialized, 0600)
+	_ = ioutil.WriteFile(backupFileName, serialized, 0600)
 }
 
 func (b *BackupBuffer) Load() ([]models.ESDocument, []models.ESDocument) {
-	serializedBackup, err := ioutil.ReadFile("unsaved_docs_backup.json")
-	utils.FailOnError(err, "Could not read file unsaved_docs_backup.json")
+	if _, err := os.Stat(backupFileName); errors.Is(err, os.ErrNotExist) {
+		// no backup file
+		return []models.ESDocument{}, []models.ESDocument{}
+	}
+
+	serializedBackup, err := ioutil.ReadFile(backupFileName)
+	utils.FailOnError(err, "Could not read unsaved data backup file")
 	b.backup.FromJSON(serializedBackup)
 	return b.backup.EventDocuments, b.backup.ConsumptionDocuments
 }
